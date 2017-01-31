@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["Daniel Abramov <dabramov@snapview.de>"]
 
 [dependencies]
+futures = "*"
+tokio-core = "*"
+
+ws2 = { path = "../ws2-rs" }
