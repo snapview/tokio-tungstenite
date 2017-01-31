@@ -1,0 +1,6 @@
+[package]
+name = "tokio-ws"
+version = "0.1.0"
+authors = ["Daniel Abramov <dabramov@snapview.de>"]
+
+[dependencies]
