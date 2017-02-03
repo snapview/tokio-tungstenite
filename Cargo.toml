@@ -6,6 +6,5 @@ authors = ["Daniel Abramov <dabramov@snapview.de>"]
 [dependencies]
 futures = "*"
 tokio-core = "*"
-url = "*"
 
 tungstenite = { path = "../tungstenite-rs" }
