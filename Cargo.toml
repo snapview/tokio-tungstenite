@@ -6,5 +6,7 @@ authors = ["Daniel Abramov <dabramov@snapview.de>"]
 [dependencies]
 futures = "*"
 tokio-core = "*"
+url = "*"
 
-tungstenite = { path = "../tungstenite-rs" }
+tungstenite = { git = "ssh://git@bitbucket.org/mikogo/tungstenite-rs.git" }
+

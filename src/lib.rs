@@ -19,10 +19,11 @@
 extern crate futures;
 extern crate tokio_core;
 extern crate tungstenite;
+extern crate url;
 
 use std::io::ErrorKind;
 
-use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
+use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend, task};
 use tokio_core::io::Io;
 
 use tungstenite::handshake::client::{ClientHandshake, Request};
@@ -103,6 +104,9 @@ impl<S: Io> ServerHandshakeExt for ServerHandshake<S> {
     }
 }
 
+// FIXME: `ClientHandshakeAsync<S>` and `ServerHandshakeAsync<S>` have the same implementation, we
+// have to get rid of this copy-pasting one day. But currently I don't see an elegant way to write
+// it.
 impl<S: Io> Future for ClientHandshakeAsync<S> {
     type Item = WebSocketStream<S>;
     type Error = WsError;
@@ -114,13 +118,21 @@ impl<S: Io> Future for ClientHandshakeAsync<S> {
                 Ok(WebSocketStream { inner: stream }.into())
             },
             HandshakeResult::Incomplete(handshake) => {
-                self.inner= Some(handshake);
+                // FIXME: Remove this line after we have a guarantee that the underlying handshake
+                // calls to both `read()`/`write()`. Or replace it by `poll_read()` and
+                // `poll_write()` (this requires making the handshake's stream public).
+                task::park().unpark();
+
+                self.inner = Some(handshake);
                 Ok(Async::NotReady)
             },
         }
     }
 }
 
+// FIXME: `ClientHandshakeAsync<S>` and `ServerHandshakeAsync<S>` have the same implementation, we
+// have to get rid of this copy-pasting one day. But currently I don't see an elegant way to write
+// it.
 impl<S: Io> Future for ServerHandshakeAsync<S> {
     type Item = WebSocketStream<S>;
     type Error = WsError;
@@ -132,7 +144,12 @@ impl<S: Io> Future for ServerHandshakeAsync<S> {
                 Ok(WebSocketStream { inner: stream }.into())
             },
             HandshakeResult::Incomplete(handshake) => {
-                self.inner= Some(handshake);
+                // FIXME: Remove this line after we have a guarantee that the underlying handshake
+                // calls to both `read()`/`write()`. Or replace it by `poll_read()` and
+                // `poll_write()` (this requires making the handshake's stream public).
+                task::park().unpark();
+
+                self.inner = Some(handshake);
                 Ok(Async::NotReady)
             },
         }
@@ -148,7 +165,9 @@ impl<T> Stream for WebSocketStream<T> where T: Io {
             Ok(message) => Ok(Async::Ready(Some(message))),
             Err(error) => {
                 match error {
-                    WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(Async::NotReady),
+                    WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => {
+                        Ok(Async::NotReady)
+                    },
                     _ => Err(error),
                 }
             },
