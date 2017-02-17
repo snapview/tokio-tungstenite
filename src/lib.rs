@@ -156,22 +156,32 @@ impl<S: Io> Future for ServerHandshakeAsync<S> {
     }
 }
 
+trait ToAsync {
+    type T;
+    type E;
+    fn to_async(self) -> Result<Async<Self::T>, Self::E>;
+}
+
+impl<T> ToAsync for Result<T, WsError> {
+    type T = T;
+    type E = WsError;
+    fn to_async(self) -> Result<Async<Self::T>, Self::E> {
+        match self {
+            Ok(x) => Ok(Async::Ready(x)),
+            Err(error) => match error {
+                WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(Async::NotReady),
+                err => Err(err),
+            },
+        }
+    }
+}
+
 impl<T> Stream for WebSocketStream<T> where T: Io {
     type Item = Message;
     type Error = WsError;
 
     fn poll(&mut self) -> Poll<Option<Message>, WsError> {
-        match self.inner.read_message() {
-            Ok(message) => Ok(Async::Ready(Some(message))),
-            Err(error) => {
-                match error {
-                    WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => {
-                        Ok(Async::NotReady)
-                    },
-                    _ => Err(error),
-                }
-            },
-        }
+        self.inner.read_message().map(|m| Some(m)).to_async()
     }
 }
 
@@ -180,12 +190,12 @@ impl<T> Sink for WebSocketStream<T> where T: Io {
     type SinkError = WsError;
 
     fn start_send(&mut self, item: Message) -> StartSend<Message, WsError> {
-        try!(self.inner.write_message(item));
+        try!(self.inner.write_message(item).to_async());
         Ok(AsyncSink::Ready)
     }
 
     fn poll_complete(&mut self) -> Poll<(), WsError> {
-        Ok(Async::Ready(()))
+        self.inner.write_pending().to_async()
     }
 }
 
