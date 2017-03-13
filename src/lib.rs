@@ -13,7 +13,12 @@
 //! functionality provided by the `tungestenite` crate, on which this crate is
 //! built. Configuration is done through `tungestenite` crate as well.
 
-#![deny(missing_docs)]
+#![deny(
+    missing_docs,
+    unused_must_use,
+    unused_mut,
+    unused_imports,
+    unused_import_braces)]
 
 #[macro_use]
 extern crate futures;
@@ -23,14 +28,55 @@ extern crate url;
 
 use std::io::ErrorKind;
 
-use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend, task};
+use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
 use tokio_core::io::Io;
 
-use tungstenite::handshake::client::{ClientHandshake, Request};
+use url::Url;
+
+use tungstenite::handshake::client::ClientHandshake;
 use tungstenite::handshake::server::ServerHandshake;
-use tungstenite::handshake::{Handshake, HandshakeResult};
+use tungstenite::handshake::{HandshakeRole, HandshakeError};
 use tungstenite::protocol::{WebSocket, Message};
 use tungstenite::error::Error as WsError;
+use tungstenite::client;
+use tungstenite::server;
+
+/// Create a handshake provided stream and assuming the provided request.
+///
+/// This function will internally call `client::client` to create a
+/// handshake representation and returns a future representing the
+/// resolution of the WebSocket handshake. The returned future will resolve
+/// to either `WebSocketStream<S>` or `Error` depending if it's successful
+/// or not.
+///
+/// This is typically used for clients who have already established, for
+/// example, a TCP connection to the remove server.
+pub fn client_async<S: Io>(url: Url, stream: S) -> ConnectAsync<S> {
+    ConnectAsync {
+        inner: MidHandshake {
+            inner: Some(client::client(url, stream))
+        }
+    }
+}
+
+/// Accepts a new WebSocket connection with the provided stream.
+///
+/// This function will internally call `server::accept` to create a
+/// handshake representation and returns a future representing the
+/// resolution of the WebSocket handshake. The returned future will resolve
+/// to either `WebSocketStream<S>` or `Error` depending if it's successful
+/// or not.
+///
+/// This is typically used after a socket has been accepted from a
+/// `TcpListener`. That socket is then passed to this function to perform
+/// the server half of the accepting a client's websocket connection.
+pub fn accept_async<S: Io>(stream: S) -> AcceptAsync<S> {
+    AcceptAsync {
+        inner: MidHandshake {
+            inner: Some(server::accept(stream))
+        }
+    }
+}
 
 /// A wrapper around an underlying raw stream which implements the WebSocket
 /// protocol.
@@ -43,137 +89,6 @@ use tungstenite::error::Error as WsError;
 /// and unit tests for this crate.
 pub struct WebSocketStream<S> {
     inner: WebSocket<S>,
-}
-
-/// Future returned from `ClientHandshakeExt::new_async` which will resolve
-/// once the connection handshake has finished.
-pub struct ClientHandshakeAsync<S> {
-    inner: Option<ClientHandshake<S>>,
-}
-
-/// Future returned from `ServerHandshakeExt::new_async` which will resolve
-/// once the connection handshake has finished.
-pub struct ServerHandshakeAsync<S: Io> {
-    inner: Option<ServerHandshake<S>>,
-}
-
-/// Extension trait for the `ClientHandshake` type in the `tungstenite` crate.
-pub trait ClientHandshakeExt {
-    /// Create a handshake provided stream and assuming the provided request.
-    ///
-    /// This function will internally call `ClientHandshake::new` to create a
-    /// handshake representation and returns a future representing the
-    /// resolution of the WebSocket handshake. The returned future will resolve
-    /// to either `WebSocketStream<S>` or `Error` depending if it's successful
-    /// or not.
-    ///
-    /// This is typically used for clients who have already established, for
-    /// example, a TCP connection to the remove server.
-    fn new_async<S: Io>(stream: S, request: Request) -> ClientHandshakeAsync<S>;
-}
-
-/// Extension trait for the `ServerHandshake` type in the `tungstenite` crate.
-pub trait ServerHandshakeExt {
-    /// Accepts a new WebSocket connection with the provided stream.
-    ///
-    /// This function will internally call `ServerHandshake::new` to create a
-    /// handshake representation and returns a future representing the
-    /// resolution of the WebSocket handshake. The returned future will resolve
-    /// to either `WebSocketStream<S>` or `Error` depending if it's successful
-    /// or not.
-    ///
-    /// This is typically used after a socket has been accepted from a
-    /// `TcpListener`. That socket is then passed to this function to perform
-    /// the server half of the accepting a client's websocket connection.
-    fn new_async<S: Io>(stream: S) -> ServerHandshakeAsync<S>;
-}
-
-impl<S: Io> ClientHandshakeExt for ClientHandshake<S> {
-    fn new_async<Stream: Io>(stream: Stream, request: Request) -> ClientHandshakeAsync<Stream> {
-        ClientHandshakeAsync {
-            inner: Some(ClientHandshake::new(stream, request)),
-        }
-    }
-}
-
-impl<S: Io> ServerHandshakeExt for ServerHandshake<S> {
-    fn new_async<Stream: Io>(stream: Stream) -> ServerHandshakeAsync<Stream> {
-        ServerHandshakeAsync {
-            inner: Some(ServerHandshake::new(stream)),
-        }
-    }
-}
-
-// FIXME: `ClientHandshakeAsync<S>` and `ServerHandshakeAsync<S>` have the same implementation, we
-// have to get rid of this copy-pasting one day. But currently I don't see an elegant way to write
-// it.
-impl<S: Io> Future for ClientHandshakeAsync<S> {
-    type Item = WebSocketStream<S>;
-    type Error = WsError;
-
-    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
-        let hs = self.inner.take().expect("Cannot poll a handshake twice");
-        match hs.handshake()? {
-            HandshakeResult::Done(stream) => {
-                Ok(WebSocketStream { inner: stream }.into())
-            },
-            HandshakeResult::Incomplete(handshake) => {
-                // FIXME: Remove this line after we have a guarantee that the underlying handshake
-                // calls to both `read()`/`write()`. Or replace it by `poll_read()` and
-                // `poll_write()` (this requires making the handshake's stream public).
-                task::park().unpark();
-
-                self.inner = Some(handshake);
-                Ok(Async::NotReady)
-            },
-        }
-    }
-}
-
-// FIXME: `ClientHandshakeAsync<S>` and `ServerHandshakeAsync<S>` have the same implementation, we
-// have to get rid of this copy-pasting one day. But currently I don't see an elegant way to write
-// it.
-impl<S: Io> Future for ServerHandshakeAsync<S> {
-    type Item = WebSocketStream<S>;
-    type Error = WsError;
-
-    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
-        let hs = self.inner.take().expect("Cannot poll a handshake twice");
-        match hs.handshake()? {
-            HandshakeResult::Done(stream) => {
-                Ok(WebSocketStream { inner: stream }.into())
-            },
-            HandshakeResult::Incomplete(handshake) => {
-                // FIXME: Remove this line after we have a guarantee that the underlying handshake
-                // calls to both `read()`/`write()`. Or replace it by `poll_read()` and
-                // `poll_write()` (this requires making the handshake's stream public).
-                task::park().unpark();
-
-                self.inner = Some(handshake);
-                Ok(Async::NotReady)
-            },
-        }
-    }
-}
-
-trait ToAsync {
-    type T;
-    type E;
-    fn to_async(self) -> Result<Async<Self::T>, Self::E>;
-}
-
-impl<T> ToAsync for Result<T, WsError> {
-    type T = T;
-    type E = WsError;
-    fn to_async(self) -> Result<Async<Self::T>, Self::E> {
-        match self {
-            Ok(x) => Ok(Async::Ready(x)),
-            Err(error) => match error {
-                WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(Async::NotReady),
-                err => Err(err),
-            },
-        }
-    }
 }
 
 impl<T> Stream for WebSocketStream<T> where T: Io {
@@ -199,6 +114,82 @@ impl<T> Sink for WebSocketStream<T> where T: Io {
     }
 }
 
+/// Future returned from connect_async() which will resolve
+/// once the connection handshake has finished.
+pub struct ConnectAsync<S> {
+    inner: MidHandshake<S, ClientHandshake>,
+}
+
+impl<S: Io> Future for ConnectAsync<S> {
+    type Item = WebSocketStream<S>;
+    type Error = WsError;
+
+    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
+        self.inner.poll()
+    }
+}
+
+/// Future returned from accept_async() which will resolve
+/// once the connection handshake has finished.
+pub struct AcceptAsync<S> {
+    inner: MidHandshake<S, ServerHandshake>,
+}
+
+impl<S: Io> Future for AcceptAsync<S> {
+    type Item = WebSocketStream<S>;
+    type Error = WsError;
+
+    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
+        self.inner.poll()
+    }
+}
+
+struct MidHandshake<S, R> {
+    inner: Option<Result<WebSocket<S>, HandshakeError<S, R>>>,
+}
+
+impl<S: Io, R: HandshakeRole> Future for MidHandshake<S, R> {
+    type Item = WebSocketStream<S>;
+    type Error = WsError;
+
+    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
+        match self.inner.take().expect("cannot poll MidHandshake twice") {
+            Ok(stream) => Ok(WebSocketStream { inner: stream }.into()),
+            Err(HandshakeError::Failure(e)) => Err(e),
+            Err(HandshakeError::Interrupted(s)) => {
+                match s.handshake() {
+                    Ok(stream) => Ok(WebSocketStream { inner: stream }.into()),
+                    Err(HandshakeError::Failure(e)) => Err(e),
+                    Err(HandshakeError::Interrupted(s)) => {
+                        self.inner = Some(Err(HandshakeError::Interrupted(s)));
+                        Ok(Async::NotReady)
+                    }
+                }
+            }
+        }
+    }
+}
+
+trait ToAsync {
+    type T;
+    type E;
+    fn to_async(self) -> Result<Async<Self::T>, Self::E>;
+}
+
+impl<T> ToAsync for Result<T, WsError> {
+    type T = T;
+    type E = WsError;
+    fn to_async(self) -> Result<Async<Self::T>, Self::E> {
+        match self {
+            Ok(x) => Ok(Async::Ready(x)),
+            Err(error) => match error {
+                WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(Async::NotReady),
+                err => Err(err),
+            },
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -209,8 +200,6 @@ mod tests {
     use futures::{Future, Stream};
     use tokio_core::net::{TcpStream, TcpListener};
     use tokio_core::reactor::Core;
-    use tungstenite::handshake::server::ServerHandshake;
-    use tungstenite::handshake::client::{ClientHandshake, Request};
 
     #[test]
     fn handshakes() {
@@ -227,7 +216,7 @@ mod tests {
             let connections = listener.incoming();
             tx.send(()).unwrap();
             let handshakes = connections.and_then(|(connection, _)| {
-                ServerHandshake::<TcpStream>::new_async(connection)
+                accept_async(connection)
                     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
             });
             let server = handshakes.for_each(|_| {
@@ -244,7 +233,7 @@ mod tests {
         let tcp = TcpStream::connect(&address, &handle);
         let handshake = tcp.and_then(|stream| {
             let url = url::Url::parse("ws://localhost:12345/").unwrap();
-            ClientHandshake::<TcpStream>::new_async(stream, Request { url: url })
+            client_async(url, stream)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         });
         let client = handshake.and_then(|_| {
