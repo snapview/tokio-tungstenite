@@ -8,5 +8,5 @@ futures = "*"
 tokio-core = "*"
 url = "*"
 
-tungstenite = { git = "ssh://git@bitbucket.org/mikogo/tungstenite-rs.git", branch = "handshake-refactor" }
+tungstenite = { git = "ssh://git@bitbucket.org/mikogo/tungstenite-rs.git" }
 
