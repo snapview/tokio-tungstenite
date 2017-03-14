@@ -25,9 +25,9 @@ use futures::sync::mpsc;
 use futures::{Future, Sink, Stream};
 use tokio_core::net::TcpStream;
 use tokio_core::reactor::Core;
-use tokio_tungstenite::ClientHandshakeExt;
-use tungstenite::handshake::client::{ClientHandshake, Request};
 use tungstenite::protocol::Message;
+
+use tokio_tungstenite::client_async;
 
 fn main() {
     // Specify the server address to which the client will be connecting.
@@ -69,8 +69,7 @@ fn main() {
     // more work from the remote then we can exit.
     let mut stdout = io::stdout();
     let client = tcp.and_then(|stream| {
-        let req = Request { url: url };
-        ClientHandshake::<TcpStream>::new_async(stream, req).and_then(|ws_stream| {
+        client_async(url, stream).and_then(|ws_stream| {
             println!("WebSocket handshake has been successfully completed");
 
             // `sink` is the stream of messages going out.

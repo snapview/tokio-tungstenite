@@ -29,12 +29,12 @@ use std::io::{Error, ErrorKind};
 use std::rc::Rc;
 
 use futures::stream::Stream;
-use futures::{Future};
-use tokio_core::net::{TcpListener, TcpStream};
+use futures::Future;
+use tokio_core::net::TcpListener;
 use tokio_core::reactor::Core;
-use tokio_tungstenite::ServerHandshakeExt;
-use tungstenite::handshake::server::ServerHandshake;
 use tungstenite::protocol::Message;
+
+use tokio_tungstenite::accept_async;
 
 fn main() {
     let addr = env::args().nth(1).unwrap_or("127.0.0.1:8080".to_string());
@@ -60,7 +60,7 @@ fn main() {
         let connections_inner = connections.clone();
         let handle_inner = handle.clone();
 
-        ServerHandshake::<TcpStream>::new_async(stream).and_then(move |ws_stream| {
+        accept_async(stream).and_then(move |ws_stream| {
             println!("New WebSocket connection: {}", addr);
 
             // Create a channel for our stream, which other sockets will use to
