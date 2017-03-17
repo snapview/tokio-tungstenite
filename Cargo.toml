@@ -9,8 +9,8 @@ repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.1.0"
 
 [dependencies]
-futures = "*"
-tokio-core = "*"
-url = "*"
+futures = "0.1.10"
+tokio-core = "0.1.4"
+url = "1.4.0"
 
 tungstenite = "0.1.0"
