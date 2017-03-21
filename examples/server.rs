@@ -6,7 +6,7 @@
 //!
 //! You can test this out by running:
 //!
-//!     cargo run --example server
+//!     cargo run --example server 127.0.0.1:12345
 //!
 //! And then in another window run:
 //!
