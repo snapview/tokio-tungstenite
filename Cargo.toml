@@ -1,7 +1,7 @@
 [package]
 name = "tokio-tungstenite"
 description = "Tokio binding for Tungstenite, the Lightweight stream-based WebSocket implementation"
-categories = ["web-programming:websocket", "network-programming", "asynchronous", "concurrency"]
+categories = ["web-programming::websocket", "network-programming", "asynchronous", "concurrency"]
 keywords = ["websocket", "io", "web"]
 authors = ["Daniel Abramov <dabramov@snapview.de>", "Alexey Galakhov <agalakhov@snapview.de>"]
 license = "MIT"
@@ -13,4 +13,4 @@ futures = "*"
 tokio-core = "*"
 url = "*"
 
-tungstenite = "0.1.0"
+tungstenite = "0.1.1"
