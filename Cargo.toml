@@ -5,6 +5,8 @@ categories = ["web-programming::websocket", "network-programming", "asynchronous
 keywords = ["websocket", "io", "web"]
 authors = ["Daniel Abramov <dabramov@snapview.de>", "Alexey Galakhov <agalakhov@snapview.de>"]
 license = "MIT"
+homepage = "https://github.com/snapview/tokio-tungstenite"
+documentation = "https://docs.rs/tokio-tungstenite"
 repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.1.1"
 
