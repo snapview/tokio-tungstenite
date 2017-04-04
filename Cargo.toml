@@ -8,12 +8,12 @@ license = "MIT"
 homepage = "https://github.com/snapview/tokio-tungstenite"
 documentation = "https://docs.rs/tokio-tungstenite"
 repository = "https://github.com/snapview/tokio-tungstenite"
-version = "0.1.1"
+version = "0.1.2"
 
 [dependencies]
 futures = "*"
 tokio-io = "*"
-tungstenite = "0.1.1"
+tungstenite = "0.2.0"
 url = "*"
 
 [dev-dependencies]
