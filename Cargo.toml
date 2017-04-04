@@ -12,7 +12,9 @@ version = "0.1.1"
 
 [dependencies]
 futures = "*"
-tokio-core = "*"
+tokio-io = "*"
+tungstenite = "0.1.1"
 url = "*"
 
-tungstenite = "0.1.1"
+[dev-dependencies]
+tokio-core = "*"
