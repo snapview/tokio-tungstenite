@@ -37,22 +37,58 @@ use tungstenite::handshake::server::ServerHandshake;
 use tungstenite::handshake::{HandshakeRole, HandshakeError};
 use tungstenite::protocol::{WebSocket, Message};
 use tungstenite::error::Error as WsError;
-use tungstenite::{client, server};
+use tungstenite::server;
 
-/// Create a handshake provided stream and assuming the provided request.
+/// A WebSocket request
+pub struct Request<'a> {
+    pub url: Url,
+    pub headers: Vec<(&'a str, &'a str)>,
+}
+
+impl<'a> Request<'a> {
+    /// Constructs a new WebSocket request with a URL or URL string
+    pub fn new<U: Into<Url>>(url: U) -> Self {
+        Request{url: url.into(), headers: vec![]}
+    }
+
+    /// Adds a WebSocket protocol to the request
+    pub fn add_protocol(&mut self, protocol: &'a str) {
+        self.headers.push(("Sec-WebSocket-Protocol", protocol));
+    }
+
+    /// Adds a custom header to the request
+    pub fn add_header(&mut self, name: &'a str, value: &'a str) {
+        self.headers.push((name, value));
+    }
+}
+
+impl<'a, U: Into<Url>> From<U> for Request<'a> {
+    fn from(u: U) -> Request<'a> {
+        Request::new(u)
+    }
+}
+
+/// Creates a WebSocket handshake from a request and a stream.
+/// For convenience, the user may call this with a url string, a URL,
+/// or a `Request`. Calling with `Request` allows the user to add
+/// a WebSocket protocol or other custom headers.
 ///
-/// This function will internally call `client::client` to create a
-/// handshake representation and returns a future representing the
-/// resolution of the WebSocket handshake. The returned future will resolve
-/// to either `WebSocketStream<S>` or `Error` depending if it's successful
-/// or not.
+/// Internally, this custom creates a handshake representation and returns
+/// a future representing the resolution of the WebSocket handshake. The
+/// returned future will resolve to either `WebSocketStream<S>` or `Error`
+/// depending on whether the handshake is successful.
 ///
 /// This is typically used for clients who have already established, for
 /// example, a TCP connection to the remove server.
-pub fn client_async<S: AsyncRead + AsyncWrite>(url: Url, stream: S) -> ConnectAsync<S> {
+pub fn client_async<'a, R, S>(request: R, stream: S) -> ConnectAsync<S>
+    where R: Into<Request<'a>>, S: AsyncRead + AsyncWrite {
+    let Request{url, headers} = request.into();
+    let tungstenite_request = tungstenite::handshake::client::Request{url: url, extra_headers: Some(&headers)};
+    let handshake = ClientHandshake::start(stream, tungstenite_request).handshake();
+
     ConnectAsync {
         inner: MidHandshake {
-            inner: Some(client::client(url, stream))
+            inner: Some(handshake)
         }
     }
 }
