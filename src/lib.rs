@@ -41,7 +41,9 @@ use tungstenite::server;
 
 /// A WebSocket request
 pub struct Request<'a> {
+    /// URL of the request.
     pub url: Url,
+    /// Extra headers, if any.
     pub headers: Vec<(&'a str, &'a str)>,
 }
 
