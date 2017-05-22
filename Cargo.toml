@@ -10,11 +10,36 @@ documentation = "https://docs.rs/tokio-tungstenite"
 repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.2.1"
 
+[features]
+default = ["connect", "tls"]
+connect = ["tokio-dns-unofficial", "tokio-core"]
+tls = ["tokio-tls", "native-tls", "bytes"]
+
 [dependencies]
 futures = "*"
 tokio-io = "*"
 tungstenite = "*"
 url = "*"
+
+[dependencies.bytes]
+optional = true
+version = "*"
+
+[dependencies.native-tls]
+optional = true
+version = "*"
+
+[dependencies.tokio-dns-unofficial]
+optional = true
+version = "*"
+
+[dependencies.tokio-core]
+optional = true
+version = "*"
+
+[dependencies.tokio-tls]
+optional = true
+version = "*"
 
 [dev-dependencies]
 tokio-core = "*"

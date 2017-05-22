@@ -25,6 +25,11 @@ extern crate tokio_io;
 extern crate tungstenite;
 extern crate url;
 
+#[cfg(feature="connect")]
+mod connect;
+#[cfg(all(feature="connect", feature="tls"))]
+mod stream;
+
 use std::io::ErrorKind;
 
 use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
@@ -38,6 +43,9 @@ use tungstenite::handshake::{HandshakeRole, HandshakeError};
 use tungstenite::protocol::{WebSocket, Message};
 use tungstenite::error::Error as WsError;
 use tungstenite::server;
+
+#[cfg(feature="connect")]
+pub use connect::connect_async;
 
 /// A WebSocket request
 pub struct Request<'a> {
