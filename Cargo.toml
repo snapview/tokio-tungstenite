@@ -18,29 +18,29 @@ stream = ["bytes"]
 
 [dependencies]
 futures = "0.1.13"
-tokio-io = "0.1.1"
+tokio-io = "0.1.2"
 tungstenite = "0.2.4"
 url = "1.4.0"
 
 [dependencies.bytes]
 optional = true
-version = "*"
+version = "0.4.3"
 
 [dependencies.native-tls]
 optional = true
-version = "*"
+version = "0.1.2"
 
 [dependencies.tokio-dns-unofficial]
 optional = true
-version = "*"
+version = "0.1.1"
 
 [dependencies.tokio-core]
 optional = true
-version = "*"
+version = "0.1.7"
 
 [dependencies.tokio-tls]
 optional = true
-version = "*"
+version = "0.1.2"
 
 [dev-dependencies]
 tokio-core = "0.1.7"
