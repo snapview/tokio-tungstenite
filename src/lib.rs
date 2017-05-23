@@ -27,8 +27,9 @@ extern crate url;
 
 #[cfg(feature="connect")]
 mod connect;
-#[cfg(all(feature="connect", feature="tls"))]
-mod stream;
+
+#[cfg(feature="stream")]
+pub mod stream;
 
 use std::io::ErrorKind;
 

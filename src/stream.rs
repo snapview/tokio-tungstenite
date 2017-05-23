@@ -12,9 +12,17 @@ use self::bytes::{Buf, BufMut};
 use futures::Poll;
 use tokio_io::{AsyncRead, AsyncWrite};
 
+/// Trait to switch TCP_NODELAY.
+pub trait NoDelay {
+    /// Set the TCP_NODELAY option to the given value.
+    fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()>;
+}
+
 /// Stream, either plain TCP or TLS.
 pub enum Stream<S, T> {
+    /// Unencrypted socket stream.
     Plain(S),
+    /// Encrypted socket stream.
     Tls(T),
 }
 
@@ -38,6 +46,15 @@ impl<S: Write, T: Write> Write for Stream<S, T> {
         match *self {
             Stream::Plain(ref mut s) => s.flush(),
             Stream::Tls(ref mut s) => s.flush(),
+        }
+    }
+}
+
+impl<S: NoDelay, T: NoDelay> NoDelay for Stream<S, T> {
+    fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
+        match *self {
+            Stream::Plain(ref mut s) => s.set_nodelay(nodelay),
+            Stream::Tls(ref mut s) => s.set_nodelay(nodelay),
         }
     }
 }

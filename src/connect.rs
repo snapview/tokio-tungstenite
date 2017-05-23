@@ -6,12 +6,23 @@ extern crate tokio_core;
 use self::tokio_dns::tcp_connect;
 use self::tokio_core::reactor::Remote;
 
+use std::io::Result as IoResult;
+
 use futures::{Future, BoxFuture};
 use futures::future;
 
 use super::{WebSocketStream, Request, client_async};
 use tungstenite::Error;
 use tungstenite::client::url_mode;
+use stream::NoDelay;
+
+use self::tokio_core::net::TcpStream;
+
+impl NoDelay for TcpStream {
+    fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
+        TcpStream::set_nodelay(self, nodelay)
+    }
+}
 
 #[cfg(feature="tls")]
 mod encryption {
@@ -23,14 +34,24 @@ mod encryption {
     use self::native_tls::TlsConnector;
     use self::tokio_tls::{TlsConnectorExt, TlsStream};
 
+    use std::io::{Read, Write, Result as IoResult};
+
     use futures::{Future, BoxFuture};
     use futures::future;
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
 
+    use stream::NoDelay;
+
     pub use stream::Stream as StreamSwitcher;
     pub type AutoStream = StreamSwitcher<TcpStream, TlsStream<TcpStream>>;
+
+    impl<T: Read + Write + NoDelay> NoDelay for TlsStream<T> {
+        fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
+            self.get_mut().get_mut().set_nodelay(nodelay)
+        }
+    }
 
     pub fn wrap_stream(socket: TcpStream, domain: String, mode: Mode) -> BoxFuture<AutoStream, Error> {
         match mode {
@@ -88,6 +109,11 @@ where R: Into<Request<'static>>
 
     tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
     .and_then(move |socket| wrap_stream(socket, domain, mode))
+    .and_then(|mut stream| {
+        NoDelay::set_nodelay(&mut stream, true)
+        .map(move |()| stream)
+        .map_err(|e| e.into())
+     })
     .and_then(move |stream| client_async(request, stream))
     .boxed()
 }

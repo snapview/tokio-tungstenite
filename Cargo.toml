@@ -12,8 +12,9 @@ version = "0.2.1"
 
 [features]
 default = ["connect", "tls"]
-connect = ["tokio-dns-unofficial", "tokio-core"]
-tls = ["tokio-tls", "native-tls", "bytes"]
+connect = ["tokio-dns-unofficial", "tokio-core", "stream"]
+tls = ["tokio-tls", "native-tls", "stream"]
+stream = ["bytes"]
 
 [dependencies]
 futures = "*"
