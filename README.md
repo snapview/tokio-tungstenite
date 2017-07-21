@@ -23,7 +23,7 @@ Next, add this to your crate:
 extern crate tokio_tungstenite;
 ```
 
-Take a loot at the `examples/` directory for client and server examples. You may also want to get familiar with
+Take a look at the `examples/` directory for client and server examples. You may also want to get familiar with
 [tokio](https://tokio.rs/) if you don't have any experience with it.
 
 ## What is tokio-tungstenite?
