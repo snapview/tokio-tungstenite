@@ -13,14 +13,17 @@ version = "0.2.1"
 [features]
 default = ["connect", "tls"]
 connect = ["tokio-dns-unofficial", "tokio-core", "stream"]
-tls = ["tokio-tls", "native-tls", "stream"]
+tls = ["tokio-tls", "native-tls", "stream", "tungstenite/tls"]
 stream = ["bytes"]
 
 [dependencies]
 futures = "0.1.13"
 tokio-io = "0.1.2"
-tungstenite = "0.2.4"
 url = "1.4.0"
+
+[dependencies.tungstenite]
+version = "0.2.4"
+default-features = false
 
 [dependencies.bytes]
 optional = true
