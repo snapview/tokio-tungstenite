@@ -8,7 +8,7 @@ license = "MIT"
 homepage = "https://github.com/snapview/tokio-tungstenite"
 documentation = "https://docs.rs/tokio-tungstenite/0.2.1"
 repository = "https://github.com/snapview/tokio-tungstenite"
-version = "0.2.1"
+version = "0.3.0"
 
 [features]
 default = ["connect", "tls"]
