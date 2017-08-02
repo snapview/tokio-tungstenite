@@ -22,7 +22,8 @@ tokio-io = "0.1.2"
 url = "1.4.0"
 
 [dependencies.tungstenite]
-version = "0.2.4"
+git = "https://github.com/snapview/tungstenite-rs"
+branch = "headers"
 default-features = false
 
 [dependencies.bytes]

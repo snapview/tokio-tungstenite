@@ -7,11 +7,6 @@
 //!
 //! Each WebSocket stream implements the required `Stream` and `Sink` traits,
 //! so the socket is just a stream of messages coming in and going out.
-//!
-//! This crate primarily exports this ability through two extension traits,
-//! `ClientHandshakeExt` and `ServerHandshakeExt`. These traits augment the
-//! functionality provided by the `tungestenite` crate, on which this crate is
-//! built. Configuration is done through `tungestenite` crate as well.
 
 #![deny(
     missing_docs,
@@ -38,8 +33,8 @@ use tokio_io::{AsyncRead, AsyncWrite};
 
 use url::Url;
 
-use tungstenite::handshake::client::ClientHandshake;
-use tungstenite::handshake::server::ServerHandshake;
+use tungstenite::handshake::client::{ClientHandshake, Response};
+use tungstenite::handshake::server::{ServerHandshake, Callback};
 use tungstenite::handshake::{HandshakeRole, HandshakeError};
 use tungstenite::protocol::{WebSocket, Message};
 use tungstenite::error::Error as WsError;
@@ -90,11 +85,16 @@ impl<'a, U: Into<Url>> From<U> for Request<'a> {
 /// depending on whether the handshake is successful.
 ///
 /// This is typically used for clients who have already established, for
-/// example, a TCP connection to the remove server.
+/// example, a TCP connection to the remote server.
 pub fn client_async<'a, R, S>(request: R, stream: S) -> ConnectAsync<S>
-    where R: Into<Request<'a>>, S: AsyncRead + AsyncWrite {
-    let Request{url, headers} = request.into();
-    let tungstenite_request = tungstenite::handshake::client::Request{url: url, extra_headers: Some(&headers)};
+where
+    R: Into<Request<'a>>,
+    S: AsyncRead + AsyncWrite
+{
+    let Request{ url, headers } = request.into();
+    let tungstenite_request = {
+        tungstenite::handshake::client::Request { url, extra_headers: Some(&headers) }
+    };
     let handshake = ClientHandshake::start(stream, tungstenite_request).handshake();
 
     ConnectAsync {
@@ -115,10 +115,16 @@ pub fn client_async<'a, R, S>(request: R, stream: S) -> ConnectAsync<S>
 /// This is typically used after a socket has been accepted from a
 /// `TcpListener`. That socket is then passed to this function to perform
 /// the server half of the accepting a client's websocket connection.
-pub fn accept_async<S: AsyncRead + AsyncWrite>(stream: S) -> AcceptAsync<S> {
+///
+/// You can also pass an optional `callback` which will
+/// be called when the websocket request is received from an incoming client.
+pub fn accept_async<S>(stream: S, callback: Option<Callback>) -> AcceptAsync<S>
+where
+    S: AsyncRead + AsyncWrite,
+{
     AcceptAsync {
         inner: MidHandshake {
-            inner: Some(server::accept(stream))
+            inner: Some(server::accept(stream, callback))
         }
     }
 }
@@ -161,49 +167,55 @@ impl<T> Sink for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
 
 /// Future returned from client_async() which will resolve
 /// once the connection handshake has finished.
-pub struct ConnectAsync<S> {
-    inner: MidHandshake<S, ClientHandshake>,
+pub struct ConnectAsync<S: AsyncRead + AsyncWrite> {
+    inner: MidHandshake<ClientHandshake<S>>,
 }
 
 impl<S: AsyncRead + AsyncWrite> Future for ConnectAsync<S> {
-    type Item = WebSocketStream<S>;
+    type Item = (WebSocketStream<S>, Response);
     type Error = WsError;
 
-    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
-        self.inner.poll()
+    fn poll(&mut self) -> Poll<Self::Item, WsError> {
+        match self.inner.poll()? {
+            Async::NotReady => Ok(Async::NotReady),
+            Async::Ready((ws, resp)) => Ok(Async::Ready((WebSocketStream { inner: ws }, resp))),
+        }
     }
 }
 
 /// Future returned from accept_async() which will resolve
 /// once the connection handshake has finished.
-pub struct AcceptAsync<S> {
-    inner: MidHandshake<S, ServerHandshake>,
+pub struct AcceptAsync<S: AsyncRead + AsyncWrite> {
+    inner: MidHandshake<ServerHandshake<S>>,
 }
 
 impl<S: AsyncRead + AsyncWrite> Future for AcceptAsync<S> {
     type Item = WebSocketStream<S>;
     type Error = WsError;
 
-    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
-        self.inner.poll()
+    fn poll(&mut self) -> Poll<Self::Item, WsError> {
+        match self.inner.poll()? {
+            Async::NotReady => Ok(Async::NotReady),
+            Async::Ready(ws) => Ok(Async::Ready(WebSocketStream { inner: ws })),
+        }
     }
 }
 
-struct MidHandshake<S, R> {
-    inner: Option<Result<WebSocket<S>, HandshakeError<S, R>>>,
+struct MidHandshake<H: HandshakeRole> {
+    inner: Option<Result<<H as HandshakeRole>::FinalResult, HandshakeError<H>>>,
 }
 
-impl<S: AsyncRead + AsyncWrite, R: HandshakeRole> Future for MidHandshake<S, R> {
-    type Item = WebSocketStream<S>;
+impl<H: HandshakeRole> Future for MidHandshake<H> {
+    type Item = <H as HandshakeRole>::FinalResult;
     type Error = WsError;
 
-    fn poll(&mut self) -> Poll<WebSocketStream<S>, WsError> {
+    fn poll(&mut self) -> Poll<Self::Item, WsError> {
         match self.inner.take().expect("cannot poll MidHandshake twice") {
-            Ok(stream) => Ok(WebSocketStream { inner: stream }.into()),
+            Ok(result) => Ok(Async::Ready(result)),
             Err(HandshakeError::Failure(e)) => Err(e),
             Err(HandshakeError::Interrupted(s)) => {
                 match s.handshake() {
-                    Ok(stream) => Ok(WebSocketStream { inner: stream }.into()),
+                    Ok(result) => Ok(Async::Ready(result)),
                     Err(HandshakeError::Failure(e)) => Err(e),
                     Err(HandshakeError::Interrupted(s)) => {
                         self.inner = Some(Err(HandshakeError::Interrupted(s)));

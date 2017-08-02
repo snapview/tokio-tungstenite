@@ -25,8 +25,7 @@ fn handshakes() {
         let connections = listener.incoming();
         tx.send(()).unwrap();
         let handshakes = connections.and_then(|(connection, _)| {
-            accept_async(connection)
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+            accept_async(connection, None).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         });
         let server = handshakes.for_each(|_| {
             Ok(())
@@ -42,8 +41,7 @@ fn handshakes() {
     let tcp = TcpStream::connect(&address, &handle);
     let handshake = tcp.and_then(|stream| {
         let url = url::Url::parse("ws://localhost:12345/").unwrap();
-        client_async(url, stream)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        client_async(url, stream).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
     });
     let client = handshake.and_then(|_| {
         Ok(())

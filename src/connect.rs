@@ -3,20 +3,20 @@
 extern crate tokio_dns;
 extern crate tokio_core;
 
-use self::tokio_dns::tcp_connect;
-use self::tokio_core::reactor::Remote;
-
 use std::io::Result as IoResult;
 
-use futures::{Future, BoxFuture};
-use futures::future;
+use self::tokio_core::net::TcpStream;
+use self::tokio_core::reactor::Remote;
+use self::tokio_dns::tcp_connect;
 
-use super::{WebSocketStream, Request, client_async};
+use futures::future;
+use futures::{Future, BoxFuture};
 use tungstenite::Error;
 use tungstenite::client::url_mode;
-use stream::NoDelay;
+use tungstenite::handshake::client::Response;
 
-use self::tokio_core::net::TcpStream;
+use stream::NoDelay;
+use super::{WebSocketStream, Request, client_async};
 
 impl NoDelay for TcpStream {
     fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
@@ -91,8 +91,10 @@ mod encryption {
 use self::encryption::{AutoStream, wrap_stream};
 
 /// Connect to a given URL.
-pub fn connect_async<R>(request: R, handle: Remote) -> BoxFuture<WebSocketStream<AutoStream>, Error>
-where R: Into<Request<'static>>
+pub fn connect_async<R>(request: R, handle: Remote)
+    -> BoxFuture<(WebSocketStream<AutoStream>, Response), Error>
+where
+    R: Into<Request<'static>>
 {
     let request: Request = request.into();
 

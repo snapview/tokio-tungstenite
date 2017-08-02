@@ -63,7 +63,7 @@ fn main() {
     // finishes. If we don't have any more data to read or we won't receive any
     // more work from the remote then we can exit.
     let mut stdout = io::stdout();
-    let client = connect_async(url, handle.remote().clone()).and_then(|ws_stream| {
+    let client = connect_async(url, handle.remote().clone()).and_then(|(ws_stream, _)| {
         println!("WebSocket handshake has been successfully completed");
 
         // `sink` is the stream of messages going out.
