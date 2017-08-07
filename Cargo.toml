@@ -17,9 +17,9 @@ tls = ["tokio-tls", "native-tls", "stream", "tungstenite/tls"]
 stream = ["bytes"]
 
 [dependencies]
-futures = "0.1.13"
+futures = "0.1.14"
 tokio-io = "0.1.2"
-url = "1.4.0"
+url = "1.5.1"
 
 [dependencies.tungstenite]
 version = "0.4.0"
@@ -27,11 +27,11 @@ default-features = false
 
 [dependencies.bytes]
 optional = true
-version = "0.4.3"
+version = "0.4.4"
 
 [dependencies.native-tls]
 optional = true
-version = "0.1.2"
+version = "0.1.4"
 
 [dependencies.tokio-dns-unofficial]
 optional = true
@@ -39,12 +39,12 @@ version = "0.1.1"
 
 [dependencies.tokio-core]
 optional = true
-version = "0.1.7"
+version = "0.1.9"
 
 [dependencies.tokio-tls]
 optional = true
-version = "0.1.2"
+version = "0.1.3"
 
 [dev-dependencies]
-tokio-core = "0.1.7"
+tokio-core = "0.1.9"
 
