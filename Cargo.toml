@@ -6,7 +6,7 @@ keywords = ["websocket", "io", "web"]
 authors = ["Daniel Abramov <dabramov@snapview.de>", "Alexey Galakhov <agalakhov@snapview.de>"]
 license = "MIT"
 homepage = "https://github.com/snapview/tokio-tungstenite"
-documentation = "https://docs.rs/tokio-tungstenite/0.2.1"
+documentation = "https://docs.rs/tokio-tungstenite/0.3.0"
 repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.3.0"
 
@@ -22,8 +22,7 @@ tokio-io = "0.1.2"
 url = "1.4.0"
 
 [dependencies.tungstenite]
-git = "https://github.com/snapview/tungstenite-rs"
-branch = "headers"
+version = "0.4.0"
 default-features = false
 
 [dependencies.bytes]
