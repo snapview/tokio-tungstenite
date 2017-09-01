@@ -18,7 +18,6 @@
 extern crate futures;
 extern crate tokio_io;
 extern crate tungstenite;
-extern crate url;
 
 #[cfg(feature="connect")]
 mod connect;
@@ -31,9 +30,7 @@ use std::io::ErrorKind;
 use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
 use tokio_io::{AsyncRead, AsyncWrite};
 
-use url::Url;
-
-use tungstenite::handshake::client::{ClientHandshake, Response};
+use tungstenite::handshake::client::{ClientHandshake, Response, Request};
 use tungstenite::handshake::server::{ServerHandshake, Callback};
 use tungstenite::handshake::{HandshakeRole, HandshakeError};
 use tungstenite::protocol::{WebSocket, Message};
@@ -42,37 +39,6 @@ use tungstenite::server;
 
 #[cfg(feature="connect")]
 pub use connect::connect_async;
-
-/// A WebSocket request
-pub struct Request<'a> {
-    /// URL of the request.
-    pub url: Url,
-    /// Extra headers, if any.
-    pub headers: Vec<(&'a str, &'a str)>,
-}
-
-impl<'a> Request<'a> {
-    /// Constructs a new WebSocket request with a URL or URL string
-    pub fn new<U: Into<Url>>(url: U) -> Self {
-        Request{url: url.into(), headers: vec![]}
-    }
-
-    /// Adds a WebSocket protocol to the request
-    pub fn add_protocol(&mut self, protocol: &'a str) {
-        self.headers.push(("Sec-WebSocket-Protocol", protocol));
-    }
-
-    /// Adds a custom header to the request
-    pub fn add_header(&mut self, name: &'a str, value: &'a str) {
-        self.headers.push((name, value));
-    }
-}
-
-impl<'a, U: Into<Url>> From<U> for Request<'a> {
-    fn from(u: U) -> Request<'a> {
-        Request::new(u)
-    }
-}
 
 /// Creates a WebSocket handshake from a request and a stream.
 /// For convenience, the user may call this with a url string, a URL,
@@ -91,15 +57,9 @@ where
     R: Into<Request<'a>>,
     S: AsyncRead + AsyncWrite
 {
-    let Request{ url, headers } = request.into();
-    let tungstenite_request = {
-        tungstenite::handshake::client::Request { url, extra_headers: Some(&headers) }
-    };
-    let handshake = ClientHandshake::start(stream, tungstenite_request).handshake();
-
     ConnectAsync {
         inner: MidHandshake {
-            inner: Some(handshake)
+            inner: Some(ClientHandshake::start(stream, request.into()).handshake())
         }
     }
 }
