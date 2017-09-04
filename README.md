@@ -14,7 +14,7 @@ First, you need to add this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tokio-timer = "*"
+tokio-tungstenite = "*"
 ```
 
 Next, add this to your crate:
