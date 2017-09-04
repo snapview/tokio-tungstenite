@@ -86,7 +86,7 @@ fn main() {
                                 .filter(|&(&k, _)| k != addr)
                                 .map(|(_, v)| v);
                 for tx in iter {
-                    tx.send(message.clone()).unwrap();
+                    tx.unbounded_send(message.clone()).unwrap();
                 }
                 Ok(())
             });
