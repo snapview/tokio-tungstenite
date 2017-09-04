@@ -8,7 +8,7 @@ license = "MIT"
 homepage = "https://github.com/snapview/tokio-tungstenite"
 documentation = "https://docs.rs/tokio-tungstenite/0.3.0"
 repository = "https://github.com/snapview/tokio-tungstenite"
-version = "0.3.0"
+version = "0.4.0"
 
 [features]
 default = ["connect", "tls"]
@@ -19,10 +19,10 @@ stream = ["bytes"]
 [dependencies]
 futures = "0.1.14"
 tokio-io = "0.1.2"
-url = "1.5.1"
 
 [dependencies.tungstenite]
-version = "0.4.0"
+git = "https://github.com/snapview/tungstenite-rs.git" # FIXME: set to 0.5.0 after tungstenite's approval
+branch = "request_minor"
 default-features = false
 
 [dependencies.bytes]
@@ -47,4 +47,4 @@ version = "0.1.3"
 
 [dev-dependencies]
 tokio-core = "0.1.9"
-
+url = "1.5.1"

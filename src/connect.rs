@@ -9,8 +9,7 @@ use self::tokio_core::net::TcpStream;
 use self::tokio_core::reactor::Remote;
 use self::tokio_dns::tcp_connect;
 
-use futures::future;
-use futures::{Future, BoxFuture};
+use futures::{future, Future};
 use tungstenite::Error;
 use tungstenite::client::url_mode;
 use tungstenite::handshake::client::Response;
@@ -36,8 +35,7 @@ mod encryption {
 
     use std::io::{Read, Write, Result as IoResult};
 
-    use futures::{Future, BoxFuture};
-    use futures::future;
+    use futures::{future, Future};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
@@ -53,16 +51,17 @@ mod encryption {
         }
     }
 
-    pub fn wrap_stream(socket: TcpStream, domain: String, mode: Mode) -> BoxFuture<AutoStream, Error> {
+    pub fn wrap_stream(socket: TcpStream, domain: String, mode: Mode)
+        -> Box<Future<Item=AutoStream, Error=Error>>
+    {
         match mode {
-            Mode::Plain => future::ok(StreamSwitcher::Plain(socket)).boxed(),
+            Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
             Mode::Tls => {
-                future::result(TlsConnector::builder())
-                .and_then(move |builder| future::result(builder.build()))
-                .and_then(move |connector| connector.connect_async(&domain, socket))
-                .map(|s| StreamSwitcher::Tls(s))
-                .map_err(|e| Error::Tls(e))
-                .boxed()
+                Box::new(future::result(TlsConnector::builder())
+                            .and_then(move |builder| future::result(builder.build()))
+                            .and_then(move |connector| connector.connect_async(&domain, socket))
+                            .map(|s| StreamSwitcher::Tls(s))
+                            .map_err(|e| Error::Tls(e)))
             }
         }
     }
@@ -72,18 +71,19 @@ mod encryption {
 mod encryption {
     use super::tokio_core::net::TcpStream;
 
-    use futures::{Future, BoxFuture};
-    use futures::future;
+    use futures::{future, Future};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
 
     pub type AutoStream = TcpStream;
 
-    pub fn wrap_stream(socket: TcpStream, _domain: String, mode: Mode) -> BoxFuture<AutoStream, Error> {
+    pub fn wrap_stream(socket: TcpStream, _domain: String, mode: Mode)
+        -> Box<Future<Item=AutoStream, Error=Error>>
+    {
         match mode {
-            Mode::Plain => future::ok(socket).boxed(),
-            Mode::Tls => future::err(Error::Url("TLS support not compiled in.".into())).boxed(),
+            Mode::Plain => Box::new(future::ok(socket)),
+            Mode::Tls => Box::new(future::err(Error::Url("TLS support not compiled in.".into()))),
         }
     }
 }
@@ -92,7 +92,7 @@ use self::encryption::{AutoStream, wrap_stream};
 
 /// Connect to a given URL.
 pub fn connect_async<R>(request: R, handle: Remote)
-    -> BoxFuture<(WebSocketStream<AutoStream>, Response), Error>
+    -> Box<Future<Item=(WebSocketStream<AutoStream>, Response), Error=Error>>
 where
     R: Into<Request<'static>>
 {
@@ -101,21 +101,20 @@ where
     // Make sure we check domain and mode first. URL must be valid.
     let mode = match url_mode(&request.url) {
         Ok(m) => m,
-        Err(e) => return future::err(e.into()).boxed(),
+        Err(e) => return Box::new(future::err(e.into())),
     };
     let domain = match request.url.host_str() {
         Some(d) => d.to_string(),
-        None => return future::err(Error::Url("No host name in the URL".into())).boxed(),
+        None => return Box::new(future::err(Error::Url("No host name in the URL".into()))),
     };
     let port = request.url.port_or_known_default().expect("Bug: port unknown");
 
-    tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
-    .and_then(move |socket| wrap_stream(socket, domain, mode))
-    .and_then(|mut stream| {
-        NoDelay::set_nodelay(&mut stream, true)
-        .map(move |()| stream)
-        .map_err(|e| e.into())
-     })
-    .and_then(move |stream| client_async(request, stream))
-    .boxed()
+    Box::new(tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
+                .and_then(move |socket| wrap_stream(socket, domain, mode))
+                .and_then(|mut stream| {
+                    NoDelay::set_nodelay(&mut stream, true)
+                        .map(move |()| stream)
+                        .map_err(|e| e.into())
+                })
+                .and_then(move |stream| client_async(request, stream)))
 }
