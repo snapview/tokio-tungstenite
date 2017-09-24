@@ -53,7 +53,7 @@ fn main() {
     let srv = socket.incoming().for_each(|(stream, addr)| {
 
         // We have to clone both of these values, because the `and_then`
-        // function billow constructs a new future, `and_then` requires
+        // function below constructs a new future, `and_then` requires
         // `FnOnce`, so we construct a move closure to move the
         // environment inside the future (AndThen future may overlive our
         // `for_each` future).
