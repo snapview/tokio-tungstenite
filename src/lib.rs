@@ -31,7 +31,7 @@ use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
 use tokio_io::{AsyncRead, AsyncWrite};
 
 use tungstenite::handshake::client::{ClientHandshake, Response, Request};
-use tungstenite::handshake::server::{ServerHandshake, Callback};
+use tungstenite::handshake::server::{ServerHandshake, Callback, NoCallback};
 use tungstenite::handshake::{HandshakeRole, HandshakeError};
 use tungstenite::protocol::{WebSocket, Message};
 use tungstenite::error::Error as WsError;
@@ -75,16 +75,26 @@ where
 /// This is typically used after a socket has been accepted from a
 /// `TcpListener`. That socket is then passed to this function to perform
 /// the server half of the accepting a client's websocket connection.
-///
-/// You can also pass an optional `callback` which will
-/// be called when the websocket request is received from an incoming client.
-pub fn accept_async<S>(stream: S, callback: Option<Callback>) -> AcceptAsync<S>
+pub fn accept_async<S>(stream: S) -> AcceptAsync<S, NoCallback>
 where
     S: AsyncRead + AsyncWrite,
 {
+    accept_hdr_async(stream, NoCallback)
+}
+
+/// Accepts a new WebSocket connection with the provided stream.
+///
+/// This function does the same as `accept_async()` but accepts an extra callback
+/// for header processing. The callback receives headers of the incoming
+/// requests and is able to add extra headers to the reply.
+pub fn accept_hdr_async<S, C>(stream: S, callback: C) -> AcceptAsync<S, C>
+where
+    S: AsyncRead + AsyncWrite,
+    C: Callback,
+{
     AcceptAsync {
         inner: MidHandshake {
-            inner: Some(server::accept(stream, callback))
+            inner: Some(server::accept_hdr(stream, callback))
         }
     }
 }
@@ -145,11 +155,11 @@ impl<S: AsyncRead + AsyncWrite> Future for ConnectAsync<S> {
 
 /// Future returned from accept_async() which will resolve
 /// once the connection handshake has finished.
-pub struct AcceptAsync<S: AsyncRead + AsyncWrite> {
-    inner: MidHandshake<ServerHandshake<S>>,
+pub struct AcceptAsync<S: AsyncRead + AsyncWrite, C: Callback> {
+    inner: MidHandshake<ServerHandshake<S, C>>,
 }
 
-impl<S: AsyncRead + AsyncWrite> Future for AcceptAsync<S> {
+impl<S: AsyncRead + AsyncWrite, C: Callback> Future for AcceptAsync<S, C> {
     type Item = WebSocketStream<S>;
     type Error = WsError;
 

@@ -25,7 +25,7 @@ fn handshakes() {
         let connections = listener.incoming();
         tx.send(()).unwrap();
         let handshakes = connections.and_then(|(connection, _)| {
-            accept_async(connection, None).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+            accept_async(connection).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         });
         let server = handshakes.for_each(|_| {
             Ok(())

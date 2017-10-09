@@ -60,7 +60,7 @@ fn main() {
         let connections_inner = connections.clone();
         let handle_inner = handle.clone();
 
-        accept_async(stream, None).and_then(move |ws_stream| {
+        accept_async(stream).and_then(move |ws_stream| {
             println!("New WebSocket connection: {}", addr);
 
             // Create a channel for our stream, which other sockets will use to
