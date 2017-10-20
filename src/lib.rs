@@ -133,6 +133,10 @@ impl<T> Sink for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
     fn poll_complete(&mut self) -> Poll<(), WsError> {
         self.inner.write_pending().to_async()
     }
+
+    fn close(&mut self) -> Poll<(), WsError> {
+        self.inner.close(None).to_async()
+    }
 }
 
 /// Future returned from client_async() which will resolve
