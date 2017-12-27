@@ -28,14 +28,13 @@ mod encryption {
     extern crate native_tls;
     extern crate tokio_tls;
 
-    use super::tokio_core::net::TcpStream;
-
     use self::native_tls::TlsConnector;
     use self::tokio_tls::{TlsConnectorExt, TlsStream};
 
     use std::io::{Read, Write, Result as IoResult};
 
     use futures::{future, Future};
+    use tokio_io::{AsyncRead, AsyncWrite};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
@@ -43,7 +42,7 @@ mod encryption {
     use stream::NoDelay;
 
     pub use stream::Stream as StreamSwitcher;
-    pub type AutoStream = StreamSwitcher<TcpStream, TlsStream<TcpStream>>;
+    pub type AutoStream<S> = StreamSwitcher<S, TlsStream<S>>;
 
     impl<T: Read + Write + NoDelay> NoDelay for TlsStream<T> {
         fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
@@ -51,8 +50,10 @@ mod encryption {
         }
     }
 
-    pub fn wrap_stream(socket: TcpStream, domain: String, mode: Mode)
-        -> Box<Future<Item=AutoStream, Error=Error>>
+    pub fn wrap_stream<S>(socket: S, domain: String, mode: Mode)
+        -> Box<Future<Item=AutoStream<S>, Error=Error>>
+    where
+        S: 'static + AsyncRead + AsyncWrite,
     {
         match mode {
             Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
@@ -69,17 +70,18 @@ mod encryption {
 
 #[cfg(not(feature="tls"))]
 mod encryption {
-    use super::tokio_core::net::TcpStream;
-
     use futures::{future, Future};
+    use tokio_io::{AsyncRead, AsyncWrite};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
 
-    pub type AutoStream = TcpStream;
+    pub type AutoStream<S> = S;
 
-    pub fn wrap_stream(socket: TcpStream, _domain: String, mode: Mode)
-        -> Box<Future<Item=AutoStream, Error=Error>>
+    pub fn wrap_stream<S>(socket: S, _domain: String, mode: Mode)
+        -> Box<Future<Item=AutoStream<S>, Error=Error>>
+    where
+        S: 'static + AsyncRead + AsyncWrite,
     {
         match mode {
             Mode::Plain => Box::new(future::ok(socket)),
@@ -92,7 +94,7 @@ use self::encryption::{AutoStream, wrap_stream};
 
 /// Connect to a given URL.
 pub fn connect_async<R>(request: R, handle: Remote)
-    -> Box<Future<Item=(WebSocketStream<AutoStream>, Response), Error=Error>>
+    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error>>
 where
     R: Into<Request<'static>>
 {
