@@ -17,7 +17,8 @@
 
 extern crate futures;
 extern crate tokio_io;
-extern crate tungstenite;
+
+pub extern crate tungstenite;
 
 #[cfg(feature="connect")]
 mod connect;
