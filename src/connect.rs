@@ -10,6 +10,8 @@ use self::tokio_core::reactor::Remote;
 use self::tokio_dns::tcp_connect;
 
 use futures::{future, Future};
+use tokio_io::{AsyncRead, AsyncWrite};
+
 use tungstenite::Error;
 use tungstenite::client::url_mode;
 use tungstenite::handshake::client::Response;
@@ -92,6 +94,45 @@ mod encryption {
 
 use self::encryption::{AutoStream, wrap_stream};
 
+/// Get a domain from an URL.
+#[inline]
+fn domain(request: &Request) -> Result<String, Error> {
+    match request.url.host_str() {
+        Some(d) => Ok(d.to_string()),
+        None => Err(Error::Url("no host name in the url".into())),
+    }
+}
+
+/// Creates a WebSocket handshake from a request and a stream,
+/// upgrading the stream to TLS if required.
+pub fn client_async_tls<R, S>(request: R, stream: S)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error>>
+where
+    R: Into<Request<'static>>,
+    S: 'static + AsyncRead + AsyncWrite + NoDelay,
+{
+    let request: Request = request.into();
+
+    let domain = match domain(&request) {
+        Ok(domain) => domain,
+        Err(err) => return Box::new(future::err(err)),
+    };
+
+    // Make sure we check domain and mode first. URL must be valid.
+    let mode = match url_mode(&request.url) {
+        Ok(m) => m,
+        Err(e) => return Box::new(future::err(e.into())),
+    };
+
+    Box::new(wrap_stream(stream, domain, mode)
+                .and_then(|mut stream| {
+                    NoDelay::set_nodelay(&mut stream, true)
+                        .map(move |()| stream)
+                        .map_err(|e| e.into())
+                })
+                .and_then(move |stream| client_async(request, stream)))
+}
+
 /// Connect to a given URL.
 pub fn connect_async<R>(request: R, handle: Remote)
     -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error>>
@@ -100,23 +141,12 @@ where
 {
     let request: Request = request.into();
 
-    // Make sure we check domain and mode first. URL must be valid.
-    let mode = match url_mode(&request.url) {
-        Ok(m) => m,
-        Err(e) => return Box::new(future::err(e.into())),
-    };
-    let domain = match request.url.host_str() {
-        Some(d) => d.to_string(),
-        None => return Box::new(future::err(Error::Url("No host name in the URL".into()))),
+    let domain = match domain(&request) {
+        Ok(domain) => domain,
+        Err(err) => return Box::new(future::err(err)),
     };
     let port = request.url.port_or_known_default().expect("Bug: port unknown");
 
     Box::new(tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
-                .and_then(move |socket| wrap_stream(socket, domain, mode))
-                .and_then(|mut stream| {
-                    NoDelay::set_nodelay(&mut stream, true)
-                        .map(move |()| stream)
-                        .map_err(|e| e.into())
-                })
-                .and_then(move |stream| client_async(request, stream)))
+                .and_then(move |socket| client_async_tls(request, socket)))
 }
