@@ -57,14 +57,35 @@ mod encryption {
     where
         S: 'static + AsyncRead + AsyncWrite,
     {
+        get_wrapped_stream(socket, domain, mode, false)
+    }
+
+    pub fn danger_wrap_stream<S>(socket: S, mode: Mode)
+        -> Box<Future<Item=AutoStream<S>, Error=Error>>
+        where
+            S: 'static + AsyncRead + AsyncWrite,
+    {
+        get_wrapped_stream(socket, String::new(), mode, true)
+    }
+
+    // Helper function for reducing duplicate code
+    fn  get_wrapped_stream<S>(socket: S, domain: String,  mode: Mode, dangerously: bool)
+        -> Box<Future<Item=AutoStream<S>, Error=Error>>
+        where
+            S: 'static + AsyncRead + AsyncWrite,
+    {
         match mode {
             Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
             Mode::Tls => {
                 Box::new(future::result(TlsConnector::builder())
-                            .and_then(move |builder| future::result(builder.build()))
-                            .and_then(move |connector| connector.connect_async(&domain, socket))
-                            .map(|s| StreamSwitcher::Tls(s))
-                            .map_err(|e| Error::Tls(e)))
+                    .and_then(move |builder| future::result(builder.build()))
+                    .and_then(move |connector| if dangerously {
+                        connector.danger_connect_async_without_providing_domain_for_certificate_verification_and_server_name_indication(socket)
+                    } else {
+                        connector.connect_async(&domain, socket)
+                    })
+                    .map(|s| StreamSwitcher::Tls(s))
+                    .map_err(|e| Error::Tls(e)))
             }
         }
     }
@@ -92,7 +113,7 @@ mod encryption {
     }
 }
 
-use self::encryption::{AutoStream, wrap_stream};
+use self::encryption::{AutoStream, wrap_stream, danger_wrap_stream};
 
 /// Get a domain from an URL.
 #[inline]
@@ -133,20 +154,55 @@ where
                 .and_then(move |stream| client_async(request, stream)))
 }
 
+/// Connect to a given URL. This version is dangerous. It doesn't check certificates.
+pub fn danger_connect_async<R>(request: R, handle: Remote)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error>>
+where
+    R: Into<Request<'static>>
+{
+    connect_async_helper(request, handle, true)
+}
+
+
 /// Connect to a given URL.
 pub fn connect_async<R>(request: R, handle: Remote)
     -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error>>
 where
     R: Into<Request<'static>>
 {
+    connect_async_helper(request, handle, false)
+}
+
+// Helper function for reducing duplicate code
+fn connect_async_helper<R>(request: R, handle: Remote, dangerously: bool)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error>>
+    where
+        R: Into<Request<'static>>
+{
     let request: Request = request.into();
 
-    let domain = match domain(&request) {
-        Ok(domain) => domain,
-        Err(err) => return Box::new(future::err(err)),
+    // Make sure we check domain and mode first. URL must be valid.
+    let mode = match url_mode(&request.url) {
+        Ok(m) => m,
+        Err(e) => return Box::new(future::err(e.into())),
+    };
+    let domain = match request.url.host_str() {
+        Some(d) => d.to_string(),
+        None => return Box::new(future::err(Error::Url("No host name in the URL".into()))),
     };
     let port = request.url.port_or_known_default().expect("Bug: port unknown");
 
-    Box::new(tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
-                .and_then(move |socket| client_async_tls(request, socket)))
+    if dangerously {
+        Box::new(tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
+            .and_then(move |socket| danger_wrap_stream(socket, mode))
+            .and_then(|mut stream| {
+                NoDelay::set_nodelay(&mut stream, true)
+                    .map(move |()| stream)
+                    .map_err(|e| e.into())
+            })
+            .and_then(move |stream| client_async(request, stream)))
+    } else {
+        Box::new(tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
+            .and_then(move |socket| client_async_tls(request, socket)))
+    }
 }

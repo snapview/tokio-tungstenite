@@ -39,7 +39,7 @@ use tungstenite::error::Error as WsError;
 use tungstenite::server;
 
 #[cfg(feature="connect")]
-pub use connect::{connect_async, client_async_tls};
+pub use connect::{connect_async, client_async_tls, danger_connect_async};
 
 /// Creates a WebSocket handshake from a request and a stream.
 /// For convenience, the user may call this with a url string, a URL,
