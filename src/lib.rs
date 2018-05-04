@@ -34,7 +34,7 @@ use tokio_io::{AsyncRead, AsyncWrite};
 use tungstenite::handshake::client::{ClientHandshake, Response, Request};
 use tungstenite::handshake::server::{ServerHandshake, Callback, NoCallback};
 use tungstenite::handshake::{HandshakeRole, HandshakeError};
-use tungstenite::protocol::{WebSocket, Message};
+use tungstenite::protocol::{WebSocket, Message, Role};
 use tungstenite::error::Error as WsError;
 use tungstenite::server;
 
@@ -111,6 +111,22 @@ where
 /// and unit tests for this crate.
 pub struct WebSocketStream<S> {
     inner: WebSocket<S>,
+}
+
+impl<S> WebSocketStream<S> {
+    /// Convert a raw socket into a WebSocketStream without performing a
+    /// handshake.
+    pub fn from_raw_socket(stream: S, role: Role) -> Self {
+        let ws = WebSocket::from_raw_socket(stream, role);
+        WebSocketStream { inner: ws }
+    }
+
+    /// Convert a raw socket into a WebSocketStream without performing a
+    /// handshake.
+    pub fn from_partially_read(stream: S, part: Vec<u8>, role: Role) -> Self {
+        let ws = WebSocket::from_partially_read(stream, part, role);
+        WebSocketStream { inner: ws }
+    }
 }
 
 impl<T> Stream for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
