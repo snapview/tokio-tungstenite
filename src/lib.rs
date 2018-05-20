@@ -16,7 +16,7 @@
     unused_import_braces)]
 
 extern crate futures;
-extern crate tokio_io;
+extern crate tokio;
 
 pub extern crate tungstenite;
 
@@ -29,7 +29,7 @@ pub mod stream;
 use std::io::ErrorKind;
 
 use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
-use tokio_io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::handshake::client::{ClientHandshake, Response, Request};
 use tungstenite::handshake::server::{ServerHandshake, Callback, NoCallback};
