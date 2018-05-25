@@ -11,7 +11,7 @@
 //! You can use this example together with the `server` example.
 
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 extern crate tokio_tungstenite;
 extern crate tungstenite;
 extern crate url;
@@ -22,7 +22,6 @@ use std::thread;
 
 use futures::sync::mpsc;
 use futures::{Future, Sink, Stream};
-use tokio_core::reactor::Core;
 use tungstenite::protocol::Message;
 
 use tokio_tungstenite::connect_async;
@@ -34,10 +33,6 @@ fn main() {
     });
 
     let url = url::Url::parse(&connect_addr).unwrap();
-
-    // Create the event loop and initiate the connection to the remote server.
-    let mut core = Core::new().unwrap();
-    let handle = core.handle();
 
     // Right now Tokio doesn't support a handle to stdin running on the event
     // loop, so we farm out that work to a separate thread. This thread will
@@ -63,7 +58,7 @@ fn main() {
     // finishes. If we don't have any more data to read or we won't receive any
     // more work from the remote then we can exit.
     let mut stdout = io::stdout();
-    let client = connect_async(url, handle.remote().clone()).and_then(|(ws_stream, _)| {
+    let client = connect_async(url).and_then(move |(ws_stream, _)| {
         println!("WebSocket handshake has been successfully completed");
 
         // `sink` is the stream of messages going out.
@@ -73,7 +68,7 @@ fn main() {
         // We forward all messages, composed out of the data, entered to
         // the stdin, to the `sink`.
         let send_stdin = stdin_rx.forward(sink);
-        let write_stdout = stream.for_each(|message| {
+        let write_stdout = stream.for_each(move |message| {
             stdout.write_all(&message.into_data()).unwrap();
             Ok(())
         });
@@ -88,7 +83,7 @@ fn main() {
     });
 
     // And now that we've got our client, we execute it in the event loop!
-    core.run(client).unwrap();
+    tokio::runtime::run(client.map_err(|_e| ()));
 }
 
 // Our helper method which will read data from stdin and send it along the

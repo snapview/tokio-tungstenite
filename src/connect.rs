@@ -1,16 +1,13 @@
 //! Connection helper.
 
 extern crate tokio_dns;
-extern crate tokio_core;
 
 use std::io::Result as IoResult;
 
-use self::tokio_core::net::TcpStream;
-use self::tokio_core::reactor::Remote;
-use self::tokio_dns::tcp_connect;
+use tokio::net::TcpStream;
 
 use futures::{future, Future};
-use tokio_io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::Error;
 use tungstenite::client::url_mode;
@@ -36,7 +33,7 @@ mod encryption {
     use std::io::{Read, Write, Result as IoResult};
 
     use futures::{future, Future};
-    use tokio_io::{AsyncRead, AsyncWrite};
+    use tokio::io::{AsyncRead, AsyncWrite};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
@@ -53,9 +50,9 @@ mod encryption {
     }
 
     pub fn wrap_stream<S>(socket: S, domain: String, mode: Mode)
-        -> Box<Future<Item=AutoStream<S>, Error=Error>>
+        -> Box<Future<Item=AutoStream<S>, Error=Error> + Send>
     where
-        S: 'static + AsyncRead + AsyncWrite,
+        S: 'static + AsyncRead + AsyncWrite + Send,
     {
         match mode {
             Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
@@ -106,10 +103,10 @@ fn domain(request: &Request) -> Result<String, Error> {
 /// Creates a WebSocket handshake from a request and a stream,
 /// upgrading the stream to TLS if required.
 pub fn client_async_tls<R, S>(request: R, stream: S)
-    -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error>>
+    -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error> + Send>
 where
     R: Into<Request<'static>>,
-    S: 'static + AsyncRead + AsyncWrite + NoDelay,
+    S: 'static + AsyncRead + AsyncWrite + NoDelay + Send,
 {
     let request: Request = request.into();
 
@@ -134,8 +131,8 @@ where
 }
 
 /// Connect to a given URL.
-pub fn connect_async<R>(request: R, handle: Remote)
-    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error>>
+pub fn connect_async<R>(request: R)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error> + Send>
 where
     R: Into<Request<'static>>
 {
@@ -147,6 +144,6 @@ where
     };
     let port = request.url.port_or_known_default().expect("Bug: port unknown");
 
-    Box::new(tcp_connect((domain.as_str(), port), handle).map_err(|e| e.into())
+    Box::new(tokio_dns::TcpStream::connect((domain.as_str(), port)).map_err(|e| e.into())
                 .and_then(move |socket| client_async_tls(request, socket)))
 }

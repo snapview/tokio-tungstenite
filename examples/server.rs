@@ -18,20 +18,18 @@
 //! messages.
 
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 extern crate tokio_tungstenite;
 extern crate tungstenite;
 
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::env;
 use std::io::{Error, ErrorKind};
-use std::rc::Rc;
+use std::sync::{Arc,Mutex};
 
 use futures::stream::Stream;
 use futures::Future;
-use tokio_core::net::TcpListener;
-use tokio_core::reactor::Core;
+use tokio::net::TcpListener;
 use tungstenite::protocol::Message;
 
 use tokio_tungstenite::accept_async;
@@ -41,16 +39,16 @@ fn main() {
     let addr = addr.parse().unwrap();
 
     // Create the event loop and TCP listener we'll accept connections on.
-    let mut core = Core::new().unwrap();
-    let handle = core.handle();
-    let socket = TcpListener::bind(&addr, &handle).unwrap();
+    let socket = TcpListener::bind(&addr).unwrap();
     println!("Listening on: {}", addr);
 
     // This is a single-threaded server, so we can just use Rc and RefCell to
     // store the map of all connections we know about.
-    let connections = Rc::new(RefCell::new(HashMap::new()));
+    let connections = Arc::new(Mutex::new(HashMap::new()));
 
-    let srv = socket.incoming().for_each(|(stream, addr)| {
+    let srv = socket.incoming().for_each(move |stream| {
+
+        let addr = stream.peer_addr().expect("connected streams should have a peer address");
 
         // We have to clone both of these values, because the `and_then`
         // function below constructs a new future, `and_then` requires
@@ -58,7 +56,6 @@ fn main() {
         // environment inside the future (AndThen future may overlive our
         // `for_each` future).
         let connections_inner = connections.clone();
-        let handle_inner = handle.clone();
 
         accept_async(stream).and_then(move |ws_stream| {
             println!("New WebSocket connection: {}", addr);
@@ -67,7 +64,7 @@ fn main() {
             // send us messages. Then register our address with the stream to send
             // data to us.
             let (tx, rx) = futures::sync::mpsc::unbounded();
-            connections_inner.borrow_mut().insert(addr, tx);
+            connections_inner.lock().unwrap().insert(addr, tx);
 
             // Let's split the WebSocket stream, so we can work with the
             // reading and writing halves separately.
@@ -81,7 +78,7 @@ fn main() {
 
                 // For each open connection except the sender, send the
                 // string via the channel.
-                let mut conns = connections.borrow_mut();
+                let mut conns = connections.lock().unwrap();
                 let iter = conns.iter_mut()
                                 .filter(|&(&k, _)| k != addr)
                                 .map(|(_, v)| v);
@@ -105,8 +102,8 @@ fn main() {
             let connection = ws_reader.map(|_| ()).map_err(|_| ())
                                       .select(ws_writer.map(|_| ()).map_err(|_| ()));
 
-            handle_inner.spawn(connection.then(move |_| {
-                connections_inner.borrow_mut().remove(&addr);
+            tokio::spawn(connection.then(move |_| {
+                connections_inner.lock().unwrap().remove(&addr);
                 println!("Connection {} closed.", addr);
                 Ok(())
             }));
@@ -119,5 +116,5 @@ fn main() {
     });
 
     // Execute server.
-    core.run(srv).unwrap();
+    tokio::runtime::run(srv.map_err(|_e| ()));
 }
