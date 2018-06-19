@@ -49,7 +49,7 @@ mod encryption {
         }
     }
 
-    pub fn wrap_stream<S>(socket: S, domain: String, mode: Mode)
+    pub fn wrap_stream<S>(socket: S, domain: Option<String>, mode: Mode)
         -> Box<Future<Item=AutoStream<S>, Error=Error> + Send>
     where
         S: 'static + AsyncRead + AsyncWrite + Send,
@@ -57,8 +57,12 @@ mod encryption {
         match mode {
             Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
             Mode::Tls => {
-                Box::new(future::result(TlsConnector::builder().build())
-                            .and_then(move |connector| connector.connect_async(&domain, socket))
+                Box::new(future::result(TlsConnector::builder().danger_accept_invalid_hostnames(domain.is_none()).build())
+                            .and_then(move |connector| if let Some(domain) = domain {
+                                connector.connect_async(&domain, socket)
+                            } else {
+                                connector.connect_async("", socket)
+                            })
                             .map(|s| StreamSwitcher::Tls(s))
                             .map_err(|e| Error::Tls(e)))
             }
@@ -76,7 +80,7 @@ mod encryption {
 
     pub type AutoStream<S> = S;
 
-    pub fn wrap_stream<S>(socket: S, _domain: String, mode: Mode)
+    pub fn wrap_stream<S>(socket: S, _domain: Option<String>, mode: Mode)
         -> Box<Future<Item=AutoStream<S>, Error=Error>>
     where
         S: 'static + AsyncRead + AsyncWrite,
@@ -99,9 +103,7 @@ fn domain(request: &Request) -> Result<String, Error> {
     }
 }
 
-/// Creates a WebSocket handshake from a request and a stream,
-/// upgrading the stream to TLS if required.
-pub fn client_async_tls<R, S>(request: R, stream: S)
+fn imp_client_async_tls<R, S>(request: R, stream: S, danger_accept_invalid_hostnames: bool)
     -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error> + Send>
 where
     R: Into<Request<'static>>,
@@ -109,9 +111,13 @@ where
 {
     let request: Request = request.into();
 
-    let domain = match domain(&request) {
-        Ok(domain) => domain,
-        Err(err) => return Box::new(future::err(err)),
+    let domain = if !danger_accept_invalid_hostnames {
+        match domain(&request) {
+            Ok(domain) => Some(domain),
+            Err(err) => return Box::new(future::err(err)),
+        }
+    } else {
+        None
     };
 
     // Make sure we check domain and mode first. URL must be valid.
@@ -129,8 +135,31 @@ where
                 .and_then(move |stream| client_async(request, stream)))
 }
 
-/// Connect to a given URL.
-pub fn connect_async<R>(request: R)
+/// Creates a WebSocket handshake from a request and a stream,
+/// upgrading the stream to TLS if required.
+pub fn client_async_tls<R, S>(request: R, stream: S)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error> + Send>
+where
+    R: Into<Request<'static>>,
+    S: 'static + AsyncRead + AsyncWrite + NoDelay + Send,
+{
+    imp_client_async_tls(request, stream, false)
+}
+
+/// Creates a WebSocket handshake from a request and a stream,
+/// upgrading the stream to TLS if required.
+///
+/// Accepts invalid hostnames.
+pub fn danger_client_async_tls<R, S>(request: R, stream: S)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error> + Send>
+where
+    R: Into<Request<'static>>,
+    S: 'static + AsyncRead + AsyncWrite + NoDelay + Send,
+{
+    imp_client_async_tls(request, stream, true)
+}
+
+fn imp_connect_async<R>(request: R, danger_accept_invalid_hostnames: bool)
     -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error> + Send>
 where
     R: Into<Request<'static>>
@@ -141,8 +170,29 @@ where
         Ok(domain) => domain,
         Err(err) => return Box::new(future::err(err)),
     };
+
     let port = request.url.port_or_known_default().expect("Bug: port unknown");
 
     Box::new(tokio_dns::TcpStream::connect((domain.as_str(), port)).map_err(|e| e.into())
-                .and_then(move |socket| client_async_tls(request, socket)))
+        .and_then(move |socket| imp_client_async_tls(request, socket, danger_accept_invalid_hostnames)))
+}
+
+/// Connect to a given URL.
+pub fn connect_async<R>(request: R)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error> + Send>
+where
+    R: Into<Request<'static>>
+{
+    imp_connect_async(request, false)
+}
+
+/// Connect to a given URL.
+///
+/// Accepts invalid hostnames.
+pub fn danger_connect_async<R>(request: R)
+    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error> + Send>
+where
+    R: Into<Request<'static>>
+{
+    imp_connect_async(request, true)
 }
