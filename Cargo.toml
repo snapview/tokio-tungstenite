@@ -46,3 +46,8 @@ version = "0.1.4"
 [dev-dependencies]
 tokio-core = "0.1.12"
 url = "1.6.0"
+
+[patch.crates-io]
+tokio-tls = { git = "https://github.com/aep/tokio-tls.git", rev = "acbe9a327ad16506ad30c8f3df0c1f5302271384" }
+native-tls = { git = "https://github.com/sfackler/rust-native-tls.git" }
+tungstenite = { git = "https://github.com/snapview/tungstenite-rs.git" }
