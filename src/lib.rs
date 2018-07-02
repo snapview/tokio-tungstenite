@@ -143,8 +143,7 @@ impl<T> Sink for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
     type SinkError = WsError;
 
     fn start_send(&mut self, item: Message) -> StartSend<Message, WsError> {
-        try!(self.inner.write_message(item).to_async());
-        Ok(AsyncSink::Ready)
+        self.inner.write_message(item).to_start_send()
     }
 
     fn poll_complete(&mut self) -> Poll<(), WsError> {
@@ -232,6 +231,27 @@ impl<T> ToAsync for Result<T, WsError> {
             Ok(x) => Ok(Async::Ready(x)),
             Err(error) => match error {
                 WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(Async::NotReady),
+                err => Err(err),
+            },
+        }
+    }
+}
+
+trait ToStartSend {
+    type T;
+    type E;
+    fn to_start_send(self) -> StartSend<Self::T, Self::E>;
+}
+
+impl ToStartSend for Result<(), (WsError, Option<Message>)> {
+    type T = Message;
+    type E = WsError;
+    fn to_start_send(self) -> StartSend<Self::T, Self::E> {
+        match self {
+            Ok(_) => Ok(AsyncSink::Ready),
+            Err((_, Some(msg))) => Ok(AsyncSink::NotReady(msg)),
+            Err((error, None)) => match error {
+                WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(AsyncSink::Ready),
                 err => Err(err),
             },
         }
