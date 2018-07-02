@@ -70,7 +70,7 @@ mod encryption {
 #[cfg(not(feature="tls"))]
 mod encryption {
     use futures::{future, Future};
-    use tokio_io::{AsyncRead, AsyncWrite};
+    use tokio::io::{AsyncRead, AsyncWrite};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
@@ -78,9 +78,9 @@ mod encryption {
     pub type AutoStream<S> = S;
 
     pub fn wrap_stream<S>(socket: S, _domain: String, mode: Mode)
-        -> Box<Future<Item=AutoStream<S>, Error=Error>>
+        -> Box<Future<Item=AutoStream<S>, Error=Error> + Send>
     where
-        S: 'static + AsyncRead + AsyncWrite,
+        S: 'static + AsyncRead + AsyncWrite + Send,
     {
         match mode {
             Mode::Plain => Box::new(future::ok(socket)),
