@@ -20,7 +20,7 @@ stream = ["bytes"]
 futures = "0.1.17"
 
 [dependencies.tungstenite]
-version = "0.5.3"
+version = "0.6.0"
 default-features = false
 
 [dependencies.bytes]
@@ -29,7 +29,7 @@ version = "0.4.6"
 
 [dependencies.native-tls]
 optional = true
-version = "0.1.5"
+version = "0.2.0"
 
 [dependencies.tokio-dns-unofficial]
 optional = true
@@ -46,3 +46,6 @@ version = "0.1.4"
 [dev-dependencies]
 tokio-core = "0.1.12"
 url = "1.6.0"
+
+[patch.crates-io]
+tokio-tls = { git = "https://github.com/aep/tokio-tls.git", rev = "7865734d2167160cabd4422aca76b8478e643b41" }
