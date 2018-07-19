@@ -57,8 +57,7 @@ mod encryption {
         match mode {
             Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
             Mode::Tls => {
-                Box::new(future::result(TlsConnector::builder())
-                            .and_then(move |builder| future::result(builder.build()))
+                Box::new(future::result(TlsConnector::builder().build())
                             .and_then(move |connector| connector.connect_async(&domain, socket))
                             .map(|s| StreamSwitcher::Tls(s))
                             .map_err(|e| Error::Tls(e)))
