@@ -17,7 +17,7 @@ tls = ["tokio-tls", "native-tls", "stream", "tungstenite/tls"]
 stream = ["bytes"]
 
 [dependencies]
-futures = "0.1.17"
+futures = "0.1.23"
 
 [dependencies.tungstenite]
 version = "0.6.0"
@@ -25,7 +25,7 @@ default-features = false
 
 [dependencies.bytes]
 optional = true
-version = "0.4.6"
+version = "0.4.8"
 
 [dependencies.native-tls]
 optional = true
@@ -37,7 +37,7 @@ version = "0.3.1"
 
 [dependencies.tokio]
 optional = true
-version = "0.1.6"
+version = "0.1.7"
 
 [dependencies.tokio-tls]
 optional = true
