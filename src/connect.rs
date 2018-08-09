@@ -39,10 +39,12 @@ mod encryption {
     use tungstenite::Error;
     use tungstenite::stream::Mode;
 
-    use stream::NoDelay;
+    use stream::{NoDelay, Stream as StreamSwitcher};
 
-    pub use stream::Stream as StreamSwitcher;
-    pub type AutoStream<S> = StreamSwitcher<S, TlsStream<S>>;
+    /// A stream that might be protected with TLS.
+    pub type MaybeTlsStream<S> = StreamSwitcher<S, TlsStream<S>>;
+
+    pub type AutoStream<S> = MaybeTlsStream<S>;
 
     impl<T: Read + Write + NoDelay> NoDelay for TlsStream<T> {
         fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
@@ -67,6 +69,9 @@ mod encryption {
         }
     }
 }
+
+#[cfg(feature="tls")]
+pub use self::encryption::MaybeTlsStream;
 
 #[cfg(not(feature="tls"))]
 mod encryption {
