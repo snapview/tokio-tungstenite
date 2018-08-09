@@ -10,7 +10,7 @@ use std::io::{Read, Write, Result as IoResult, Error as IoError};
 
 use self::bytes::{Buf, BufMut};
 use futures::Poll;
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio_io::{AsyncRead, AsyncWrite};
 
 /// Trait to switch TCP_NODELAY.
 pub trait NoDelay {

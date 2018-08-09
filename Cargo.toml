@@ -12,12 +12,13 @@ version = "0.6.0"
 
 [features]
 default = ["connect", "tls"]
-connect = ["tokio-dns-unofficial", "tokio", "stream"]
+connect = ["tokio-dns-unofficial", "tokio-tcp", "stream"]
 tls = ["tokio-tls", "native-tls", "stream", "tungstenite/tls"]
 stream = ["bytes"]
 
 [dependencies]
 futures = "0.1.23"
+tokio-io = "0.1.7"
 
 [dependencies.tungstenite]
 version = "0.6.0"
@@ -35,17 +36,14 @@ version = "0.2.0"
 optional = true
 version = "0.3.1"
 
-[dependencies.tokio]
+[dependencies.tokio-tcp]
 optional = true
-version = "0.1.7"
+version = "0.1.0"
 
 [dependencies.tokio-tls]
 optional = true
-version = "0.1.4"
+version = "0.2.0"
 
 [dev-dependencies]
-tokio-core = "0.1.12"
+tokio = "0.1.7"
 url = "1.6.0"
-
-[patch.crates-io]
-tokio-tls = { git = "https://github.com/aep/tokio-tls.git", rev = "7865734d2167160cabd4422aca76b8478e643b41" }

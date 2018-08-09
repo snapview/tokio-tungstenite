@@ -1,13 +1,14 @@
 //! Connection helper.
 
 extern crate tokio_dns;
+extern crate tokio_tcp;
 
 use std::io::Result as IoResult;
 
-use tokio::net::TcpStream;
+use self::tokio_tcp::TcpStream;
 
 use futures::{future, Future};
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio_io::{AsyncRead, AsyncWrite};
 
 use tungstenite::Error;
 use tungstenite::client::url_mode;
@@ -28,12 +29,12 @@ mod encryption {
     extern crate tokio_tls;
 
     use self::native_tls::TlsConnector;
-    use self::tokio_tls::{TlsConnectorExt, TlsStream};
+    use self::tokio_tls::{TlsConnector as TokioTlsConnector, TlsStream};
 
     use std::io::{Read, Write, Result as IoResult};
 
     use futures::{future, Future};
-    use tokio::io::{AsyncRead, AsyncWrite};
+    use tokio_io::{AsyncRead, AsyncWrite};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
@@ -57,8 +58,9 @@ mod encryption {
         match mode {
             Mode::Plain => Box::new(future::ok(StreamSwitcher::Plain(socket))),
             Mode::Tls => {
-                Box::new(future::result(TlsConnector::builder().build())
-                            .and_then(move |connector| connector.connect_async(&domain, socket))
+                Box::new(future::result(TlsConnector::new())
+                            .map(TokioTlsConnector::from)
+                            .and_then(move |connector| connector.connect(&domain, socket))
                             .map(|s| StreamSwitcher::Tls(s))
                             .map_err(|e| Error::Tls(e)))
             }
@@ -69,7 +71,7 @@ mod encryption {
 #[cfg(not(feature="tls"))]
 mod encryption {
     use futures::{future, Future};
-    use tokio::io::{AsyncRead, AsyncWrite};
+    use tokio_io::{AsyncRead, AsyncWrite};
 
     use tungstenite::Error;
     use tungstenite::stream::Mode;
