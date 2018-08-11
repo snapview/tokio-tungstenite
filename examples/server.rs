@@ -42,8 +42,8 @@ fn main() {
     let socket = TcpListener::bind(&addr).unwrap();
     println!("Listening on: {}", addr);
 
-    // This is a single-threaded server, so we can just use Rc and RefCell to
-    // store the map of all connections we know about.
+    // Tokio Runtime uses a thread pool based executor by default, so we need
+    // to use Arc and Mutex to store the map of all connections we know about.
     let connections = Arc::new(Mutex::new(HashMap::new()));
 
     let srv = socket.incoming().for_each(move |stream| {
