@@ -45,6 +45,9 @@ use tungstenite::{
 #[cfg(feature="connect")]
 pub use connect::{connect_async, client_async_tls};
 
+#[cfg(all(feature="connect", feature="tls"))]
+pub use connect::MaybeTlsStream;
+
 /// Creates a WebSocket handshake from a request and a stream.
 /// For convenience, the user may call this with a url string, a URL,
 /// or a `Request`. Calling with `Request` allows the user to add
