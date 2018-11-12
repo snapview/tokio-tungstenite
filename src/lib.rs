@@ -28,6 +28,12 @@ pub mod stream;
 
 use std::io::ErrorKind;
 
+#[cfg(feature="stream")]
+use std::{
+    net::SocketAddr,
+    io::Result as IoResult,
+};
+
 use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
 use tokio_io::{AsyncRead, AsyncWrite};
 
@@ -44,6 +50,9 @@ use tungstenite::{
 
 #[cfg(feature="connect")]
 pub use connect::{connect_async, client_async_tls};
+
+#[cfg(feature="stream")]
+pub use stream::PeerAddr;
 
 #[cfg(all(feature="connect", feature="tls"))]
 pub use connect::MaybeTlsStream;
@@ -191,6 +200,13 @@ impl<S> WebSocketStream<S> {
             inner: ws,
             stream_ended: false,
         }
+    }
+}
+
+#[cfg(feature="stream")]
+impl<S: PeerAddr> PeerAddr for WebSocketStream<S> {
+    fn peer_addr(&self) -> IoResult<SocketAddr> {
+        self.inner.get_ref().peer_addr()
     }
 }
 

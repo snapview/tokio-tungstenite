@@ -6,6 +6,7 @@
 
 extern crate bytes;
 
+use std::net::SocketAddr;
 use std::io::{Read, Write, Result as IoResult, Error as IoError};
 
 use self::bytes::{Buf, BufMut};
@@ -16,6 +17,12 @@ use tokio_io::{AsyncRead, AsyncWrite};
 pub trait NoDelay {
     /// Set the TCP_NODELAY option to the given value.
     fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()>;
+}
+
+/// Trait to get the remote address from the underlying stream.
+pub trait PeerAddr {
+    /// Returns the remote address that this stream is connected to.
+    fn peer_addr(&self) -> IoResult<SocketAddr>;
 }
 
 /// Stream, either plain TCP or TLS.
@@ -55,6 +62,15 @@ impl<S: NoDelay, T: NoDelay> NoDelay for Stream<S, T> {
         match *self {
             Stream::Plain(ref mut s) => s.set_nodelay(nodelay),
             Stream::Tls(ref mut s) => s.set_nodelay(nodelay),
+        }
+    }
+}
+
+impl<S: PeerAddr, T: PeerAddr> PeerAddr for Stream<S, T> {
+    fn peer_addr(&self) -> IoResult<SocketAddr> {
+        match *self {
+            Stream::Plain(ref s) => s.peer_addr(),
+            Stream::Tls(ref s) => s.peer_addr(),
         }
     }
 }

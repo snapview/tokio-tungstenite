@@ -3,6 +3,7 @@
 extern crate tokio_dns;
 extern crate tokio_tcp;
 
+use std::net::SocketAddr;
 use std::io::Result as IoResult;
 
 use self::tokio_tcp::TcpStream;
@@ -14,12 +15,18 @@ use tungstenite::Error;
 use tungstenite::client::url_mode;
 use tungstenite::handshake::client::Response;
 
-use stream::NoDelay;
+use stream::{NoDelay, PeerAddr};
 use super::{WebSocketStream, Request, client_async};
 
 impl NoDelay for TcpStream {
     fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
         TcpStream::set_nodelay(self, nodelay)
+    }
+}
+
+impl PeerAddr for TcpStream {
+    fn peer_addr(&self) -> IoResult<SocketAddr> {
+        self.peer_addr()
     }
 }
 
@@ -31,6 +38,7 @@ mod encryption {
     use self::native_tls::TlsConnector;
     use self::tokio_tls::{TlsConnector as TokioTlsConnector, TlsStream};
 
+    use std::net::SocketAddr;
     use std::io::{Read, Write, Result as IoResult};
 
     use futures::{future, Future};
@@ -39,7 +47,7 @@ mod encryption {
     use tungstenite::Error;
     use tungstenite::stream::Mode;
 
-    use stream::{NoDelay, Stream as StreamSwitcher};
+    use stream::{NoDelay, PeerAddr, Stream as StreamSwitcher};
 
     /// A stream that might be protected with TLS.
     pub type MaybeTlsStream<S> = StreamSwitcher<S, TlsStream<S>>;
@@ -49,6 +57,12 @@ mod encryption {
     impl<T: Read + Write + NoDelay> NoDelay for TlsStream<T> {
         fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
             self.get_mut().get_mut().set_nodelay(nodelay)
+        }
+    }
+
+    impl<S: Read + Write + PeerAddr> PeerAddr for TlsStream<S> {
+        fn peer_addr(&self) -> IoResult<SocketAddr> {
+            self.get_ref().get_ref().peer_addr()
         }
     }
 
