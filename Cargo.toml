@@ -21,7 +21,10 @@ futures = "0.1.23"
 tokio-io = "0.1.7"
 
 [dependencies.tungstenite]
-version = "0.6.0"
+# Uncomment when `tungstenite-rs` is released.
+# version = "0.7.0"
+git = "https://github.com/snapview/tungstenite-rs"
+branch = "close-as-message"
 default-features = false
 
 [dependencies.bytes]

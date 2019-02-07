@@ -161,6 +161,7 @@ where
 /// and unit tests for this crate.
 pub struct WebSocketStream<S> {
     inner: WebSocket<S>,
+    stream_ended: bool,
 }
 
 impl<S> WebSocketStream<S> {
@@ -171,8 +172,7 @@ impl<S> WebSocketStream<S> {
         role: Role,
         config: Option<WebSocketConfig>,
     ) -> Self {
-        let ws = WebSocket::from_raw_socket(stream, role, config);
-        WebSocketStream { inner: ws }
+        Self::new(WebSocket::from_raw_socket(stream, role, config))
     }
 
     /// Convert a raw socket into a WebSocketStream without performing a
@@ -183,8 +183,14 @@ impl<S> WebSocketStream<S> {
         role: Role,
         config: Option<WebSocketConfig>,
     ) -> Self {
-        let ws = WebSocket::from_partially_read(stream, part, role, config);
-        WebSocketStream { inner: ws }
+        Self::new(WebSocket::from_partially_read(stream, part, role, config))
+    }
+
+    fn new(ws: WebSocket<S>) -> Self {
+        WebSocketStream {
+            inner: ws,
+            stream_ended: false,
+        }
     }
 }
 
@@ -193,7 +199,17 @@ impl<T> Stream for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
     type Error = WsError;
 
     fn poll(&mut self) -> Poll<Option<Message>, WsError> {
-        self.inner.read_message().map(|m| Some(m)).to_async()
+        if self.stream_ended {
+            self.stream_ended = false;
+            return Ok(Async::Ready(None))
+        }
+
+        self.inner.read_message().map(|m| {
+            if m.is_close() {
+                self.stream_ended = true;
+            }
+            Some(m)
+        }).to_async()
     }
 }
 
@@ -227,7 +243,7 @@ impl<S: AsyncRead + AsyncWrite> Future for ConnectAsync<S> {
     fn poll(&mut self) -> Poll<Self::Item, WsError> {
         match self.inner.poll()? {
             Async::NotReady => Ok(Async::NotReady),
-            Async::Ready((ws, resp)) => Ok(Async::Ready((WebSocketStream { inner: ws }, resp))),
+            Async::Ready((ws, resp)) => Ok(Async::Ready((WebSocketStream::new(ws), resp))),
         }
     }
 }
@@ -245,7 +261,7 @@ impl<S: AsyncRead + AsyncWrite, C: Callback> Future for AcceptAsync<S, C> {
     fn poll(&mut self) -> Poll<Self::Item, WsError> {
         match self.inner.poll()? {
             Async::NotReady => Ok(Async::NotReady),
-            Async::Ready(ws) => Ok(Async::Ready(WebSocketStream { inner: ws })),
+            Async::Ready(ws) => Ok(Async::Ready(WebSocketStream::new(ws))),
         }
     }
 }
