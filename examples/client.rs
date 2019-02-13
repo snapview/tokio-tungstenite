@@ -25,6 +25,7 @@ use futures::{Future, Sink, Stream};
 use tungstenite::protocol::Message;
 
 use tokio_tungstenite::connect_async;
+use tokio_tungstenite::stream::PeerAddr;
 
 fn main() {
     // Specify the server address to which the client will be connecting.
@@ -60,6 +61,9 @@ fn main() {
     let mut stdout = io::stdout();
     let client = connect_async(url).and_then(move |(ws_stream, _)| {
         println!("WebSocket handshake has been successfully completed");
+
+        let addr = ws_stream.peer_addr().expect("connected streams should have a peer address");
+        println!("Peer address: {}", addr);
 
         // `sink` is the stream of messages going out.
         // `stream` is the stream of incoming messages.

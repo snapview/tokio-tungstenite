@@ -49,6 +49,7 @@ fn main() {
     let srv = socket.incoming().for_each(move |stream| {
 
         let addr = stream.peer_addr().expect("connected streams should have a peer address");
+        println!("Peer address: {}", addr);
 
         // We have to clone both of these values, because the `and_then`
         // function below constructs a new future, `and_then` requires
