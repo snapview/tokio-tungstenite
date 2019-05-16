@@ -170,7 +170,6 @@ where
 /// and unit tests for this crate.
 pub struct WebSocketStream<S> {
     inner: WebSocket<S>,
-    stream_ended: bool,
 }
 
 impl<S> WebSocketStream<S> {
@@ -198,7 +197,6 @@ impl<S> WebSocketStream<S> {
     fn new(ws: WebSocket<S>) -> Self {
         WebSocketStream {
             inner: ws,
-            stream_ended: false,
         }
     }
 }
@@ -215,17 +213,14 @@ impl<T> Stream for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
     type Error = WsError;
 
     fn poll(&mut self) -> Poll<Option<Message>, WsError> {
-        if self.stream_ended {
-            self.stream_ended = false;
-            return Ok(Async::Ready(None))
-        }
-
-        self.inner.read_message().map(|m| {
-            if m.is_close() {
-                self.stream_ended = true;
-            }
-            Some(m)
-        }).to_async()
+        self.inner
+            .read_message()
+            .map(|msg| Some(msg))
+            .to_async()
+            .or_else(|err| match err {
+                WsError::ConnectionClosed => Ok(Async::Ready(None)),
+                err => Err(err)
+            })
     }
 }
 
