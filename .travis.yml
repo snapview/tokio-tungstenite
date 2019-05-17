@@ -1,1 +1,13 @@
 language: rust
+
+before_script:
+  - export PATH="$PATH:$HOME/.cargo/bin"
+
+script:
+  - cargo test --release
+
+after_success:
+  - sudo apt-get install python-unittest2
+  - sudo pip install ghp-import urllib3[secure] autobahntestsuite
+  - echo "Running Autobahn TestSuite for client" && ./scripts/autobahn-client.sh
+  - echo "Running Autobahn TestSuite for server" && ./scripts/autobahn-server.sh
