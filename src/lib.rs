@@ -20,6 +20,8 @@ extern crate tokio_io;
 
 pub extern crate tungstenite;
 
+pub mod auto_pong;
+
 #[cfg(feature="connect")]
 mod connect;
 
