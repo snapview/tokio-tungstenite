@@ -21,7 +21,7 @@ futures = "0.1.23"
 tokio-io = "0.1.7"
 
 [dependencies.tungstenite]
-version = "0.8.1"
+version = "0.9.1"
 default-features = false
 
 [dependencies.bytes]
@@ -46,6 +46,6 @@ version = "0.2.0"
 
 [dev-dependencies]
 tokio = "0.1.7"
-url = "1.6.0"
+url = "2.0.0"
 env_logger = "0.6.1"
 log = "0.4.6"
