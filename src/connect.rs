@@ -77,8 +77,8 @@ mod encryption {
                 Box::new(future::result(TlsConnector::new())
                             .map(TokioTlsConnector::from)
                             .and_then(move |connector| connector.connect(&domain, socket))
-                            .map(|s| StreamSwitcher::Tls(s))
-                            .map_err(|e| Error::Tls(e)))
+                            .map(StreamSwitcher::Tls)
+                            .map_err(Error::Tls))
             }
         }
     }
@@ -138,7 +138,7 @@ where
     // Make sure we check domain and mode first. URL must be valid.
     let mode = match url_mode(&request.url) {
         Ok(m) => m,
-        Err(e) => return Box::new(future::err(e.into())),
+        Err(e) => return Box::new(future::err(e)),
     };
 
     Box::new(wrap_stream(stream, domain, mode)
