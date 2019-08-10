@@ -67,7 +67,7 @@ mod encryption {
     }
 
     pub fn wrap_stream<S>(socket: S, domain: String, mode: Mode)
-        -> Box<Future<Item=AutoStream<S>, Error=Error> + Send>
+        -> Box<dyn Future<Item=AutoStream<S>, Error=Error> + Send>
     where
         S: 'static + AsyncRead + AsyncWrite + Send,
     {
@@ -123,7 +123,7 @@ fn domain(request: &Request) -> Result<String, Error> {
 /// Creates a WebSocket handshake from a request and a stream,
 /// upgrading the stream to TLS if required.
 pub fn client_async_tls<R, S>(request: R, stream: S)
-    -> Box<Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error> + Send>
+    -> Box<dyn Future<Item=(WebSocketStream<AutoStream<S>>, Response), Error=Error> + Send>
 where
     R: Into<Request<'static>>,
     S: 'static + AsyncRead + AsyncWrite + NoDelay + Send,
@@ -152,7 +152,7 @@ where
 
 /// Connect to a given URL.
 pub fn connect_async<R>(request: R)
-    -> Box<Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error> + Send>
+    -> Box<dyn Future<Item=(WebSocketStream<AutoStream<TcpStream>>, Response), Error=Error> + Send>
 where
     R: Into<Request<'static>>
 {
