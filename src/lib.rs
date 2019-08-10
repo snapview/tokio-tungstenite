@@ -168,11 +168,11 @@ where
 /// through the respective `Stream` and `Sink`. Check more information about
 /// them in `futures-rs` crate documentation or have a look on the examples
 /// and unit tests for this crate.
-pub struct WebSocketStream<S> {
+pub struct WebSocketStream<S: AsyncRead + AsyncWrite> {
     inner: WebSocket<S>,
 }
 
-impl<S> WebSocketStream<S> {
+impl<S: AsyncRead + AsyncWrite> WebSocketStream<S> {
     /// Convert a raw socket into a WebSocketStream without performing a
     /// handshake.
     pub fn from_raw_socket(
@@ -201,8 +201,16 @@ impl<S> WebSocketStream<S> {
     }
 }
 
+impl<T> Drop for WebSocketStream<T> where T: AsyncRead + AsyncWrite
+{
+    fn drop( &mut self )
+    {
+        let _ = self.inner.close(None);
+    }
+}
+
 #[cfg(feature="stream")]
-impl<S: PeerAddr> PeerAddr for WebSocketStream<S> {
+impl<S: PeerAddr + AsyncRead + AsyncWrite> PeerAddr for WebSocketStream<S> {
     fn peer_addr(&self) -> IoResult<SocketAddr> {
         self.inner.get_ref().peer_addr()
     }
