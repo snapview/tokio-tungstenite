@@ -215,7 +215,7 @@ impl<T> Stream for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
     fn poll(&mut self) -> Poll<Option<Message>, WsError> {
         self.inner
             .read_message()
-            .map(|msg| Some(msg))
+            .map(Some)
             .to_async()
             .or_else(|err| match err {
                 WsError::ConnectionClosed => Ok(Async::Ready(None)),
