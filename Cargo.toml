@@ -9,6 +9,7 @@ homepage = "https://github.com/snapview/tokio-tungstenite"
 documentation = "https://docs.rs/tokio-tungstenite/0.9.0"
 repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.9.0"
+edition = "2018"
 
 [features]
 default = ["connect", "tls"]

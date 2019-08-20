@@ -10,12 +10,6 @@
 //!
 //! You can use this example together with the `server` example.
 
-extern crate futures;
-extern crate tokio;
-extern crate tokio_tungstenite;
-extern crate tungstenite;
-extern crate url;
-
 use std::env;
 use std::io::{self, Read, Write};
 use std::thread;
@@ -29,9 +23,9 @@ use tokio_tungstenite::stream::PeerAddr;
 
 fn main() {
     // Specify the server address to which the client will be connecting.
-    let connect_addr = env::args().nth(1).unwrap_or_else(|| {
-        panic!("this program requires at least one argument")
-    });
+    let connect_addr = env::args()
+        .nth(1)
+        .unwrap_or_else(|| panic!("this program requires at least one argument"));
 
     let url = url::Url::parse(&connect_addr).unwrap();
 
@@ -59,32 +53,37 @@ fn main() {
     // finishes. If we don't have any more data to read or we won't receive any
     // more work from the remote then we can exit.
     let mut stdout = io::stdout();
-    let client = connect_async(url).and_then(move |(ws_stream, _)| {
-        println!("WebSocket handshake has been successfully completed");
+    let client = connect_async(url)
+        .and_then(move |(ws_stream, _)| {
+            println!("WebSocket handshake has been successfully completed");
 
-        let addr = ws_stream.peer_addr().expect("connected streams should have a peer address");
-        println!("Peer address: {}", addr);
+            let addr = ws_stream
+                .peer_addr()
+                .expect("connected streams should have a peer address");
+            println!("Peer address: {}", addr);
 
-        // `sink` is the stream of messages going out.
-        // `stream` is the stream of incoming messages.
-        let (sink, stream) = ws_stream.split();
+            // `sink` is the stream of messages going out.
+            // `stream` is the stream of incoming messages.
+            let (sink, stream) = ws_stream.split();
 
-        // We forward all messages, composed out of the data, entered to
-        // the stdin, to the `sink`.
-        let send_stdin = stdin_rx.forward(sink);
-        let write_stdout = stream.for_each(move |message| {
-            stdout.write_all(&message.into_data()).unwrap();
-            Ok(())
+            // We forward all messages, composed out of the data, entered to
+            // the stdin, to the `sink`.
+            let send_stdin = stdin_rx.forward(sink);
+            let write_stdout = stream.for_each(move |message| {
+                stdout.write_all(&message.into_data()).unwrap();
+                Ok(())
+            });
+
+            // Wait for either of futures to complete.
+            send_stdin
+                .map(|_| ())
+                .select(write_stdout.map(|_| ()))
+                .then(|_| Ok(()))
+        })
+        .map_err(|e| {
+            println!("Error during the websocket handshake occurred: {}", e);
+            io::Error::new(io::ErrorKind::Other, e)
         });
-
-        // Wait for either of futures to complete.
-        send_stdin.map(|_| ())
-                  .select(write_stdout.map(|_| ()))
-                  .then(|_| Ok(()))
-    }).map_err(|e| {
-        println!("Error during the websocket handshake occurred: {}", e);
-        io::Error::new(io::ErrorKind::Other, e)
-    });
 
     // And now that we've got our client, we execute it in the event loop!
     tokio::runtime::run(client.map_err(|_e| ()));
@@ -97,8 +96,7 @@ fn read_stdin(mut tx: mpsc::Sender<Message>) {
     loop {
         let mut buf = vec![0; 1024];
         let n = match stdin.read(&mut buf) {
-            Err(_) |
-            Ok(0) => break,
+            Err(_) | Ok(0) => break,
             Ok(n) => n,
         };
         buf.truncate(n);
