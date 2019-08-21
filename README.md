@@ -10,17 +10,11 @@ Asynchronous WebSockets for Tokio stack.
 
 ## Usage
 
-First, you need to add this in your `Cargo.toml`:
+Add this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
 tokio-tungstenite = "*"
-```
-
-Next, add this to your crate:
-
-```rust
-extern crate tokio_tungstenite;
 ```
 
 Take a look at the `examples/` directory for client and server examples. You may also want to get familiar with

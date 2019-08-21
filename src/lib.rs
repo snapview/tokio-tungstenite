@@ -13,48 +13,43 @@
     unused_must_use,
     unused_mut,
     unused_imports,
-    unused_import_braces)]
+    unused_import_braces
+)]
 
-extern crate futures;
-extern crate tokio_io;
+pub use tungstenite;
 
-pub extern crate tungstenite;
-
-#[cfg(feature="connect")]
+#[cfg(feature = "connect")]
 mod connect;
 
-#[cfg(feature="stream")]
+#[cfg(feature = "stream")]
 pub mod stream;
 
 use std::io::ErrorKind;
 
-#[cfg(feature="stream")]
-use std::{
-    net::SocketAddr,
-    io::Result as IoResult,
-};
+#[cfg(feature = "stream")]
+use std::{io::Result as IoResult, net::SocketAddr};
 
-use futures::{Poll, Future, Async, AsyncSink, Stream, Sink, StartSend};
+use futures::{Async, AsyncSink, Future, Poll, Sink, StartSend, Stream};
 use tokio_io::{AsyncRead, AsyncWrite};
 
 use tungstenite::{
     error::Error as WsError,
     handshake::{
-        HandshakeRole, HandshakeError,
-        client::{ClientHandshake, Response, Request},
-        server::{ServerHandshake, Callback, NoCallback},
+        client::{ClientHandshake, Request, Response},
+        server::{Callback, NoCallback, ServerHandshake},
+        HandshakeError, HandshakeRole,
     },
-    protocol::{WebSocket, Message, Role, WebSocketConfig},
+    protocol::{Message, Role, WebSocket, WebSocketConfig},
     server,
 };
 
-#[cfg(feature="connect")]
-pub use connect::{connect_async, client_async_tls};
+#[cfg(feature = "connect")]
+pub use connect::{client_async_tls, connect_async};
 
-#[cfg(feature="stream")]
+#[cfg(feature = "stream")]
 pub use stream::PeerAddr;
 
-#[cfg(all(feature="connect", feature="tls"))]
+#[cfg(all(feature = "connect", feature = "tls"))]
 pub use connect::MaybeTlsStream;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -69,13 +64,10 @@ pub use connect::MaybeTlsStream;
 ///
 /// This is typically used for clients who have already established, for
 /// example, a TCP connection to the remote server.
-pub fn client_async<'a, R, S>(
-    request: R,
-    stream: S,
-) -> ConnectAsync<S>
+pub fn client_async<'a, R, S>(request: R, stream: S) -> ConnectAsync<S>
 where
     R: Into<Request<'a>>,
-    S: AsyncRead + AsyncWrite
+    S: AsyncRead + AsyncWrite,
 {
     client_async_with_config(request, stream, None)
 }
@@ -89,12 +81,12 @@ pub fn client_async_with_config<'a, R, S>(
 ) -> ConnectAsync<S>
 where
     R: Into<Request<'a>>,
-    S: AsyncRead + AsyncWrite
+    S: AsyncRead + AsyncWrite,
 {
     ConnectAsync {
         inner: MidHandshake {
-            inner: Some(ClientHandshake::start(stream, request.into(), config).handshake())
-        }
+            inner: Some(ClientHandshake::start(stream, request.into(), config).handshake()),
+        },
     }
 }
 
@@ -154,8 +146,8 @@ where
 {
     AcceptAsync {
         inner: MidHandshake {
-            inner: Some(server::accept_hdr_with_config(stream, callback, config))
-        }
+            inner: Some(server::accept_hdr_with_config(stream, callback, config)),
+        },
     }
 }
 
@@ -175,11 +167,7 @@ pub struct WebSocketStream<S> {
 impl<S> WebSocketStream<S> {
     /// Convert a raw socket into a WebSocketStream without performing a
     /// handshake.
-    pub fn from_raw_socket(
-        stream: S,
-        role: Role,
-        config: Option<WebSocketConfig>,
-    ) -> Self {
+    pub fn from_raw_socket(stream: S, role: Role, config: Option<WebSocketConfig>) -> Self {
         Self::new(WebSocket::from_raw_socket(stream, role, config))
     }
 
@@ -195,20 +183,21 @@ impl<S> WebSocketStream<S> {
     }
 
     fn new(ws: WebSocket<S>) -> Self {
-        WebSocketStream {
-            inner: ws,
-        }
+        WebSocketStream { inner: ws }
     }
 }
 
-#[cfg(feature="stream")]
+#[cfg(feature = "stream")]
 impl<S: PeerAddr> PeerAddr for WebSocketStream<S> {
     fn peer_addr(&self) -> IoResult<SocketAddr> {
         self.inner.get_ref().peer_addr()
     }
 }
 
-impl<T> Stream for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
+impl<T> Stream for WebSocketStream<T>
+where
+    T: AsyncRead + AsyncWrite,
+{
     type Item = Message;
     type Error = WsError;
 
@@ -219,12 +208,15 @@ impl<T> Stream for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
             .to_async()
             .or_else(|err| match err {
                 WsError::ConnectionClosed => Ok(Async::Ready(None)),
-                err => Err(err)
+                err => Err(err),
             })
     }
 }
 
-impl<T> Sink for WebSocketStream<T> where T: AsyncRead + AsyncWrite {
+impl<T> Sink for WebSocketStream<T>
+where
+    T: AsyncRead + AsyncWrite,
+{
     type SinkItem = Message;
     type SinkError = WsError;
 
@@ -289,16 +281,14 @@ impl<H: HandshakeRole> Future for MidHandshake<H> {
         match self.inner.take().expect("cannot poll MidHandshake twice") {
             Ok(result) => Ok(Async::Ready(result)),
             Err(HandshakeError::Failure(e)) => Err(e),
-            Err(HandshakeError::Interrupted(s)) => {
-                match s.handshake() {
-                    Ok(result) => Ok(Async::Ready(result)),
-                    Err(HandshakeError::Failure(e)) => Err(e),
-                    Err(HandshakeError::Interrupted(s)) => {
-                        self.inner = Some(Err(HandshakeError::Interrupted(s)));
-                        Ok(Async::NotReady)
-                    }
+            Err(HandshakeError::Interrupted(s)) => match s.handshake() {
+                Ok(result) => Ok(Async::Ready(result)),
+                Err(HandshakeError::Failure(e)) => Err(e),
+                Err(HandshakeError::Interrupted(s)) => {
+                    self.inner = Some(Err(HandshakeError::Interrupted(s)));
+                    Ok(Async::NotReady)
                 }
-            }
+            },
         }
     }
 }
@@ -339,8 +329,7 @@ impl ToStartSend for Result<(), WsError> {
                 WsError::Io(ref err) if err.kind() == ErrorKind::WouldBlock => Ok(AsyncSink::Ready),
                 WsError::SendQueueFull(msg) => Ok(AsyncSink::NotReady(msg)),
                 err => Err(err),
-            }
+            },
         }
     }
 }
-
