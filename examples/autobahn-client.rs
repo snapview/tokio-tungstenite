@@ -1,33 +1,32 @@
-use futures::{Future, Stream};
+use futures::StreamExt;
 use log::*;
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::{connect, Error as WsError, Result},
-};
+use tokio_tungstenite::{connect_async, tungstenite::Result};
 use url::Url;
 
 const AGENT: &'static str = "Tungstenite";
 
-fn get_case_count() -> Result<u32> {
-    let (mut socket, _) = connect(Url::parse("ws://localhost:9001/getCaseCount").unwrap())?;
-    let msg = socket.read_message()?;
-    socket.close(None)?;
+async fn get_case_count() -> Result<u32> {
+    let (mut socket, _) =
+        connect_async(Url::parse("ws://localhost:9001/getCaseCount").unwrap()).await?;
+    let msg = socket.next().await.unwrap()?;
+    socket.close(None).await?;
     Ok(msg.into_text()?.parse::<u32>().unwrap())
 }
 
-fn update_reports() -> Result<()> {
-    let (mut socket, _) = connect(
+async fn update_reports() -> Result<()> {
+    let (mut socket, _) = connect_async(
         Url::parse(&format!(
             "ws://localhost:9001/updateReports?agent={}",
             AGENT
         ))
         .unwrap(),
-    )?;
-    socket.close(None)?;
+    )
+    .await?;
+    socket.close(None).await?;
     Ok(())
 }
 
-fn run_test(case: u32) {
+async fn run_test(case: u32) {
     info!("Running test case {}", case);
     let case_url = Url::parse(&format!(
         "ws://localhost:9001/runCase?case={}&agent={}",
@@ -35,31 +34,24 @@ fn run_test(case: u32) {
     ))
     .unwrap();
 
-    let job = connect_async(case_url)
-        .map_err(|err| error!("Connect error: {}", err))
-        .and_then(|(ws_stream, _)| {
-            let (sink, stream) = ws_stream.split();
-            stream
-                .filter(|msg| msg.is_text() || msg.is_binary())
-                .forward(sink)
-                .and_then(|(_stream, _sink)| Ok(()))
-                .map_err(|err| match err {
-                    WsError::ConnectionClosed => (),
-                    err => info!("WS error {}", err),
-                })
-        });
-
-    tokio::run(job)
+    let (mut ws_stream, _) = connect_async(case_url).await.expect("Connect error");
+    while let Some(msg) = ws_stream.next().await {
+        let msg = msg.expect("Failed to get message");
+        if msg.is_text() || msg.is_binary() {
+            ws_stream.send(msg).await.expect("Write error");
+        }
+    }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env_logger::init();
 
-    let total = get_case_count().unwrap();
+    let total = get_case_count().await.unwrap();
 
     for case in 1..(total + 1) {
-        run_test(case)
+        run_test(case).await
     }
 
-    update_reports().unwrap();
+    update_reports().await.unwrap();
 }

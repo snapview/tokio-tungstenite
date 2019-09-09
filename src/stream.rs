@@ -3,25 +3,10 @@
 //!  There is no dependency on actual TLS implementations. Everything like
 //! `native_tls` or `openssl` will work as long as there is a TLS stream supporting standard
 //! `Read + Write` traits.
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
-use std::io::{Error as IoError, Read, Result as IoResult, Write};
-use std::net::SocketAddr;
-
-use bytes::{Buf, BufMut};
-use futures::Poll;
-use tokio_io::{AsyncRead, AsyncWrite};
-
-/// Trait to switch TCP_NODELAY.
-pub trait NoDelay {
-    /// Set the TCP_NODELAY option to the given value.
-    fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()>;
-}
-
-/// Trait to get the remote address from the underlying stream.
-pub trait PeerAddr {
-    /// Returns the remote address that this stream is connected to.
-    fn peer_addr(&self) -> IoResult<SocketAddr>;
-}
+use tokio::io::{AsyncRead, AsyncWrite};
 
 /// Stream, either plain TCP or TLS.
 pub enum Stream<S, T> {
@@ -31,74 +16,72 @@ pub enum Stream<S, T> {
     Tls(T),
 }
 
-impl<S: Read, T: Read> Read for Stream<S, T> {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+impl<S: AsyncRead + Unpin, T: AsyncRead + Unpin> AsyncRead for Stream<S, T> {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut [u8],
+    ) -> Poll<std::io::Result<usize>> {
         match *self {
-            Stream::Plain(ref mut s) => s.read(buf),
-            Stream::Tls(ref mut s) => s.read(buf),
+            Stream::Plain(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_read(cx, buf)
+            }
+            Stream::Tls(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_read(cx, buf)
+            }
         }
     }
 }
 
-impl<S: Write, T: Write> Write for Stream<S, T> {
-    fn write(&mut self, buf: &[u8]) -> IoResult<usize> {
+impl<S: AsyncWrite + Unpin, T: AsyncWrite + Unpin> AsyncWrite for Stream<S, T> {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<Result<usize, std::io::Error>> {
         match *self {
-            Stream::Plain(ref mut s) => s.write(buf),
-            Stream::Tls(ref mut s) => s.write(buf),
+            Stream::Plain(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_write(cx, buf)
+            }
+            Stream::Tls(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_write(cx, buf)
+            }
         }
     }
-    fn flush(&mut self) -> IoResult<()> {
-        match *self {
-            Stream::Plain(ref mut s) => s.flush(),
-            Stream::Tls(ref mut s) => s.flush(),
-        }
-    }
-}
 
-impl<S: NoDelay, T: NoDelay> NoDelay for Stream<S, T> {
-    fn set_nodelay(&mut self, nodelay: bool) -> IoResult<()> {
+    fn poll_flush(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Result<(), std::io::Error>> {
         match *self {
-            Stream::Plain(ref mut s) => s.set_nodelay(nodelay),
-            Stream::Tls(ref mut s) => s.set_nodelay(nodelay),
+            Stream::Plain(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_flush(cx)
+            }
+            Stream::Tls(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_flush(cx)
+            }
         }
     }
-}
 
-impl<S: PeerAddr, T: PeerAddr> PeerAddr for Stream<S, T> {
-    fn peer_addr(&self) -> IoResult<SocketAddr> {
+    fn poll_shutdown(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Result<(), std::io::Error>> {
         match *self {
-            Stream::Plain(ref s) => s.peer_addr(),
-            Stream::Tls(ref s) => s.peer_addr(),
-        }
-    }
-}
-
-impl<S: AsyncRead, T: AsyncRead> AsyncRead for Stream<S, T> {
-    unsafe fn prepare_uninitialized_buffer(&self, buf: &mut [u8]) -> bool {
-        match *self {
-            Stream::Plain(ref s) => s.prepare_uninitialized_buffer(buf),
-            Stream::Tls(ref s) => s.prepare_uninitialized_buffer(buf),
-        }
-    }
-    fn read_buf<B: BufMut>(&mut self, buf: &mut B) -> Poll<usize, IoError> {
-        match *self {
-            Stream::Plain(ref mut s) => s.read_buf(buf),
-            Stream::Tls(ref mut s) => s.read_buf(buf),
-        }
-    }
-}
-
-impl<S: AsyncWrite, T: AsyncWrite> AsyncWrite for Stream<S, T> {
-    fn shutdown(&mut self) -> Poll<(), IoError> {
-        match *self {
-            Stream::Plain(ref mut s) => s.shutdown(),
-            Stream::Tls(ref mut s) => s.shutdown(),
-        }
-    }
-    fn write_buf<B: Buf>(&mut self, buf: &mut B) -> Poll<usize, IoError> {
-        match *self {
-            Stream::Plain(ref mut s) => s.write_buf(buf),
-            Stream::Tls(ref mut s) => s.write_buf(buf),
+            Stream::Plain(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_shutdown(cx)
+            }
+            Stream::Tls(ref mut s) => {
+                let pinned = unsafe { Pin::new_unchecked(s) };
+                pinned.poll_shutdown(cx)
+            }
         }
     }
 }

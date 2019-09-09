@@ -17,106 +17,85 @@
 //! connected clients they'll all join the same room and see everyone else's
 //! messages.
 
-use std::collections::HashMap;
 use std::env;
-use std::io::{Error, ErrorKind};
-use std::sync::{Arc, Mutex};
+use std::io::Error;
 
-use futures::stream::Stream;
-use futures::Future;
-use tokio::net::TcpListener;
+use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender};
+use futures::StreamExt;
+use log::*;
+use std::net::{SocketAddr, ToSocketAddrs};
+use tokio::net::{TcpListener, TcpStream};
 use tungstenite::protocol::Message;
 
-use tokio_tungstenite::accept_async;
+struct Connection {
+    addr: SocketAddr,
+    rx: UnboundedReceiver<Message>,
+    tx: UnboundedSender<Message>,
+}
 
-fn main() {
+async fn handle_connection(connection: Connection) {
+    let mut connection = connection;
+    while let Some(msg) = connection.rx.next().await {
+        info!("Received a message from {}: {}", connection.addr, msg);
+        connection
+            .tx
+            .unbounded_send(msg)
+            .expect("Failed to forward message");
+    }
+}
+
+async fn accept_connection(stream: TcpStream) {
+    let addr = stream
+        .peer_addr()
+        .expect("connected streams should have a peer address");
+    info!("Peer address: {}", addr);
+
+    let mut ws_stream = tokio_tungstenite::accept_async(stream)
+        .await
+        .expect("Error during the websocket handshake occurred");
+
+    info!("New WebSocket connection: {}", addr);
+
+    // Create a channel for our stream, which other sockets will use to
+    // send us messages. Then register our address with the stream to send
+    // data to us.
+    let (msg_tx, msg_rx) = futures::channel::mpsc::unbounded();
+    let (response_tx, mut response_rx) = futures::channel::mpsc::unbounded();
+    let c = Connection {
+        addr: addr,
+        rx: msg_rx,
+        tx: response_tx,
+    };
+    tokio::spawn(handle_connection(c));
+
+    while let Some(message) = ws_stream.next().await {
+        let message = message.expect("Failed to get request");
+        msg_tx
+            .unbounded_send(message)
+            .expect("Failed to forward request");
+        if let Some(resp) = response_rx.next().await {
+            ws_stream.send(resp).await.expect("Failed to send response");
+        }
+    }
+}
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let _ = env_logger::try_init();
     let addr = env::args().nth(1).unwrap_or("127.0.0.1:8080".to_string());
-    let addr = addr.parse().unwrap();
+    let addr = addr
+        .to_socket_addrs()
+        .expect("Not a valid address")
+        .next()
+        .expect("Not a socket address");
 
     // Create the event loop and TCP listener we'll accept connections on.
-    let socket = TcpListener::bind(&addr).unwrap();
-    println!("Listening on: {}", addr);
+    let try_socket = TcpListener::bind(&addr).await;
+    let mut listener = try_socket.expect("Failed to bind");
+    info!("Listening on: {}", addr);
 
-    // Tokio Runtime uses a thread pool based executor by default, so we need
-    // to use Arc and Mutex to store the map of all connections we know about.
-    let connections = Arc::new(Mutex::new(HashMap::new()));
+    while let Ok((stream, _)) = listener.accept().await {
+        tokio::spawn(accept_connection(stream));
+    }
 
-    let srv = socket.incoming().for_each(move |stream| {
-        let addr = stream
-            .peer_addr()
-            .expect("connected streams should have a peer address");
-        println!("Peer address: {}", addr);
-
-        // We have to clone both of these values, because the `and_then`
-        // function below constructs a new future, `and_then` requires
-        // `FnOnce`, so we construct a move closure to move the
-        // environment inside the future (AndThen future may overlive our
-        // `for_each` future).
-        let connections_inner = connections.clone();
-
-        accept_async(stream)
-            .and_then(move |ws_stream| {
-                println!("New WebSocket connection: {}", addr);
-
-                // Create a channel for our stream, which other sockets will use to
-                // send us messages. Then register our address with the stream to send
-                // data to us.
-                let (tx, rx) = futures::sync::mpsc::unbounded();
-                connections_inner.lock().unwrap().insert(addr, tx);
-
-                // Let's split the WebSocket stream, so we can work with the
-                // reading and writing halves separately.
-                let (sink, stream) = ws_stream.split();
-
-                // Whenever we receive a message from the client, we print it and
-                // send to other clients, excluding the sender.
-                let connections = connections_inner.clone();
-                let ws_reader = stream.for_each(move |message: Message| {
-                    println!("Received a message from {}: {}", addr, message);
-
-                    // For each open connection except the sender, send the
-                    // string via the channel.
-                    let mut conns = connections.lock().unwrap();
-                    let iter = conns
-                        .iter_mut()
-                        .filter(|&(&k, _)| k != addr)
-                        .map(|(_, v)| v);
-                    for tx in iter {
-                        tx.unbounded_send(message.clone()).unwrap();
-                    }
-                    Ok(())
-                });
-
-                // Whenever we receive a string on the Receiver, we write it to
-                // `WriteHalf<WebSocketStream>`.
-                let ws_writer = rx.fold(sink, |mut sink, msg| {
-                    use futures::Sink;
-                    sink.start_send(msg).unwrap();
-                    Ok(sink)
-                });
-
-                // Now that we've got futures representing each half of the socket, we
-                // use the `select` combinator to wait for either half to be done to
-                // tear down the other. Then we spawn off the result.
-                let connection = ws_reader
-                    .map(|_| ())
-                    .map_err(|_| ())
-                    .select(ws_writer.map(|_| ()).map_err(|_| ()));
-
-                tokio::spawn(connection.then(move |_| {
-                    connections_inner.lock().unwrap().remove(&addr);
-                    println!("Connection {} closed.", addr);
-                    Ok(())
-                }));
-
-                Ok(())
-            })
-            .map_err(|e| {
-                println!("Error during the websocket handshake occurred: {}", e);
-                Error::new(ErrorKind::Other, e)
-            })
-    });
-
-    // Execute server.
-    tokio::runtime::run(srv.map_err(|_e| ()));
+    Ok(())
 }

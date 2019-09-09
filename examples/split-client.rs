@@ -13,7 +13,7 @@
 use std::env;
 use std::io::{self, Write};
 
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use log::*;
 use tungstenite::protocol::Message;
 
@@ -54,12 +54,13 @@ async fn main() {
     // finishes. If we don't have any more data to read or we won't receive any
     // more work from the remote then we can exit.
     let mut stdout = io::stdout();
-    let (mut ws_stream, _) = connect_async(url).await.expect("Failed to connect");
+    let (ws_stream, _) = connect_async(url).await.expect("Failed to connect");
+    let (mut ws_tx, mut ws_rx) = ws_stream.split();
     info!("WebSocket handshake has been successfully completed");
 
     while let Some(msg) = stdin_rx.next().await {
-        ws_stream.send(msg).await.expect("Failed to send request");
-        if let Some(msg) = ws_stream.next().await {
+        ws_tx.send(msg).await.expect("Failed to send request");
+        if let Some(msg) = ws_rx.next().await {
             let msg = msg.expect("Failed to get response");
             stdout.write_all(&msg.into_data()).unwrap();
         }

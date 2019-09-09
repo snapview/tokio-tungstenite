@@ -1,4 +1,6 @@
 language: rust
+rust:
+  - nightly-2019-09-05
 
 before_script:
   - export PATH="$PATH:$HOME/.cargo/bin"
