@@ -2,7 +2,7 @@ use futures::{SinkExt, StreamExt};
 use log::*;
 use std::net::ToSocketAddrs;
 use tokio::io::{AsyncRead, AsyncWrite};
-use tokio::net::tcp::{TcpListener, TcpStream};
+use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, client_async, WebSocketStream};
 use tungstenite::Message;
 

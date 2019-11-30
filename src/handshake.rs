@@ -1,4 +1,4 @@
-use crate::compat::{AllowStd, HasContext};
+use crate::compat::{AllowStd, SetWaker};
 use crate::WebSocketStream;
 use log::*;
 use pin_project::pin_project;
@@ -45,10 +45,7 @@ where
             .take()
             .expect("future polled after completion");
         trace!("Setting context when skipping handshake");
-        let stream = AllowStd {
-            inner: inner.stream,
-            context: (true, ctx as *mut _ as *mut ()),
-        };
+        let stream = AllowStd::new(inner.stream, ctx.waker());
 
         Poll::Ready((inner.f)(stream))
     }
@@ -71,7 +68,7 @@ struct StartedHandshakeFutureInner<F, S> {
 async fn handshake<Role, F, S>(stream: S, f: F) -> Result<Role::FinalResult, Error<Role>>
 where
     Role: HandshakeRole + Unpin,
-    Role::InternalStream: HasContext,
+    Role::InternalStream: SetWaker,
     F: FnOnce(AllowStd<S>) -> Result<Role::FinalResult, Error<Role>> + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
@@ -125,7 +122,7 @@ where
 impl<Role, F, S> Future for StartedHandshakeFuture<F, S>
 where
     Role: HandshakeRole,
-    Role::InternalStream: HasContext,
+    Role::InternalStream: SetWaker,
     F: FnOnce(AllowStd<S>) -> Result<Role::FinalResult, Error<Role>> + Unpin,
     S: Unpin,
     AllowStd<S>: Read + Write,
@@ -135,18 +132,11 @@ where
     fn poll(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
         let inner = self.0.take().expect("future polled after completion");
         trace!("Setting ctx when starting handshake");
-        let stream = AllowStd {
-            inner: inner.stream,
-            context: (true, ctx as *mut _ as *mut ()),
-        };
+        let stream = AllowStd::new(inner.stream, ctx.waker());
 
         match (inner.f)(stream) {
             Ok(r) => Poll::Ready(Ok(StartedHandshake::Done(r))),
-            Err(Error::Interrupted(mut mid)) => {
-                let machine = mid.get_mut();
-                machine.get_mut().set_context((true, std::ptr::null_mut()));
-                Poll::Ready(Ok(StartedHandshake::Mid(mid)))
-            }
+            Err(Error::Interrupted(mid)) => Poll::Ready(Ok(StartedHandshake::Mid(mid))),
             Err(Error::Failure(e)) => Poll::Ready(Err(Error::Failure(e))),
         }
     }
@@ -155,7 +145,7 @@ where
 impl<Role> Future for MidHandshake<Role>
 where
     Role: HandshakeRole + Unpin,
-    Role::InternalStream: HasContext,
+    Role::InternalStream: SetWaker,
 {
     type Output = Result<Role::FinalResult, Error<Role>>;
 
@@ -165,16 +155,12 @@ where
 
         let machine = s.get_mut();
         trace!("Setting context in handshake");
-        machine
-            .get_mut()
-            .set_context((true, cx as *mut _ as *mut ()));
+        machine.get_mut().set_waker(cx.waker());
 
         match s.handshake() {
             Ok(stream) => Poll::Ready(Ok(stream)),
             Err(Error::Failure(e)) => Poll::Ready(Err(Error::Failure(e))),
-            Err(Error::Interrupted(mut mid)) => {
-                let machine = mid.get_mut();
-                machine.get_mut().set_context((true, std::ptr::null_mut()));
+            Err(Error::Interrupted(mid)) => {
                 *this.0 = Some(mid);
                 Poll::Pending
             }

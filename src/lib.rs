@@ -27,11 +27,9 @@ pub mod stream;
 
 use std::io::{Read, Write};
 
-use compat::{cvt, AllowStd};
-use futures::{Sink, Stream};
+use compat::{cvt, AllowStd, ContextWaker};
+use futures::{Sink, SinkExt, Stream};
 use log::*;
-use pin_project::pin_project;
-use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -174,9 +172,7 @@ where
 /// through the respective `Stream` and `Sink`. Check more information about
 /// them in `futures-rs` crate documentation or have a look on the examples
 /// and unit tests for this crate.
-#[pin_project]
 pub struct WebSocketStream<S> {
-    #[pin]
     inner: WebSocket<AllowStd<S>>,
 }
 
@@ -214,19 +210,17 @@ impl<S> WebSocketStream<S> {
         WebSocketStream { inner: ws }
     }
 
-    fn with_context<F, R>(&mut self, ctx: Option<&mut Context<'_>>, f: F) -> R
+    fn with_context<F, R>(&mut self, ctx: Option<(ContextWaker, &mut Context<'_>)>, f: F) -> R
     where
         S: Unpin,
         F: FnOnce(&mut WebSocket<AllowStd<S>>) -> R,
         AllowStd<S>: Read + Write,
     {
         trace!("{}:{} WebSocketStream.with_context", file!(), line!());
-        self.inner.get_mut().context = match ctx {
-            None => (false, std::ptr::null_mut()),
-            Some(cx) => (true, cx as *mut _ as *mut ()),
-        };
-        let mut g = compat::Guard(&mut self.inner);
-        f(&mut (g.0))
+        if let Some((kind, ctx)) = ctx {
+            self.inner.get_mut().set_waker(kind, &ctx.waker());
+        }
+        f(&mut self.inner)
     }
 
     /// Returns a shared reference to the inner stream.
@@ -245,28 +239,13 @@ impl<S> WebSocketStream<S> {
         self.inner.get_mut().get_mut()
     }
 
-    /// Send a message to this websocket
-    pub async fn send(&mut self, msg: Message) -> Result<(), WsError>
-    where
-        S: AsyncWrite + AsyncRead + Unpin,
-    {
-        let f = SendFuture {
-            stream: self,
-            message: Some(msg),
-        };
-        f.await
-    }
-
     /// Close the underlying web socket
     pub async fn close(&mut self, msg: Option<CloseFrame<'_>>) -> Result<(), WsError>
     where
         S: AsyncRead + AsyncWrite + Unpin,
     {
-        let f = CloseFuture {
-            stream: self,
-            message: Some(msg),
-        };
-        f.await
+        let msg = msg.map(|msg| msg.into_owned());
+        self.send(Message::Close(msg)).await
     }
 }
 
@@ -278,7 +257,7 @@ where
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         trace!("{}:{} Stream.poll_next", file!(), line!());
-        match futures::ready!(self.with_context(Some(cx), |s| {
+        match futures::ready!(self.with_context(Some((ContextWaker::Read, cx)), |s| {
             trace!(
                 "{}:{} Stream.with_context poll_next -> read_message()",
                 file!(),
@@ -300,7 +279,7 @@ where
     type Error = WsError;
 
     fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some(cx), |s| cvt(s.write_pending()))
+        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending()))
     }
 
     fn start_send(mut self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
@@ -321,11 +300,11 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some(cx), |s| cvt(s.write_pending()))
+        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending()))
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        match (*self).with_context(Some(cx), |s| s.close(None)) {
+        match (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.close(None)) {
             Ok(()) => Poll::Ready(Ok(())),
             Err(::tungstenite::Error::ConnectionClosed) => Poll::Ready(Ok(())),
             Err(err) => {
@@ -333,49 +312,6 @@ where
                 Poll::Ready(Err(err))
             }
         }
-    }
-}
-
-#[pin_project]
-struct SendFuture<'a, T> {
-    stream: &'a mut WebSocketStream<T>,
-    message: Option<Message>,
-}
-
-impl<'a, T> Future for SendFuture<'a, T>
-where
-    T: AsyncRead + AsyncWrite + Unpin,
-    AllowStd<T>: Read + Write,
-{
-    type Output = Result<(), WsError>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let this = self.project();
-        let message = this.message.take().expect("Cannot poll twice");
-        Poll::Ready(
-            this.stream
-                .with_context(Some(cx), |s| s.write_message(message)),
-        )
-    }
-}
-
-#[pin_project]
-struct CloseFuture<'a, T> {
-    stream: &'a mut WebSocketStream<T>,
-    message: Option<Option<CloseFrame<'a>>>,
-}
-
-impl<'a, T> Future for CloseFuture<'a, T>
-where
-    T: AsyncRead + AsyncWrite + Unpin,
-    AllowStd<T>: Read + Write,
-{
-    type Output = Result<(), WsError>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let this = self.project();
-        let message = this.message.take().expect("Cannot poll twice");
-        Poll::Ready(this.stream.with_context(Some(cx), |s| s.close(message)))
     }
 }
 

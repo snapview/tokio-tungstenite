@@ -1,4 +1,4 @@
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use log::*;
 use tokio_tungstenite::{connect_async, tungstenite::Result};
 use url::Url;

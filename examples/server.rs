@@ -21,7 +21,7 @@ use std::env;
 use std::io::Error;
 
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use log::*;
 use std::net::{SocketAddr, ToSocketAddrs};
 use tokio::net::{TcpListener, TcpStream};
