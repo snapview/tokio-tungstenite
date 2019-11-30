@@ -1,7 +1,7 @@
 use futures::{SinkExt, StreamExt};
 use log::*;
 use std::net::{SocketAddr, ToSocketAddrs};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::tcp::{TcpListener, TcpStream};
 use tokio_tungstenite::accept_async;
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {

@@ -13,15 +13,16 @@ edition = "2018"
 
 [features]
 default = ["connect"]
-connect = ["stream", "tokio/net"]
+connect = ["stream", "tokio-net"]
 tls = ["native-tls", "tokio-tls", "stream", "tungstenite/tls"]
 stream = []
 
 [dependencies]
 log = "0.4"
-futures = "0.3"
+futures-preview = "0.3.0-alpha.19"
 pin-project = "0.4"
-tokio = "0.2"
+tokio-io = { version = "0.2.0-alpha.6", features = ["util"] }
+tokio-net = { version = "0.2.0-alpha.6", optional = true, features = ["tcp"] }
 
 [dependencies.tungstenite]
 version = "0.9.2"
@@ -33,9 +34,9 @@ version = "0.2.0"
 
 [dependencies.tokio-tls]
 optional = true
-version = "0.3"
+version = "0.3.0-alpha.6"
 
 [dev-dependencies]
-tokio = { version = "0.2", features = ["net", "macros", "rt-threaded", "io-std", "io-util"] }
-url = "2.0.0"
+tokio = "=0.2.0-alpha.6"
+url = "2.0"
 env_logger = "0.6"

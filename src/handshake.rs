@@ -6,7 +6,7 @@ use std::future::Future;
 use std::io::{Read, Write};
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio_io::{AsyncRead, AsyncWrite};
 use tungstenite::handshake::client::Response;
 use tungstenite::handshake::server::Callback;
 use tungstenite::handshake::{HandshakeError as Error, HandshakeRole, MidHandshake as WsHandshake};
