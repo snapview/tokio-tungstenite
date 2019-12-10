@@ -5,7 +5,7 @@ use std::task::{Context, Poll};
 
 use futures::task;
 use std::sync::Arc;
-use tokio_io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite};
 use tungstenite::Error as WsError;
 
 pub(crate) enum ContextWaker {

@@ -24,7 +24,7 @@ use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender};
 use futures::{SinkExt, StreamExt};
 use log::*;
 use std::net::{SocketAddr, ToSocketAddrs};
-use tokio_net::tcp::{TcpListener, TcpStream};
+use tokio::net::{TcpListener, TcpStream};
 use tungstenite::protocol::Message;
 
 struct Connection {

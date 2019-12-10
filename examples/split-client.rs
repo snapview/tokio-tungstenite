@@ -17,7 +17,7 @@ use futures::{SinkExt, StreamExt};
 use log::*;
 use tungstenite::protocol::Message;
 
-use tokio_io::AsyncReadExt;
+use tokio::io::AsyncReadExt;
 use tokio_tungstenite::connect_async;
 
 #[tokio::main]

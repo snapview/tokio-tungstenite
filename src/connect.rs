@@ -1,6 +1,6 @@
 //! Connection helper.
-use tokio_io::{AsyncRead, AsyncWrite};
-use tokio_net::tcp::TcpStream;
+use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::net::TcpStream;
 
 use tungstenite::client::url_mode;
 use tungstenite::handshake::client::Response;
@@ -13,7 +13,7 @@ pub(crate) mod encryption {
     use native_tls::TlsConnector;
     use tokio_tls::{TlsConnector as TokioTlsConnector, TlsStream};
 
-    use tokio_io::{AsyncRead, AsyncWrite};
+    use tokio::io::{AsyncRead, AsyncWrite};
 
     use tungstenite::stream::Mode;
     use tungstenite::Error;
@@ -54,7 +54,7 @@ pub use self::encryption::MaybeTlsStream;
 
 #[cfg(not(feature = "tls"))]
 pub(crate) mod encryption {
-    use tokio_io::{AsyncRead, AsyncWrite};
+    use tokio::io::{AsyncRead, AsyncWrite};
 
     use tungstenite::stream::Mode;
     use tungstenite::Error;

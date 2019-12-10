@@ -32,7 +32,7 @@ use futures::{Sink, SinkExt, Stream};
 use log::*;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tokio_io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::{
     error::Error as WsError,
@@ -322,7 +322,7 @@ mod tests {
     use crate::connect::encryption::AutoStream;
     use crate::WebSocketStream;
     use std::io::{Read, Write};
-    use tokio_io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
     fn is_read<T: Read>() {}
     fn is_write<T: Write>() {}
@@ -332,16 +332,16 @@ mod tests {
 
     #[test]
     fn web_socket_stream_has_traits() {
-        is_read::<AllowStd<tokio_net::tcp::TcpStream>>();
-        is_write::<AllowStd<tokio_net::tcp::TcpStream>>();
+        is_read::<AllowStd<tokio::net::TcpStream>>();
+        is_write::<AllowStd<tokio::net::TcpStream>>();
 
         #[cfg(feature = "connect")]
-        is_async_read::<AutoStream<tokio_net::tcp::TcpStream>>();
+        is_async_read::<AutoStream<tokio::net::TcpStream>>();
         #[cfg(feature = "connect")]
-        is_async_write::<AutoStream<tokio_net::tcp::TcpStream>>();
+        is_async_write::<AutoStream<tokio::net::TcpStream>>();
 
-        is_unpin::<WebSocketStream<tokio_net::tcp::TcpStream>>();
+        is_unpin::<WebSocketStream<tokio::net::TcpStream>>();
         #[cfg(feature = "connect")]
-        is_unpin::<WebSocketStream<AutoStream<tokio_net::tcp::TcpStream>>>();
+        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>>>();
     }
 }
