@@ -8,7 +8,7 @@
 //!
 //!     cargo run --example client ws://127.0.0.1:12345/
 
-use std::{env, io::Error, net::ToSocketAddrs};
+use std::{env, io::Error};
 
 use futures::StreamExt;
 use log::info;
@@ -18,11 +18,6 @@ use tokio::net::{TcpListener, TcpStream};
 async fn main() -> Result<(), Error> {
     let _ = env_logger::try_init();
     let addr = env::args().nth(1).unwrap_or("127.0.0.1:8080".to_string());
-    let addr = addr
-        .to_socket_addrs()
-        .expect("Not a valid address")
-        .next()
-        .expect("Not a socket address");
 
     // Create the event loop and TCP listener we'll accept connections on.
     let try_socket = TcpListener::bind(&addr).await;

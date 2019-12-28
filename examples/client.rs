@@ -12,7 +12,7 @@
 
 use std::env;
 
-use futures::{future, pin_mut, SinkExt, StreamExt};
+use futures::{future, pin_mut, StreamExt};
 use log::info;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_tungstenite::connect_async;

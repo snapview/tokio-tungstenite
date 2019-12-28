@@ -1,6 +1,6 @@
 use futures::{SinkExt, StreamExt};
 use log::*;
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::accept_async;
 
@@ -21,11 +21,7 @@ async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
 async fn main() {
     env_logger::init();
 
-    let addr = "127.0.0.1:9002"
-        .to_socket_addrs()
-        .expect("Not a valid address")
-        .next()
-        .expect("Not a socket address");
+    let addr = "127.0.0.1:9002";
     let mut listener = TcpListener::bind(&addr).await.unwrap();
     info!("Listening on: {}", addr);
 
