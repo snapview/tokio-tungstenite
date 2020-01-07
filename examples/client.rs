@@ -11,95 +11,56 @@
 //! You can use this example together with the `server` example.
 
 use std::env;
-use std::io::{self, Read, Write};
-use std::thread;
 
-use futures::sync::mpsc;
-use futures::{Future, Sink, Stream};
+use futures::{future, pin_mut, SinkExt, StreamExt};
+use log::info;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio_tungstenite::connect_async;
 use tungstenite::protocol::Message;
 
-use tokio_tungstenite::connect_async;
-use tokio_tungstenite::stream::PeerAddr;
+#[tokio::main]
+async fn main() {
+    let _ = env_logger::try_init();
 
-fn main() {
-    // Specify the server address to which the client will be connecting.
     let connect_addr = env::args()
         .nth(1)
         .unwrap_or_else(|| panic!("this program requires at least one argument"));
 
     let url = url::Url::parse(&connect_addr).unwrap();
 
-    // Right now Tokio doesn't support a handle to stdin running on the event
-    // loop, so we farm out that work to a separate thread. This thread will
-    // read data from stdin and then send it to the event loop over a standard
-    // futures channel.
-    let (stdin_tx, stdin_rx) = mpsc::channel(0);
-    thread::spawn(|| read_stdin(stdin_tx));
-    let stdin_rx = stdin_rx.map_err(|_| panic!()); // errors not possible on rx
+    let (stdin_tx, stdin_rx) = futures::channel::mpsc::unbounded();
+    tokio::spawn(read_stdin(stdin_tx));
 
-    // After the TCP connection has been established, we set up our client to
-    // start forwarding data.
-    //
-    // First we do a WebSocket handshake on a TCP stream, i.e. do the upgrade
-    // request.
-    //
-    // Half of the work we're going to do is to take all data we receive on
-    // stdin (`stdin_rx`) and send that along the WebSocket stream (`sink`).
-    // The second half is to take all the data we receive (`stream`) and then
-    // write that to stdout. Currently we just write to stdout in a synchronous
-    // fashion.
-    //
-    // Finally we set the client to terminate once either half of this work
-    // finishes. If we don't have any more data to read or we won't receive any
-    // more work from the remote then we can exit.
-    let mut stdout = io::stdout();
-    let client = connect_async(url)
-        .and_then(move |(ws_stream, _)| {
-            println!("WebSocket handshake has been successfully completed");
+    let (ws_stream, _) = connect_async(url).await.expect("Failed to connect");
+    info!("WebSocket handshake has been successfully completed");
 
-            let addr = ws_stream
-                .peer_addr()
-                .expect("connected streams should have a peer address");
-            println!("Peer address: {}", addr);
+    let (write, read) = ws_stream.split();
 
-            // `sink` is the stream of messages going out.
-            // `stream` is the stream of incoming messages.
-            let (sink, stream) = ws_stream.split();
-
-            // We forward all messages, composed out of the data, entered to
-            // the stdin, to the `sink`.
-            let send_stdin = stdin_rx.forward(sink);
-            let write_stdout = stream.for_each(move |message| {
-                stdout.write_all(&message.into_data()).unwrap();
-                Ok(())
-            });
-
-            // Wait for either of futures to complete.
-            send_stdin
-                .map(|_| ())
-                .select(write_stdout.map(|_| ()))
-                .then(|_| Ok(()))
+    let stdin_to_ws = stdin_rx.map(|msg| Ok(msg)).forward(write);
+    let ws_to_stdout = {
+        read.for_each(|message| {
+            async {
+                let data = message.unwrap().into_data();
+                tokio::io::stdout().write_all(&data).await.unwrap();
+            }
         })
-        .map_err(|e| {
-            println!("Error during the websocket handshake occurred: {}", e);
-            io::Error::new(io::ErrorKind::Other, e)
-        });
+    };
 
-    // And now that we've got our client, we execute it in the event loop!
-    tokio::runtime::run(client.map_err(|_e| ()));
+    pin_mut!(stdin_to_ws, ws_to_stdout);
+    future::select(stdin_to_ws, ws_to_stdout).await;
 }
 
 // Our helper method which will read data from stdin and send it along the
 // sender provided.
-fn read_stdin(mut tx: mpsc::Sender<Message>) {
-    let mut stdin = io::stdin();
+async fn read_stdin(tx: futures::channel::mpsc::UnboundedSender<Message>) {
+    let mut stdin = tokio::io::stdin();
     loop {
         let mut buf = vec![0; 1024];
-        let n = match stdin.read(&mut buf) {
+        let n = match stdin.read(&mut buf).await {
             Err(_) | Ok(0) => break,
             Ok(n) => n,
         };
         buf.truncate(n);
-        tx = tx.send(Message::binary(buf)).wait().unwrap();
+        tx.unbounded_send(Message::binary(buf)).unwrap();
     }
 }

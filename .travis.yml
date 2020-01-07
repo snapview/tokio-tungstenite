@@ -1,4 +1,6 @@
 language: rust
+rust:
+  - stable
 
 before_script:
   - export PATH="$PATH:$HOME/.cargo/bin"

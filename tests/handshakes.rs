@@ -1,36 +1,38 @@
-use std::io;
-
-use futures::{Future, Stream};
-use tokio_tcp::{TcpListener, TcpStream};
+use std::net::ToSocketAddrs;
+use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, client_async};
 
-#[test]
-fn handshakes() {
-    use std::sync::mpsc::channel;
-    use std::thread;
+#[tokio::test]
+async fn handshakes() {
+    let (tx, rx) = futures::channel::oneshot::channel();
 
-    let (tx, rx) = channel();
-
-    thread::spawn(move || {
-        let address = "0.0.0.0:12345".parse().unwrap();
-        let listener = TcpListener::bind(&address).unwrap();
-        let connections = listener.incoming();
+    let f = async move {
+        let address = "0.0.0.0:12345"
+            .to_socket_addrs()
+            .expect("Not a valid address")
+            .next()
+            .expect("No address resolved");
+        let mut listener = TcpListener::bind(&address).await.unwrap();
         tx.send(()).unwrap();
-        let handshakes = connections.and_then(|connection| {
-            accept_async(connection).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
-        });
-        let server = handshakes.for_each(|_| Ok(()));
+        while let Ok((connection, _)) = listener.accept().await {
+            let stream = accept_async(connection).await;
+            stream.expect("Failed to handshake with connection");
+        }
+    };
 
-        server.wait().unwrap();
-    });
+    tokio::spawn(f);
 
-    rx.recv().unwrap();
-    let address = "0.0.0.0:12345".parse().unwrap();
-    let tcp = TcpStream::connect(&address);
-    let handshake = tcp.and_then(|stream| {
-        let url = url::Url::parse("ws://localhost:12345/").unwrap();
-        client_async(url, stream).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
-    });
-    let client = handshake.and_then(|_| Ok(()));
-    client.wait().unwrap();
+    rx.await.expect("Failed to wait for server to be ready");
+    let address = "0.0.0.0:12345"
+        .to_socket_addrs()
+        .expect("Not a valid address")
+        .next()
+        .expect("No address resolved");
+    let tcp = TcpStream::connect(&address)
+        .await
+        .expect("Failed to connect");
+    let url = url::Url::parse("ws://localhost:12345/").unwrap();
+    let _stream = client_async(url, tcp)
+        .await
+        .expect("Client failed to connect");
 }
