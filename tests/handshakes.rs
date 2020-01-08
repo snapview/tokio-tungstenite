@@ -1,4 +1,3 @@
-use std::net::ToSocketAddrs;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, client_async};
 
@@ -7,12 +6,7 @@ async fn handshakes() {
     let (tx, rx) = futures::channel::oneshot::channel();
 
     let f = async move {
-        let address = "0.0.0.0:12345"
-            .to_socket_addrs()
-            .expect("Not a valid address")
-            .next()
-            .expect("No address resolved");
-        let mut listener = TcpListener::bind(&address).await.unwrap();
+        let mut listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
         tx.send(()).unwrap();
         while let Ok((connection, _)) = listener.accept().await {
             let stream = accept_async(connection).await;
@@ -23,12 +17,7 @@ async fn handshakes() {
     tokio::spawn(f);
 
     rx.await.expect("Failed to wait for server to be ready");
-    let address = "0.0.0.0:12345"
-        .to_socket_addrs()
-        .expect("Not a valid address")
-        .next()
-        .expect("No address resolved");
-    let tcp = TcpStream::connect(&address)
+    let tcp = TcpStream::connect("0.0.0.0:12345")
         .await
         .expect("Failed to connect");
     let url = url::Url::parse("ws://localhost:12345/").unwrap();
