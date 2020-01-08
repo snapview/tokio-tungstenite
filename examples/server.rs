@@ -47,7 +47,7 @@ async fn handle_message(addr: SocketAddr, peer_map: PeerMap, ws_rx: WsRx) {
         );
 
         for peer in peer_map.lock().unwrap().iter_mut() {
-            let _ = peer.1.unbounded_send(msg.clone().into());
+            let _ = peer.1.unbounded_send(msg.clone());
         }
     }
 }
@@ -83,7 +83,7 @@ async fn accept_connection(peer_map: PeerMap, raw_stream: TcpStream) {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let _ = env_logger::try_init();
-    let addr = env::args().nth(1).unwrap_or("127.0.0.1:8080".to_string());
+    let addr = env::args().nth(1).unwrap_or_else(|| "127.0.0.1:8080".to_string());
     let addr = addr
         .to_socket_addrs()
         .expect("Not a valid address")
