@@ -20,13 +20,13 @@
 use std::env;
 use std::io::Error;
 
-use std::sync::{Arc,Mutex};
-use std::collections::HashMap;
 use futures::channel::mpsc::UnboundedSender;
-use futures::{SinkExt, StreamExt};
 use futures::stream::SplitStream;
+use futures::{SinkExt, StreamExt};
 use log::*;
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::collections::HashMap;
+use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 use tokio::net::{TcpListener, TcpStream};
 use tungstenite::protocol::Message;
 
@@ -36,14 +36,18 @@ type WsRx = SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>;
 
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
-async fn handle_message(addr: SocketAddr, peer_map: PeerMap, ws_rx: WsRx ) {
+async fn handle_message(addr: SocketAddr, peer_map: PeerMap, ws_rx: WsRx) {
     let mut ws_rx = ws_rx;
     while let Some(msg) = ws_rx.next().await {
         let msg = msg.expect("Failed to get response");
-        info!("Received a message from {}: {}", addr, msg.to_text().unwrap());
+        info!(
+            "Received a message from {}: {}",
+            addr,
+            msg.to_text().unwrap()
+        );
 
         for peer in peer_map.lock().unwrap().iter_mut() {
-            let _ = peer.1.unbounded_send(msg.clone().into());
+            let _ = peer.1.unbounded_send(msg.clone());
         }
     }
 }
@@ -68,7 +72,7 @@ async fn accept_connection(peer_map: PeerMap, raw_stream: TcpStream) {
 
     //Handle incoming messages
     tokio::spawn(handle_message(addr, peer_map.clone(), ws_rx));
-    
+
     //If msg_rx get's some data, send it on the websocket.
     while let Some(msg) = msg_rx.next().await {
         info!("Sending message to {}", addr);
@@ -79,14 +83,11 @@ async fn accept_connection(peer_map: PeerMap, raw_stream: TcpStream) {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let _ = env_logger::try_init();
-    let addr = env::args().nth(1).unwrap_or("127.0.0.1:8080".to_string());
-    let addr = addr
-        .to_socket_addrs()
-        .expect("Not a valid address")
-        .next()
-        .expect("Not a socket address");
+    let addr = env::args()
+        .nth(1)
+        .unwrap_or_else(|| "127.0.0.1:8080".to_string());
 
-    let hm: HashMap<SocketAddr,Tx> = HashMap::new();
+    let hm: HashMap<SocketAddr, Tx> = HashMap::new();
     let state = PeerMap::new(Mutex::new(hm));
 
     // Create the event loop and TCP listener we'll accept connections on.
@@ -100,4 +101,3 @@ async fn main() -> Result<(), Error> {
 
     Ok(())
 }
-
