@@ -6,11 +6,16 @@ use url::Url;
 const AGENT: &str = "Tungstenite";
 
 async fn get_case_count() -> Result<u32> {
-    let (mut socket, _) =
-        connect_async(Url::parse("ws://localhost:9001/getCaseCount").unwrap()).await?;
-    let msg = socket.next().await.unwrap()?;
+    let (mut socket, _) = connect_async(
+        Url::parse("ws://localhost:9001/getCaseCount").expect("Can't connect to case count URL"),
+    )
+    .await?;
+    let msg = socket.next().await.expect("Can't fetch case count")?;
     socket.close(None).await?;
-    Ok(msg.into_text()?.parse::<u32>().unwrap())
+    Ok(msg
+        .into_text()?
+        .parse::<u32>()
+        .expect("Can't parse case count"))
 }
 
 async fn update_reports() -> Result<()> {
@@ -19,39 +24,43 @@ async fn update_reports() -> Result<()> {
             "ws://localhost:9001/updateReports?agent={}",
             AGENT
         ))
-        .unwrap(),
+        .expect("Can't update reports"),
     )
     .await?;
     socket.close(None).await?;
     Ok(())
 }
 
-async fn run_test(case: u32) {
+async fn run_test(case: u32) -> Result<()> {
     info!("Running test case {}", case);
     let case_url = Url::parse(&format!(
         "ws://localhost:9001/runCase?case={}&agent={}",
         case, AGENT
     ))
-    .unwrap();
+    .expect("Bad testcase URL");
 
-    let (mut ws_stream, _) = connect_async(case_url).await.expect("Connect error");
+    let (mut ws_stream, _) = connect_async(case_url).await?;
     while let Some(msg) = ws_stream.next().await {
-        let msg = msg.expect("Failed to get message");
+        let msg = msg?;
         if msg.is_text() || msg.is_binary() {
-            ws_stream.send(msg).await.expect("Write error");
+            ws_stream.send(msg).await?;
         }
     }
+
+    Ok(())
 }
 
 #[tokio::main]
 async fn main() {
     env_logger::init();
 
-    let total = get_case_count().await.unwrap();
+    let total = get_case_count().await.expect("Error getting case count");
 
     for case in 1..=total {
-        run_test(case).await
+        if let Err(err) = run_test(case).await {
+            error!("Testcase failed: {}", err);
+        }
     }
 
-    update_reports().await.unwrap();
+    update_reports().await.expect("Error updating reports");
 }
