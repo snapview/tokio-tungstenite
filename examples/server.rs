@@ -25,7 +25,7 @@ use futures::stream::SplitStream;
 use futures::{SinkExt, StreamExt};
 use log::*;
 use std::collections::HashMap;
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use tokio::net::{TcpListener, TcpStream};
 use tungstenite::protocol::Message;
@@ -83,12 +83,9 @@ async fn accept_connection(peer_map: PeerMap, raw_stream: TcpStream) {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let _ = env_logger::try_init();
-    let addr = env::args().nth(1).unwrap_or_else(|| "127.0.0.1:8080".to_string());
-    let addr = addr
-        .to_socket_addrs()
-        .expect("Not a valid address")
-        .next()
-        .expect("Not a socket address");
+    let addr = env::args()
+        .nth(1)
+        .unwrap_or_else(|| "127.0.0.1:8080".to_string());
 
     let hm: HashMap<SocketAddr, Tx> = HashMap::new();
     let state = PeerMap::new(Mutex::new(hm));
