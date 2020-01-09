@@ -22,5 +22,5 @@ Take a look at the `examples/` directory for client and server examples. You may
 
 ## What is tokio-tungstenite?
 
-This crate is based on `tungstenite-rs` Rust WebSocket library and provides `tokio` bindings and wrappers for it, so you
+This crate is based on [`tungstenite-rs`](https://github.com/snapview/tungstenite-rs) Rust WebSocket library and provides `tokio` bindings and wrappers for it, so you
 can use it with non-blocking/asynchronous `TcpStream`s from and couple it together with other crates from `tokio` stack.
