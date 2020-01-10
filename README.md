@@ -18,9 +18,9 @@ tokio-tungstenite = "*"
 ```
 
 Take a look at the `examples/` directory for client and server examples. You may also want to get familiar with
-[tokio](https://tokio.rs/) if you don't have any experience with it.
+[Tokio](https://github.com/tokio-rs/tokio) if you don't have any experience with it.
 
 ## What is tokio-tungstenite?
 
-This crate is based on [`tungstenite-rs`](https://github.com/snapview/tungstenite-rs) Rust WebSocket library and provides `tokio` bindings and wrappers for it, so you
-can use it with non-blocking/asynchronous `TcpStream`s from and couple it together with other crates from `tokio` stack.
+This crate is based on [`tungstenite-rs`](https://github.com/snapview/tungstenite-rs) Rust WebSocket library and provides `Tokio` bindings and wrappers for it, so you
+can use it with non-blocking/asynchronous `TcpStream`s from and couple it together with other crates from `Tokio` stack.
