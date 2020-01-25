@@ -102,3 +102,6 @@ async fn main() -> Result<(), IoError> {
 
     Ok(())
 }
+
+
+//your example not work
