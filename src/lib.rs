@@ -36,6 +36,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::{
     error::Error as WsError,
+    client::IntoClientRequest,
     handshake::{
         client::{ClientHandshake, Request, Response},
         server::{Callback, NoCallback},
@@ -69,7 +70,7 @@ pub async fn client_async<'a, R, S>(
     stream: S,
 ) -> Result<(WebSocketStream<S>, Response), WsError>
 where
-    R: Into<Request<'a>> + Unpin,
+    R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
     client_async_with_config(request, stream, None).await
@@ -83,11 +84,12 @@ pub async fn client_async_with_config<'a, R, S>(
     config: Option<WebSocketConfig>,
 ) -> Result<(WebSocketStream<S>, Response), WsError>
 where
-    R: Into<Request<'a>> + Unpin,
+    R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
     let f = handshake::client_handshake(stream, move |allow_std| {
-        let cli_handshake = ClientHandshake::start(allow_std, request.into(), config);
+        let request = request.into_client_request()?;
+        let cli_handshake = ClientHandshake::start(allow_std, request, config)?;
         cli_handshake.handshake()
     });
     f.await.map_err(|e| {

@@ -2,11 +2,11 @@
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::TcpStream;
 
-use tungstenite::client::url_mode;
+use tungstenite::client::uri_mode;
 use tungstenite::handshake::client::Response;
 use tungstenite::Error;
 
-use super::{client_async, Request, WebSocketStream};
+use super::{client_async, Request, IntoClientRequest, WebSocketStream};
 
 #[cfg(feature = "tls")]
 pub(crate) mod encryption {
@@ -81,7 +81,7 @@ use self::encryption::{wrap_stream, AutoStream};
 /// Get a domain from an URL.
 #[inline]
 fn domain(request: &Request) -> Result<String, Error> {
-    match request.url.host_str() {
+    match request.uri().host() {
         Some(d) => Ok(d.to_string()),
         None => Err(Error::Url("no host name in the url".into())),
     }
@@ -94,16 +94,16 @@ pub async fn client_async_tls<R, S>(
     stream: S,
 ) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
 where
-    R: Into<Request<'static>> + Unpin,
+    R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
 {
-    let request: Request = request.into();
+    let request = request.into_client_request()?;
 
     let domain = domain(&request)?;
 
     // Make sure we check domain and mode first. URL must be valid.
-    let mode = url_mode(&request.url)?;
+    let mode = uri_mode(&request.uri())?;
 
     let stream = wrap_stream(stream, domain, mode).await?;
     client_async(request, stream).await
@@ -114,15 +114,16 @@ pub async fn connect_async<R>(
     request: R,
 ) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
 where
-    R: Into<Request<'static>> + Unpin,
+    R: IntoClientRequest + Unpin,
 {
-    let request: Request = request.into();
+    let request = request.into_client_request()?;
 
     let domain = domain(&request)?;
     let port = request
-        .url
-        .port_or_known_default()
-        .expect("Bug: port unknown");
+        .uri()
+        .port_u16()
+        .unwrap_or(80) // FIXME     _or_known_default()
+        ;//.expect("Bug: port unknown");
 
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;

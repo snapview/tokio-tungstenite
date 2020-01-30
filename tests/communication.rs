@@ -48,7 +48,7 @@ async fn communication() {
     let tcp = TcpStream::connect("0.0.0.0:12345")
         .await
         .expect("Failed to connect");
-    let url = url::Url::parse("ws://localhost:12345/").unwrap();
+    let url = "ws://localhost:12345/";
     let (mut stream, _) = client_async(url, tcp)
         .await
         .expect("Client failed to connect");
