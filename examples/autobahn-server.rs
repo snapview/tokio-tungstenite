@@ -2,12 +2,15 @@ use futures::{SinkExt, StreamExt};
 use log::*;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::accept_async;
+use tokio_tungstenite::{accept_async, tungstenite::Error};
 use tungstenite::Result;
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
-    if let Err(err) = handle_connection(peer, stream).await {
-        error!("Error processing connection: {}", err);
+    if let Err(e) = handle_connection(peer, stream).await {
+        match e {
+            Error::ConnectionClosed | Error::Protocol(_) | Error::Utf8 => (),
+            err => error!("Error processing connection: {}", err),
+        }
     }
 }
 

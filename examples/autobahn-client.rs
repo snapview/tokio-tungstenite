@@ -1,6 +1,6 @@
 use futures::{SinkExt, StreamExt};
 use log::*;
-use tokio_tungstenite::{connect_async, tungstenite::Result};
+use tokio_tungstenite::{connect_async, tungstenite::Result, tungstenite::Error};
 use url::Url;
 
 const AGENT: &str = "Tungstenite";
@@ -57,8 +57,11 @@ async fn main() {
     let total = get_case_count().await.expect("Error getting case count");
 
     for case in 1..=total {
-        if let Err(err) = run_test(case).await {
-            error!("Testcase failed: {}", err);
+        if let Err(e) = run_test(case).await {
+            match e {
+                Error::ConnectionClosed | Error::Protocol(_) | Error::Utf8 => (),
+                err => error!("Testcase failed: {}", err),
+            }
         }
     }
 
