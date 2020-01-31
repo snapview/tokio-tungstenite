@@ -122,8 +122,14 @@ where
     let port = request
         .uri()
         .port_u16()
-        .unwrap_or(80) // FIXME     _or_known_default()
-        ;//.expect("Bug: port unknown");
+        .or_else(|| {
+            match request.uri().scheme_str() {
+                Some("wss") => Some(443),
+                Some("ws") => Some(80),
+                _ => None
+            }
+        })
+        .ok_or(Error::Url("Url scheme not supported".into()))?;
 
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;
