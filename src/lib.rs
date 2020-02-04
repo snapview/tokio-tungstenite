@@ -35,8 +35,8 @@ use std::task::{Context, Poll};
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::{
-    error::Error as WsError,
     client::IntoClientRequest,
+    error::Error as WsError,
     handshake::{
         client::{ClientHandshake, Request, Response},
         server::{Callback, NoCallback},
