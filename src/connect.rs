@@ -129,7 +129,7 @@ where
                 _ => None
             }
         })
-        .ok_or(Error::Url("Url scheme not supported".into()))?;
+        .ok_or_else(|| Error::Url("Url scheme not supported".into()))?;
 
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;
