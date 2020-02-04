@@ -1,6 +1,6 @@
 use futures::{SinkExt, StreamExt};
 use log::*;
-use tokio_tungstenite::{connect_async, tungstenite::Result, tungstenite::Error};
+use tokio_tungstenite::{connect_async, tungstenite::Error, tungstenite::Result};
 use url::Url;
 
 const AGENT: &str = "Tungstenite";

@@ -21,7 +21,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
     info!("New WebSocket connection: {}", peer);
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
     let mut interval = tokio::time::interval(Duration::from_millis(1000));
-    
+
     // Echo incoming WebSocket messages and send a message periodically every second.
 
     let mut msg_fut = ws_receiver.next();

@@ -6,7 +6,7 @@ use tungstenite::client::uri_mode;
 use tungstenite::handshake::client::Response;
 use tungstenite::Error;
 
-use super::{client_async, Request, IntoClientRequest, WebSocketStream};
+use super::{client_async, IntoClientRequest, Request, WebSocketStream};
 
 #[cfg(feature = "tls")]
 pub(crate) mod encryption {
@@ -122,12 +122,10 @@ where
     let port = request
         .uri()
         .port_u16()
-        .or_else(|| {
-            match request.uri().scheme_str() {
-                Some("wss") => Some(443),
-                Some("ws") => Some(80),
-                _ => None
-            }
+        .or_else(|| match request.uri().scheme_str() {
+            Some("wss") => Some(443),
+            Some("ws") => Some(80),
+            _ => None,
         })
         .ok_or_else(|| Error::Url("Url scheme not supported".into()))?;
 
