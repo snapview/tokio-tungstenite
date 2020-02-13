@@ -1,5 +1,5 @@
-use futures::future::{select, Either};
-use futures::{SinkExt, StreamExt};
+use futures_util::future::{select, Either};
+use futures_util::{SinkExt, StreamExt};
 use log::*;
 use std::net::SocketAddr;
 use std::time::Duration;

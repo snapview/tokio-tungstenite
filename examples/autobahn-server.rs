@@ -1,4 +1,4 @@
-use futures::{SinkExt, StreamExt};
+use futures_util::{SinkExt, StreamExt};
 use log::*;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};

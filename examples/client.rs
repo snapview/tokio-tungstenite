@@ -12,7 +12,7 @@
 
 use std::env;
 
-use futures::{future, pin_mut, StreamExt};
+use futures_util::{future, pin_mut, StreamExt};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_tungstenite::connect_async;
 use tungstenite::protocol::Message;
@@ -25,7 +25,7 @@ async fn main() {
 
     let url = url::Url::parse(&connect_addr).unwrap();
 
-    let (stdin_tx, stdin_rx) = futures::channel::mpsc::unbounded();
+    let (stdin_tx, stdin_rx) = futures_channel::mpsc::unbounded();
     tokio::spawn(read_stdin(stdin_tx));
 
     let (ws_stream, _) = connect_async(url).await.expect("Failed to connect");
@@ -47,7 +47,7 @@ async fn main() {
 
 // Our helper method which will read data from stdin and send it along the
 // sender provided.
-async fn read_stdin(tx: futures::channel::mpsc::UnboundedSender<Message>) {
+async fn read_stdin(tx: futures_channel::mpsc::UnboundedSender<Message>) {
     let mut stdin = tokio::io::stdin();
     loop {
         let mut buf = vec![0; 1024];

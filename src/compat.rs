@@ -3,7 +3,7 @@ use std::io::{Read, Write};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use futures::task;
+use futures_util::task;
 use std::sync::Arc;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tungstenite::Error as WsError;

@@ -1,4 +1,4 @@
-use futures::{SinkExt, StreamExt};
+use futures_util::{SinkExt, StreamExt};
 use log::*;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::{TcpListener, TcpStream};
@@ -7,7 +7,7 @@ use tungstenite::Message;
 
 async fn run_connection<S>(
     connection: WebSocketStream<S>,
-    msg_tx: futures::channel::oneshot::Sender<Vec<Message>>,
+    msg_tx: futures_channel::oneshot::Sender<Vec<Message>>,
 ) where
     S: AsyncRead + AsyncWrite + Unpin,
 {
@@ -26,8 +26,8 @@ async fn run_connection<S>(
 async fn communication() {
     let _ = env_logger::try_init();
 
-    let (con_tx, con_rx) = futures::channel::oneshot::channel();
-    let (msg_tx, msg_rx) = futures::channel::oneshot::channel();
+    let (con_tx, con_rx) = futures_channel::oneshot::channel();
+    let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
 
     let f = async move {
         let mut listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
@@ -72,8 +72,8 @@ async fn communication() {
 async fn split_communication() {
     let _ = env_logger::try_init();
 
-    let (con_tx, con_rx) = futures::channel::oneshot::channel();
-    let (msg_tx, msg_rx) = futures::channel::oneshot::channel();
+    let (con_tx, con_rx) = futures_channel::oneshot::channel();
+    let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
 
     let f = async move {
         let mut listener = TcpListener::bind("0.0.0.0:12346").await.unwrap();
