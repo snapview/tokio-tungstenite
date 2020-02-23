@@ -3,7 +3,7 @@ use tokio_tungstenite::{accept_async, client_async};
 
 #[tokio::test]
 async fn handshakes() {
-    let (tx, rx) = futures::channel::oneshot::channel();
+    let (tx, rx) = futures_channel::oneshot::channel();
 
     let f = async move {
         let mut listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
