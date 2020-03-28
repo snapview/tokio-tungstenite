@@ -241,6 +241,12 @@ impl<S> WebSocketStream<S> {
         self.inner.get_mut().get_mut()
     }
 
+    /// Returns a reference to the configuration of the tungstenite stream.
+    pub fn get_config(&self) -> &WebSocketConfig
+    {
+        self.inner.get_config()
+    }
+
     /// Close the underlying web socket
     pub async fn close(&mut self, msg: Option<CloseFrame<'_>>) -> Result<(), WsError>
     where
