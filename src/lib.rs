@@ -28,7 +28,10 @@ pub mod stream;
 use std::io::{Read, Write};
 
 use compat::{cvt, AllowStd, ContextWaker};
-use futures_util::{sink::{Sink, SinkExt}, stream::Stream};
+use futures_util::{
+    sink::{Sink, SinkExt},
+    stream::Stream,
+};
 use log::*;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -50,7 +53,6 @@ pub use connect::{client_async_tls, connect_async};
 
 #[cfg(all(feature = "connect", feature = "tls"))]
 pub use connect::MaybeTlsStream;
-use std::error::Error;
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -95,7 +97,7 @@ where
     f.await.map_err(|e| {
         WsError::Io(std::io::Error::new(
             std::io::ErrorKind::Other,
-            e.description(),
+            e.to_string(),
         ))
     })
 }
@@ -160,7 +162,7 @@ where
     f.await.map_err(|e| {
         WsError::Io(std::io::Error::new(
             std::io::ErrorKind::Other,
-            e.description(),
+            e.to_string(),
         ))
     })
 }
