@@ -18,7 +18,7 @@ pub enum Stream<S, T> {
     Tls(#[pin] T),
 }
 
-impl<S: AsyncRead + Unpin, T: AsyncRead + Unpin> AsyncRead for Stream<S, T> {
+impl<S: AsyncRead, T: AsyncRead> AsyncRead for Stream<S, T> {
     #[project]
     fn poll_read(
         self: Pin<&mut Self>,
@@ -27,13 +27,13 @@ impl<S: AsyncRead + Unpin, T: AsyncRead + Unpin> AsyncRead for Stream<S, T> {
     ) -> Poll<std::io::Result<usize>> {
         #[project]
         match self.project() {
-            Stream::Plain(ref mut s) => Pin::new(s).poll_read(cx, buf),
-            Stream::Tls(ref mut s) => Pin::new(s).poll_read(cx, buf),
+            Stream::Plain(s) => s.poll_read(cx, buf),
+            Stream::Tls(s) => s.poll_read(cx, buf),
         }
     }
 }
 
-impl<S: AsyncWrite + Unpin, T: AsyncWrite + Unpin> AsyncWrite for Stream<S, T> {
+impl<S: AsyncWrite, T: AsyncWrite> AsyncWrite for Stream<S, T> {
     #[project]
     fn poll_write(
         self: Pin<&mut Self>,
@@ -42,8 +42,8 @@ impl<S: AsyncWrite + Unpin, T: AsyncWrite + Unpin> AsyncWrite for Stream<S, T> {
     ) -> Poll<Result<usize, std::io::Error>> {
         #[project]
         match self.project() {
-            Stream::Plain(ref mut s) => Pin::new(s).poll_write(cx, buf),
-            Stream::Tls(ref mut s) => Pin::new(s).poll_write(cx, buf),
+            Stream::Plain(s) => s.poll_write(cx, buf),
+            Stream::Tls(s) => s.poll_write(cx, buf),
         }
     }
 
@@ -51,8 +51,8 @@ impl<S: AsyncWrite + Unpin, T: AsyncWrite + Unpin> AsyncWrite for Stream<S, T> {
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
         #[project]
         match self.project() {
-            Stream::Plain(ref mut s) => Pin::new(s).poll_flush(cx),
-            Stream::Tls(ref mut s) => Pin::new(s).poll_flush(cx),
+            Stream::Plain(s) => s.poll_flush(cx),
+            Stream::Tls(s) => s.poll_flush(cx),
         }
     }
 
@@ -63,8 +63,8 @@ impl<S: AsyncWrite + Unpin, T: AsyncWrite + Unpin> AsyncWrite for Stream<S, T> {
     ) -> Poll<Result<(), std::io::Error>> {
         #[project]
         match self.project() {
-            Stream::Plain(ref mut s) => Pin::new(s).poll_shutdown(cx),
-            Stream::Tls(ref mut s) => Pin::new(s).poll_shutdown(cx),
+            Stream::Plain(s) => s.poll_shutdown(cx),
+            Stream::Tls(s) => s.poll_shutdown(cx),
         }
     }
 }
