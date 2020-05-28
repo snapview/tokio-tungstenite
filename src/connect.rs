@@ -4,9 +4,10 @@ use tokio::net::TcpStream;
 
 use tungstenite::client::uri_mode;
 use tungstenite::handshake::client::Response;
+use tungstenite::protocol::WebSocketConfig;
 use tungstenite::Error;
 
-use super::{client_async, IntoClientRequest, Request, WebSocketStream};
+use super::{client_async_with_config, IntoClientRequest, Request, WebSocketStream};
 
 #[cfg(feature = "tls")]
 pub(crate) mod encryption {
@@ -98,6 +99,22 @@ where
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
 {
+    client_async_tls_with_config(request, stream, None).await
+}
+
+/// The same as `client_async_tls()` but the one can specify a websocket configuration.
+/// Please refer to `client_async_tls()` for more details.
+
+pub async fn client_async_tls_with_config<R, S>(
+    request: R,
+    stream: S,
+    config: Option<WebSocketConfig>
+) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+    S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
+    AutoStream<S>: Unpin,
+{
     let request = request.into_client_request()?;
 
     let domain = domain(&request)?;
@@ -106,12 +123,25 @@ where
     let mode = uri_mode(&request.uri())?;
 
     let stream = wrap_stream(stream, domain, mode).await?;
-    client_async(request, stream).await
+    client_async_with_config(request, stream, config).await
 }
 
 /// Connect to a given URL.
 pub async fn connect_async<R>(
+    request: R
+) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    connect_async_with_config(request, None).await
+}
+
+/// The same as `connect_async()` but the one can specify a websocket configuration.
+/// Please refer to `connect_async()` for more details.
+
+pub async fn connect_async_with_config<R>(
     request: R,
+    config: Option<WebSocketConfig>
 ) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
@@ -132,5 +162,5 @@ where
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;
     let socket = try_socket.map_err(Error::Io)?;
-    client_async_tls(request, socket).await
+    client_async_tls_with_config(request, socket, config).await
 }
