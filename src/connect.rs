@@ -104,7 +104,6 @@ where
 
 /// The same as `client_async_tls()` but the one can specify a websocket configuration.
 /// Please refer to `client_async_tls()` for more details.
-
 pub async fn client_async_tls_with_config<R, S>(
     request: R,
     stream: S,
@@ -138,7 +137,6 @@ where
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
 /// Please refer to `connect_async()` for more details.
-
 pub async fn connect_async_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>
