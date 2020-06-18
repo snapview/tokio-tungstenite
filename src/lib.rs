@@ -51,10 +51,11 @@ use tungstenite::{
 
 #[cfg(feature = "connect")]
 pub use connect::{
-    client_async_tls, 
-    client_async_tls_with_config, 
+    client_async_tls,
+    client_async_tls_with_config,
     connect_async,
-    connect_async_with_config
+    connect_async_with_config,
+    TlsConnector,
 };
 
 #[cfg(all(feature = "connect", feature = "tls"))]
