@@ -14,7 +14,7 @@ edition = "2018"
 [features]
 default = ["connect"]
 connect = ["stream", "tokio/net"]
-tls = ["native-tls", "tokio-tls", "stream", "tungstenite/tls"]
+tls = ["native-tls", "tokio-native-tls", "stream", "tungstenite/tls"]
 stream = []
 
 [dependencies]
@@ -31,9 +31,9 @@ default-features = false
 optional = true
 version = "0.2.0"
 
-[dependencies.tokio-tls]
+[dependencies.tokio-native-tls]
 optional = true
-version = "0.3"
+version = "0.1"
 
 [dev-dependencies]
 futures-channel = "0.3"

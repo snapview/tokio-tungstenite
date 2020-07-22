@@ -12,7 +12,7 @@ use super::{client_async_with_config, IntoClientRequest, Request, WebSocketStrea
 #[cfg(feature = "tls")]
 pub(crate) mod encryption {
     use native_tls::TlsConnector;
-    use tokio_tls::{TlsConnector as TokioTlsConnector, TlsStream};
+    use tokio_native_tls::{TlsConnector as TokioTlsConnector, TlsStream};
 
     use tokio::io::{AsyncRead, AsyncWrite};
 
