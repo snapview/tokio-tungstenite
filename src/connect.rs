@@ -112,8 +112,9 @@ where
     client_async_tls_with_config(request, stream, None, None).await
 }
 
-/// The same as `client_async_tls()` but the one can specify a websocket configuration, and a
-/// TLS connector.
+/// The same as `client_async_tls()` but the one can specify a websocket configuration,
+/// and an optional TLS connector. If no connector is specified, the default one will
+/// be created.
 ///
 /// Please refer to `client_async_tls()` for more details.
 pub async fn client_async_tls_with_config<R, S>(
