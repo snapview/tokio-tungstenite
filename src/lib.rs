@@ -37,6 +37,9 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use tokio::io::{AsyncRead, AsyncWrite};
 
+#[cfg(test)]
+mod t;
+
 use tungstenite::{
     client::IntoClientRequest,
     error::Error as WsError,
@@ -51,10 +54,7 @@ use tungstenite::{
 
 #[cfg(feature = "connect")]
 pub use connect::{
-    client_async_tls,
-    client_async_tls_with_config,
-    connect_async,
-    connect_async_with_config,
+    client_async_tls, client_async_tls_with_config, connect_async, connect_async_with_config,
     TlsConnector,
 };
 
@@ -254,8 +254,7 @@ impl<S> WebSocketStream<S> {
     }
 
     /// Returns a reference to the configuration of the tungstenite stream.
-    pub fn get_config(&self) -> &WebSocketConfig
-    {
+    pub fn get_config(&self) -> &WebSocketConfig {
         self.inner.get_config()
     }
 
