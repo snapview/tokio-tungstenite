@@ -8,16 +8,17 @@
 //! Each WebSocket stream implements the required `Stream` and `Sink` traits,
 //! so the socket is just a stream of messages coming in and going out.
 
-#![deny(
-    missing_docs,
-    unused_must_use,
-    unused_mut,
-    unused_imports,
-    unused_import_braces
-)]
+// #![deny(
+//     missing_docs,
+//     unused_must_use,
+//     unused_mut,
+//     unused_imports,
+//     unused_import_braces
+// )]
 
 pub use tungstenite;
 
+pub mod async_deflate;
 mod compat;
 #[cfg(feature = "connect")]
 mod connect;
@@ -58,8 +59,10 @@ pub use connect::{
     TlsConnector,
 };
 
+use crate::async_deflate::AsyncWebSocketExtension;
 #[cfg(all(feature = "connect", feature = "tls"))]
 pub use connect::MaybeTlsStream;
+use tungstenite::ext::uncompressed::UncompressedExt;
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -77,24 +80,25 @@ use tungstenite::protocol::CloseFrame;
 pub async fn client_async<'a, R, S>(
     request: R,
     stream: S,
-) -> Result<(WebSocketStream<S>, Response), WsError>
+) -> Result<(WebSocketStream<S, UncompressedExt>, Response), WsError>
 where
     R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    client_async_with_config(request, stream, None).await
+    client_async_with_config::<_, _, UncompressedExt>(request, stream, None).await
 }
 
 /// The same as `client_async()` but the one can specify a websocket configuration.
 /// Please refer to `client_async()` for more details.
-pub async fn client_async_with_config<'a, R, S>(
+pub async fn client_async_with_config<'a, R, S, E>(
     request: R,
     stream: S,
-    config: Option<WebSocketConfig>,
-) -> Result<(WebSocketStream<S>, Response), WsError>
+    config: Option<WebSocketConfig<E>>,
+) -> Result<(WebSocketStream<S, E>, Response), WsError>
 where
     R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
+    E: AsyncWebSocketExtension,
 {
     let f = handshake::client_handshake(stream, move |allow_std| {
         let request = request.into_client_request()?;
@@ -121,7 +125,7 @@ where
 /// This is typically used after a socket has been accepted from a
 /// `TcpListener`. That socket is then passed to this function to perform
 /// the server half of the accepting a client's websocket connection.
-pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S>, WsError>
+pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S, UncompressedExt>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
 {
@@ -130,12 +134,13 @@ where
 
 /// The same as `accept_async()` but the one can specify a websocket configuration.
 /// Please refer to `accept_async()` for more details.
-pub async fn accept_async_with_config<S>(
+pub async fn accept_async_with_config<S, E>(
     stream: S,
-    config: Option<WebSocketConfig>,
-) -> Result<WebSocketStream<S>, WsError>
+    config: Option<WebSocketConfig<E>>,
+) -> Result<WebSocketStream<S, E>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
+    E: AsyncWebSocketExtension + Unpin,
 {
     accept_hdr_async_with_config(stream, NoCallback, config).await
 }
@@ -145,7 +150,10 @@ where
 /// This function does the same as `accept_async()` but accepts an extra callback
 /// for header processing. The callback receives headers of the incoming
 /// requests and is able to add extra headers to the reply.
-pub async fn accept_hdr_async<S, C>(stream: S, callback: C) -> Result<WebSocketStream<S>, WsError>
+pub async fn accept_hdr_async<S, C>(
+    stream: S,
+    callback: C,
+) -> Result<WebSocketStream<S, UncompressedExt>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
     C: Callback + Unpin,
@@ -155,14 +163,15 @@ where
 
 /// The same as `accept_hdr_async()` but the one can specify a websocket configuration.
 /// Please refer to `accept_hdr_async()` for more details.
-pub async fn accept_hdr_async_with_config<S, C>(
+pub async fn accept_hdr_async_with_config<S, C, E>(
     stream: S,
     callback: C,
-    config: Option<WebSocketConfig>,
-) -> Result<WebSocketStream<S>, WsError>
+    config: Option<WebSocketConfig<E>>,
+) -> Result<WebSocketStream<S, E>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
     C: Callback + Unpin,
+    E: AsyncWebSocketExtension + Unpin,
 {
     let f = handshake::server_handshake(stream, move |allow_std| {
         server::accept_hdr_with_config(allow_std, callback, config)
@@ -186,14 +195,20 @@ where
 /// them in `futures-rs` crate documentation or have a look on the examples
 /// and unit tests for this crate.
 #[derive(Debug)]
-pub struct WebSocketStream<S> {
-    inner: WebSocket<AllowStd<S>>,
+pub struct WebSocketStream<S, E>
+where
+    E: AsyncWebSocketExtension,
+{
+    inner: WebSocket<AllowStd<S>, E>,
 }
 
-impl<S> WebSocketStream<S> {
+impl<S, E> WebSocketStream<S, E>
+where
+    E: AsyncWebSocketExtension,
+{
     /// Convert a raw socket into a WebSocketStream without performing a
     /// handshake.
-    pub async fn from_raw_socket(stream: S, role: Role, config: Option<WebSocketConfig>) -> Self
+    pub async fn from_raw_socket(stream: S, role: Role, config: Option<WebSocketConfig<E>>) -> Self
     where
         S: AsyncRead + AsyncWrite + Unpin,
     {
@@ -209,7 +224,7 @@ impl<S> WebSocketStream<S> {
         stream: S,
         part: Vec<u8>,
         role: Role,
-        config: Option<WebSocketConfig>,
+        config: Option<WebSocketConfig<E>>,
     ) -> Self
     where
         S: AsyncRead + AsyncWrite + Unpin,
@@ -220,14 +235,14 @@ impl<S> WebSocketStream<S> {
         .await
     }
 
-    pub(crate) fn new(ws: WebSocket<AllowStd<S>>) -> Self {
+    pub(crate) fn new(ws: WebSocket<AllowStd<S>, E>) -> Self {
         WebSocketStream { inner: ws }
     }
 
     fn with_context<F, R>(&mut self, ctx: Option<(ContextWaker, &mut Context<'_>)>, f: F) -> R
     where
         S: Unpin,
-        F: FnOnce(&mut WebSocket<AllowStd<S>>) -> R,
+        F: FnOnce(&mut WebSocket<AllowStd<S>, E>) -> R,
         AllowStd<S>: Read + Write,
     {
         trace!("{}:{} WebSocketStream.with_context", file!(), line!());
@@ -254,7 +269,7 @@ impl<S> WebSocketStream<S> {
     }
 
     /// Returns a reference to the configuration of the tungstenite stream.
-    pub fn get_config(&self) -> &WebSocketConfig {
+    pub fn get_config(&self) -> &WebSocketConfig<E> {
         self.inner.get_config()
     }
 
@@ -268,9 +283,10 @@ impl<S> WebSocketStream<S> {
     }
 }
 
-impl<T> Stream for WebSocketStream<T>
+impl<T, E> Stream for WebSocketStream<T, E>
 where
     T: AsyncRead + AsyncWrite + Unpin,
+    E: AsyncWebSocketExtension,
 {
     type Item = Result<Message, WsError>;
 
@@ -291,9 +307,10 @@ where
     }
 }
 
-impl<T> Sink<Message> for WebSocketStream<T>
+impl<T, E> Sink<Message> for WebSocketStream<T, E>
 where
     T: AsyncRead + AsyncWrite + Unpin,
+    E: AsyncWebSocketExtension,
 {
     type Error = WsError;
 
@@ -336,6 +353,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::async_deflate::AsyncDeflate;
     use crate::compat::AllowStd;
     #[cfg(feature = "connect")]
     use crate::connect::encryption::AutoStream;
@@ -359,8 +377,8 @@ mod tests {
         #[cfg(feature = "connect")]
         is_async_write::<AutoStream<tokio::net::TcpStream>>();
 
-        is_unpin::<WebSocketStream<tokio::net::TcpStream>>();
+        is_unpin::<WebSocketStream<tokio::net::TcpStream, AsyncDeflate>>();
         #[cfg(feature = "connect")]
-        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>>>();
+        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>, AsyncDeflate>>();
     }
 }

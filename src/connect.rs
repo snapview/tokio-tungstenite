@@ -88,6 +88,8 @@ pub(crate) mod encryption {
 }
 
 use self::encryption::{wrap_stream, AutoStream};
+use crate::async_deflate::AsyncWebSocketExtension;
+use tungstenite::ext::uncompressed::UncompressedExt;
 
 /// Get a domain from an URL.
 #[inline]
@@ -103,13 +105,13 @@ fn domain(request: &Request) -> Result<String, Error> {
 pub async fn client_async_tls<R, S>(
     request: R,
     stream: S,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+) -> Result<(WebSocketStream<AutoStream<S>, UncompressedExt>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
 {
-    client_async_tls_with_config(request, stream, None, None).await
+    client_async_tls_with_config::<_, _, UncompressedExt>(request, stream, None, None).await
 }
 
 /// The same as `client_async_tls()` but the one can specify a websocket configuration,
@@ -117,16 +119,17 @@ where
 /// be created.
 ///
 /// Please refer to `client_async_tls()` for more details.
-pub async fn client_async_tls_with_config<R, S>(
+pub async fn client_async_tls_with_config<R, S, E>(
     request: R,
     stream: S,
-    config: Option<WebSocketConfig>,
+    config: Option<WebSocketConfig<E>>,
     tls_connector: Option<TlsConnector>,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+) -> Result<(WebSocketStream<AutoStream<S>, E>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
+    E: AsyncWebSocketExtension,
 {
     let request = request.into_client_request()?;
 
@@ -142,21 +145,28 @@ where
 /// Connect to a given URL.
 pub async fn connect_async<R>(
     request: R,
-) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
+) -> Result<
+    (
+        WebSocketStream<AutoStream<TcpStream>, UncompressedExt>,
+        Response,
+    ),
+    Error,
+>
 where
     R: IntoClientRequest + Unpin,
 {
-    connect_async_with_config(request, None).await
+    connect_async_with_config::<_, UncompressedExt>(request, None).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
 /// Please refer to `connect_async()` for more details.
-pub async fn connect_async_with_config<R>(
+pub async fn connect_async_with_config<R, E>(
     request: R,
-    config: Option<WebSocketConfig>,
-) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
+    config: Option<WebSocketConfig<E>>,
+) -> Result<(WebSocketStream<AutoStream<TcpStream>, E>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
+    E: AsyncWebSocketExtension,
 {
     let request = request.into_client_request()?;
 

@@ -1,6 +1,5 @@
 use futures_util::{SinkExt, StreamExt};
-use tungstenite::extensions::compression::CompressionConfig;
-use tungstenite::extensions::deflate::DeflateConfig;
+use tungstenite::ext::deflate::DeflateExtension;
 use tungstenite::protocol::WebSocketConfig;
 use url::Url;
 
@@ -11,7 +10,7 @@ async fn t() {
         max_send_queue: None,
         max_message_size: Some(64 << 20),
         max_frame_size: Some(16 << 20),
-        compression_config: CompressionConfig::Deflate(DeflateConfig::default()),
+        encoder: DeflateExtension::default(),
     };
 
     let (stream, _response) = crate::connect_async_with_config(url, Some(config))
