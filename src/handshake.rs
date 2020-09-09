@@ -1,5 +1,5 @@
-use crate::async_deflate::AsyncWebSocketExtension;
 use crate::compat::{AllowStd, SetWaker};
+use crate::extensions::AsyncWebSocketExtension;
 use crate::WebSocketStream;
 use log::*;
 use pin_project::pin_project;

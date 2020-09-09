@@ -1,11 +1,7 @@
-use tungstenite::ext::deflate::DeflateExtensionError;
-use tungstenite::ext::WebSocketExtension;
+use tungstenite::extensions::deflate::DeflateExtensionError;
+use tungstenite::extensions::WebSocketExtension;
 use tungstenite::protocol::frame::Frame;
 use tungstenite::Message;
-
-pub trait AsyncWebSocketExtension: WebSocketExtension + Unpin {}
-
-impl<E> AsyncWebSocketExtension for E where E: WebSocketExtension + Unpin {}
 
 #[derive(Clone, Debug, Default)]
 pub struct AsyncDeflate;

@@ -16,6 +16,7 @@ default = ["connect"]
 connect = ["stream", "tokio/net"]
 tls = ["native-tls", "tokio-native-tls", "stream", "tungstenite/tls"]
 stream = []
+deflate = ["tungstenite/deflate"]
 
 [dependencies]
 log = "0.4"

@@ -18,10 +18,10 @@
 
 pub use tungstenite;
 
-pub mod async_deflate;
 mod compat;
 #[cfg(feature = "connect")]
 mod connect;
+mod extensions;
 mod handshake;
 #[cfg(feature = "stream")]
 pub mod stream;
@@ -37,9 +37,6 @@ use log::*;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use tokio::io::{AsyncRead, AsyncWrite};
-
-#[cfg(test)]
-mod t;
 
 use tungstenite::{
     client::IntoClientRequest,
@@ -59,10 +56,10 @@ pub use connect::{
     TlsConnector,
 };
 
-use crate::async_deflate::AsyncWebSocketExtension;
+use crate::extensions::AsyncWebSocketExtension;
 #[cfg(all(feature = "connect", feature = "tls"))]
 pub use connect::MaybeTlsStream;
-use tungstenite::ext::uncompressed::UncompressedExt;
+use tungstenite::extensions::uncompressed::PlainTextExt;
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -80,12 +77,12 @@ use tungstenite::protocol::CloseFrame;
 pub async fn client_async<'a, R, S>(
     request: R,
     stream: S,
-) -> Result<(WebSocketStream<S, UncompressedExt>, Response), WsError>
+) -> Result<(WebSocketStream<S, PlainTextExt>, Response), WsError>
 where
     R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    client_async_with_config::<_, _, UncompressedExt>(request, stream, None).await
+    client_async_with_config::<_, _, PlainTextExt>(request, stream, None).await
 }
 
 /// The same as `client_async()` but the one can specify a websocket configuration.
@@ -125,7 +122,7 @@ where
 /// This is typically used after a socket has been accepted from a
 /// `TcpListener`. That socket is then passed to this function to perform
 /// the server half of the accepting a client's websocket connection.
-pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S, UncompressedExt>, WsError>
+pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S, PlainTextExt>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
 {
@@ -153,7 +150,7 @@ where
 pub async fn accept_hdr_async<S, C>(
     stream: S,
     callback: C,
-) -> Result<WebSocketStream<S, UncompressedExt>, WsError>
+) -> Result<WebSocketStream<S, PlainTextExt>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
     C: Callback + Unpin,
@@ -353,13 +350,13 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::async_deflate::AsyncDeflate;
     use crate::compat::AllowStd;
     #[cfg(feature = "connect")]
     use crate::connect::encryption::AutoStream;
     use crate::WebSocketStream;
     use std::io::{Read, Write};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tungstenite::extensions::uncompressed::PlainTextExt;
 
     fn is_read<T: Read>() {}
     fn is_write<T: Write>() {}
@@ -377,8 +374,7 @@ mod tests {
         #[cfg(feature = "connect")]
         is_async_write::<AutoStream<tokio::net::TcpStream>>();
 
-        is_unpin::<WebSocketStream<tokio::net::TcpStream, AsyncDeflate>>();
-        #[cfg(feature = "connect")]
-        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>, AsyncDeflate>>();
+        is_unpin::<WebSocketStream<tokio::net::TcpStream, PlainTextExt>>();
+        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>, PlainTextExt>>();
     }
 }
