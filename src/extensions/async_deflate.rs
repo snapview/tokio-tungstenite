@@ -9,11 +9,11 @@ pub struct AsyncDeflate;
 impl WebSocketExtension for AsyncDeflate {
     type Error = DeflateExtensionError;
 
-    fn enabled(&self) -> bool {
-        unimplemented!()
+    fn new(_max_message_size: Option<usize>) -> Self {
+        Self
     }
 
-    fn rsv1(&self) -> bool {
+    fn enabled(&self) -> bool {
         unimplemented!()
     }
 
