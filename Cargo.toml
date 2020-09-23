@@ -41,3 +41,11 @@ futures-channel = "0.3"
 tokio = { version = "0.2", default-features = false, features = ["io-std", "macros", "stream", "time"] }
 url = "2.0.0"
 env_logger = "0.7"
+
+[[example]]
+name = "autobahn-client"
+required-features = ["deflate"]
+
+[[example]]
+name = "autobahn-server"
+required-features = ["deflate"]

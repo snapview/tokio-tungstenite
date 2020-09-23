@@ -2,8 +2,10 @@ use futures_util::{SinkExt, StreamExt};
 use log::*;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::{accept_async, tungstenite::Error};
+use tokio_tungstenite::{tungstenite::Error, accept_async_with_config};
 use tungstenite::Result;
+use tokio_tungstenite::tungstenite::protocol::WebSocketConfig;
+use tokio_tungstenite::tungstenite::extensions::deflate::{DeflateExt, DeflateConfigBuilder};
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {
@@ -15,7 +17,16 @@ async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
 }
 
 async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
-    let mut ws_stream = accept_async(stream).await.expect("Failed to accept");
+    let deflate_config = DeflateConfigBuilder::default()
+        .max_message_size(None)
+        .build();
+    let mut ws_stream = accept_async_with_config(stream, Some(
+        WebSocketConfig {
+            max_send_queue: None,
+            max_frame_size: Some(16 << 20),
+            encoder: DeflateExt::new(deflate_config),
+        }
+    )).await.expect("Failed to accept");
 
     info!("New WebSocket connection: {}", peer);
 

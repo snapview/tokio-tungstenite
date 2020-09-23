@@ -14,7 +14,7 @@ trap cleanup TERM EXIT
 
 function test_diff() {
     if ! diff -q \
-        <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/client-results.json') \
+        <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/server-results.json') \
         <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/server/index.json')
     then
         echo Difference in results, either this is a regression or \
@@ -23,8 +23,8 @@ function test_diff() {
     fi
 }
 
-cargo build --release --example autobahn-server
-cargo run --release --example autobahn-server & WSSERVER_PID=$!
+cargo build --release --example autobahn-server --features deflate
+cargo run --release --example autobahn-server --features deflate & WSSERVER_PID=$!
 echo "Server PID: ${WSSERVER_PID}"
 sleep 3
 wstest -m fuzzingclient -s 'autobahn/fuzzingclient.json'

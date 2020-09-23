@@ -111,7 +111,7 @@ where
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
 {
-    client_async_tls_with_config::<_, _, UncompressedExt>(request, stream, None, None).await
+    client_async_tls_with_config(request, stream, None, None).await
 }
 
 /// The same as `client_async_tls()` but the one can specify a websocket configuration,
@@ -155,7 +155,7 @@ pub async fn connect_async<R>(
 where
     R: IntoClientRequest + Unpin,
 {
-    connect_async_with_config::<_, UncompressedExt>(request, None).await
+    connect_async_with_config(request, None).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.

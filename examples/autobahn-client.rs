@@ -1,7 +1,9 @@
 use futures_util::{SinkExt, StreamExt};
 use log::*;
-use tokio_tungstenite::{connect_async, tungstenite::Error, tungstenite::Result};
+use tokio_tungstenite::{tungstenite::Error, tungstenite::Result, connect_async_with_config, connect_async};
 use url::Url;
+use tokio_tungstenite::tungstenite::extensions::deflate::{DeflateConfigBuilder, DeflateExt};
+use tokio_tungstenite::tungstenite::protocol::WebSocketConfig;
 
 const AGENT: &str = "Tungstenite";
 
@@ -38,8 +40,17 @@ async fn run_test(case: u32) -> Result<()> {
         case, AGENT
     ))
     .expect("Bad testcase URL");
+    let deflate_config = DeflateConfigBuilder::default()
+        .max_message_size(None)
+        .build();
 
-    let (mut ws_stream, _) = connect_async(case_url).await?;
+    let (mut ws_stream, _) = connect_async_with_config(case_url, Some(
+        WebSocketConfig {
+            max_send_queue: None,
+            max_frame_size: Some(16 << 20),
+            encoder: DeflateExt::new(deflate_config),
+        }
+    )).await?;
     while let Some(msg) = ws_stream.next().await {
         let msg = msg?;
         if msg.is_text() || msg.is_binary() {

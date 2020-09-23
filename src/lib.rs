@@ -8,20 +8,21 @@
 //! Each WebSocket stream implements the required `Stream` and `Sink` traits,
 //! so the socket is just a stream of messages coming in and going out.
 
-// #![deny(
-//     missing_docs,
-//     unused_must_use,
-//     unused_mut,
-//     unused_imports,
-//     unused_import_braces
-// )]
+#![deny(
+    missing_docs,
+    unused_must_use,
+    unused_mut,
+    unused_imports,
+    unused_import_braces
+)]
 
 pub use tungstenite;
 
 mod compat;
 #[cfg(feature = "connect")]
 mod connect;
-mod extensions;
+/// WebSocket extension template.
+pub mod extensions;
 mod handshake;
 #[cfg(feature = "stream")]
 pub mod stream;
@@ -82,7 +83,7 @@ where
     R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    client_async_with_config::<_, _, UncompressedExt>(request, stream, None).await
+    client_async_with_config(request, stream, None).await
 }
 
 /// The same as `client_async()` but the one can specify a websocket configuration.
