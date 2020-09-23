@@ -13,11 +13,11 @@ use tungstenite::handshake::server::Callback;
 use tungstenite::handshake::{HandshakeError as Error, HandshakeRole, MidHandshake as WsHandshake};
 use tungstenite::{ClientHandshake, ServerHandshake, WebSocket};
 
-pub(crate) async fn without_handshake<F, S, E>(stream: S, f: F) -> WebSocketStream<S, E>
+pub(crate) async fn without_handshake<F, S, Ext>(stream: S, f: F) -> WebSocketStream<S, Ext>
 where
-    F: FnOnce(AllowStd<S>) -> WebSocket<AllowStd<S>, E> + Unpin,
+    F: FnOnce(AllowStd<S>) -> WebSocket<AllowStd<S>, Ext> + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
-    E: AsyncWebSocketExtension,
+    Ext: AsyncWebSocketExtension,
 {
     let start = SkippedHandshakeFuture(Some(SkippedHandshakeFutureInner { f, stream }));
 
@@ -32,14 +32,14 @@ struct SkippedHandshakeFutureInner<F, S> {
     stream: S,
 }
 
-impl<F, S, E> Future for SkippedHandshakeFuture<F, S>
+impl<F, S, Ext> Future for SkippedHandshakeFuture<F, S>
 where
-    F: FnOnce(AllowStd<S>) -> WebSocket<AllowStd<S>, E> + Unpin,
+    F: FnOnce(AllowStd<S>) -> WebSocket<AllowStd<S>, Ext> + Unpin,
     S: Unpin,
     AllowStd<S>: Read + Write,
-    E: AsyncWebSocketExtension,
+    Ext: AsyncWebSocketExtension,
 {
-    type Output = WebSocket<AllowStd<S>, E>;
+    type Output = WebSocket<AllowStd<S>, Ext>;
 
     fn poll(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
         let inner = self
@@ -86,41 +86,41 @@ where
     }
 }
 
-pub(crate) async fn client_handshake<F, S, E>(
+pub(crate) async fn client_handshake<F, S, Ext>(
     stream: S,
     f: F,
-) -> Result<(WebSocketStream<S, E>, Response), Error<ClientHandshake<AllowStd<S>, E>>>
+) -> Result<(WebSocketStream<S, Ext>, Response), Error<ClientHandshake<AllowStd<S>, Ext>>>
 where
     F: FnOnce(
             AllowStd<S>,
         ) -> Result<
-            <ClientHandshake<AllowStd<S>, E> as HandshakeRole>::FinalResult,
-            Error<ClientHandshake<AllowStd<S>, E>>,
+            <ClientHandshake<AllowStd<S>, Ext> as HandshakeRole>::FinalResult,
+            Error<ClientHandshake<AllowStd<S>, Ext>>,
         > + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
-    E: AsyncWebSocketExtension + Unpin,
+    Ext: AsyncWebSocketExtension + Unpin,
 {
     let result = handshake(stream, f).await?;
     let (s, r) = result;
     Ok((WebSocketStream::new(s), r))
 }
 
-pub(crate) async fn server_handshake<C, F, S, E>(
+pub(crate) async fn server_handshake<C, F, S, Ext>(
     stream: S,
     f: F,
-) -> Result<WebSocketStream<S, E>, Error<ServerHandshake<AllowStd<S>, C, E>>>
+) -> Result<WebSocketStream<S, Ext>, Error<ServerHandshake<AllowStd<S>, C, Ext>>>
 where
     C: Callback + Unpin,
     F: FnOnce(
             AllowStd<S>,
         ) -> Result<
-            <ServerHandshake<AllowStd<S>, C, E> as HandshakeRole>::FinalResult,
-            Error<ServerHandshake<AllowStd<S>, C, E>>,
+            <ServerHandshake<AllowStd<S>, C, Ext> as HandshakeRole>::FinalResult,
+            Error<ServerHandshake<AllowStd<S>, C, Ext>>,
         > + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
-    E: AsyncWebSocketExtension + Unpin,
+    Ext: AsyncWebSocketExtension + Unpin,
 {
-    let s: WebSocket<AllowStd<S>, E> = handshake(stream, f).await?;
+    let s: WebSocket<AllowStd<S>, Ext> = handshake(stream, f).await?;
     Ok(WebSocketStream::new(s))
 }
 
