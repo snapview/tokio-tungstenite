@@ -119,17 +119,17 @@ where
 /// be created.
 ///
 /// Please refer to `client_async_tls()` for more details.
-pub async fn client_async_tls_with_config<R, S, E>(
+pub async fn client_async_tls_with_config<R, S, Ext>(
     request: R,
     stream: S,
-    config: Option<WebSocketConfig<E>>,
+    config: Option<WebSocketConfig<Ext>>,
     tls_connector: Option<TlsConnector>,
-) -> Result<(WebSocketStream<AutoStream<S>, E>, Response), Error>
+) -> Result<(WebSocketStream<AutoStream<S>, Ext>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
-    E: AsyncWebSocketExtension,
+    Ext: AsyncWebSocketExtension,
 {
     let request = request.into_client_request()?;
 
@@ -160,13 +160,13 @@ where
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
 /// Please refer to `connect_async()` for more details.
-pub async fn connect_async_with_config<R, E>(
+pub async fn connect_async_with_config<R, Ext>(
     request: R,
-    config: Option<WebSocketConfig<E>>,
-) -> Result<(WebSocketStream<AutoStream<TcpStream>, E>, Response), Error>
+    config: Option<WebSocketConfig<Ext>>,
+) -> Result<(WebSocketStream<AutoStream<TcpStream>, Ext>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
-    E: AsyncWebSocketExtension,
+    Ext: AsyncWebSocketExtension,
 {
     let request = request.into_client_request()?;
 
