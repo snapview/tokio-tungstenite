@@ -3,11 +3,11 @@ use log::*;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, client_async, WebSocketStream};
-use tungstenite::extensions::uncompressed::PlainTextExt;
+use tungstenite::extensions::uncompressed::UncompressedExt;
 use tungstenite::Message;
 
 async fn run_connection<S>(
-    connection: WebSocketStream<S, PlainTextExt>,
+    connection: WebSocketStream<S, UncompressedExt>,
     msg_tx: futures_channel::oneshot::Sender<Vec<Message>>,
 ) where
     S: AsyncRead + AsyncWrite + Unpin,

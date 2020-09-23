@@ -59,7 +59,7 @@ pub use connect::{
 use crate::extensions::AsyncWebSocketExtension;
 #[cfg(all(feature = "connect", feature = "tls"))]
 pub use connect::MaybeTlsStream;
-use tungstenite::extensions::uncompressed::PlainTextExt;
+use tungstenite::extensions::uncompressed::UncompressedExt;
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -77,12 +77,12 @@ use tungstenite::protocol::CloseFrame;
 pub async fn client_async<'a, R, S>(
     request: R,
     stream: S,
-) -> Result<(WebSocketStream<S, PlainTextExt>, Response), WsError>
+) -> Result<(WebSocketStream<S, UncompressedExt>, Response), WsError>
 where
     R: IntoClientRequest + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    client_async_with_config::<_, _, PlainTextExt>(request, stream, None).await
+    client_async_with_config::<_, _, UncompressedExt>(request, stream, None).await
 }
 
 /// The same as `client_async()` but the one can specify a websocket configuration.
@@ -122,7 +122,7 @@ where
 /// This is typically used after a socket has been accepted from a
 /// `TcpListener`. That socket is then passed to this function to perform
 /// the server half of the accepting a client's websocket connection.
-pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S, PlainTextExt>, WsError>
+pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S, UncompressedExt>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
 {
@@ -150,7 +150,7 @@ where
 pub async fn accept_hdr_async<S, C>(
     stream: S,
     callback: C,
-) -> Result<WebSocketStream<S, PlainTextExt>, WsError>
+) -> Result<WebSocketStream<S, UncompressedExt>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
     C: Callback + Unpin,
@@ -356,7 +356,7 @@ mod tests {
     use crate::WebSocketStream;
     use std::io::{Read, Write};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
-    use tungstenite::extensions::uncompressed::PlainTextExt;
+    use tungstenite::extensions::uncompressed::UncompressedExt;
 
     fn is_read<T: Read>() {}
     fn is_write<T: Write>() {}
@@ -374,7 +374,7 @@ mod tests {
         #[cfg(feature = "connect")]
         is_async_write::<AutoStream<tokio::net::TcpStream>>();
 
-        is_unpin::<WebSocketStream<tokio::net::TcpStream, PlainTextExt>>();
-        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>, PlainTextExt>>();
+        is_unpin::<WebSocketStream<tokio::net::TcpStream, UncompressedExt>>();
+        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>, UncompressedExt>>();
     }
 }

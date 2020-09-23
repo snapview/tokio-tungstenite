@@ -89,7 +89,7 @@ pub(crate) mod encryption {
 
 use self::encryption::{wrap_stream, AutoStream};
 use crate::extensions::AsyncWebSocketExtension;
-use tungstenite::extensions::uncompressed::PlainTextExt;
+use tungstenite::extensions::uncompressed::UncompressedExt;
 
 /// Get a domain from an URL.
 #[inline]
@@ -105,13 +105,13 @@ fn domain(request: &Request) -> Result<String, Error> {
 pub async fn client_async_tls<R, S>(
     request: R,
     stream: S,
-) -> Result<(WebSocketStream<AutoStream<S>, PlainTextExt>, Response), Error>
+) -> Result<(WebSocketStream<AutoStream<S>, UncompressedExt>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
 {
-    client_async_tls_with_config::<_, _, PlainTextExt>(request, stream, None, None).await
+    client_async_tls_with_config::<_, _, UncompressedExt>(request, stream, None, None).await
 }
 
 /// The same as `client_async_tls()` but the one can specify a websocket configuration,
@@ -147,7 +147,7 @@ pub async fn connect_async<R>(
     request: R,
 ) -> Result<
     (
-        WebSocketStream<AutoStream<TcpStream>, PlainTextExt>,
+        WebSocketStream<AutoStream<TcpStream>, UncompressedExt>,
         Response,
     ),
     Error,
@@ -155,7 +155,7 @@ pub async fn connect_async<R>(
 where
     R: IntoClientRequest + Unpin,
 {
-    connect_async_with_config::<_, PlainTextExt>(request, None).await
+    connect_async_with_config::<_, UncompressedExt>(request, None).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
