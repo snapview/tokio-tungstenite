@@ -45,12 +45,9 @@ async fn run_test(case: u32) -> Result<()> {
         .build();
 
     let (mut ws_stream, _) = connect_async_with_config(case_url, Some(
-        WebSocketConfig {
-            max_send_queue: None,
-            max_frame_size: Some(16 << 20),
-            encoder: DeflateExt::new(deflate_config),
-        }
+        WebSocketConfig::default_with_encoder(DeflateExt::new(deflate_config))
     )).await?;
+
     while let Some(msg) = ws_stream.next().await {
         let msg = msg?;
         if msg.is_text() || msg.is_binary() {

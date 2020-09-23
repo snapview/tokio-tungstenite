@@ -21,11 +21,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
         .max_message_size(None)
         .build();
     let mut ws_stream = accept_async_with_config(stream, Some(
-        WebSocketConfig {
-            max_send_queue: None,
-            max_frame_size: Some(16 << 20),
-            encoder: DeflateExt::new(deflate_config),
-        }
+        WebSocketConfig::default_with_encoder(DeflateExt::new(deflate_config))
     )).await.expect("Failed to accept");
 
     info!("New WebSocket connection: {}", peer);
