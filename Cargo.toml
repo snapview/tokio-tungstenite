@@ -16,6 +16,7 @@ default = ["connect"]
 connect = ["stream", "tokio/net"]
 tls = ["native-tls", "tokio-native-tls", "stream", "tungstenite/tls"]
 stream = []
+deflate = ["tungstenite/deflate"]
 
 [dependencies]
 log = "0.4"
@@ -24,7 +25,7 @@ pin-project = "0.4.17"
 tokio = { version = "0.2", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.11.1"
+git = "https://github.com/SirCipher/tungstenite-rs"
 default-features = false
 
 [dependencies.native-tls]
@@ -40,3 +41,11 @@ futures-channel = "0.3"
 tokio = { version = "0.2", default-features = false, features = ["io-std", "macros", "stream", "time"] }
 url = "2.0.0"
 env_logger = "0.7"
+
+[[example]]
+name = "autobahn-client"
+required-features = ["deflate"]
+
+[[example]]
+name = "autobahn-server"
+required-features = ["deflate"]

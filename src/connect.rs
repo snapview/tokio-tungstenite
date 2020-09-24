@@ -88,6 +88,8 @@ pub(crate) mod encryption {
 }
 
 use self::encryption::{wrap_stream, AutoStream};
+use crate::extensions::AsyncWebSocketExtension;
+use tungstenite::extensions::uncompressed::UncompressedExt;
 
 /// Get a domain from an URL.
 #[inline]
@@ -103,7 +105,7 @@ fn domain(request: &Request) -> Result<String, Error> {
 pub async fn client_async_tls<R, S>(
     request: R,
     stream: S,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+) -> Result<(WebSocketStream<AutoStream<S>, UncompressedExt>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
@@ -117,16 +119,17 @@ where
 /// be created.
 ///
 /// Please refer to `client_async_tls()` for more details.
-pub async fn client_async_tls_with_config<R, S>(
+pub async fn client_async_tls_with_config<R, S, Ext>(
     request: R,
     stream: S,
-    config: Option<WebSocketConfig>,
+    config: Option<WebSocketConfig<Ext>>,
     tls_connector: Option<TlsConnector>,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+) -> Result<(WebSocketStream<AutoStream<S>, Ext>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
     S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
     AutoStream<S>: Unpin,
+    Ext: AsyncWebSocketExtension,
 {
     let request = request.into_client_request()?;
 
@@ -142,7 +145,13 @@ where
 /// Connect to a given URL.
 pub async fn connect_async<R>(
     request: R,
-) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
+) -> Result<
+    (
+        WebSocketStream<AutoStream<TcpStream>, UncompressedExt>,
+        Response,
+    ),
+    Error,
+>
 where
     R: IntoClientRequest + Unpin,
 {
@@ -151,12 +160,13 @@ where
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
 /// Please refer to `connect_async()` for more details.
-pub async fn connect_async_with_config<R>(
+pub async fn connect_async_with_config<R, Ext>(
     request: R,
-    config: Option<WebSocketConfig>,
-) -> Result<(WebSocketStream<AutoStream<TcpStream>>, Response), Error>
+    config: Option<WebSocketConfig<Ext>>,
+) -> Result<(WebSocketStream<AutoStream<TcpStream>, Ext>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
+    Ext: AsyncWebSocketExtension,
 {
     let request = request.into_client_request()?;
 
