@@ -25,7 +25,7 @@ pin-project = "0.4.17"
 tokio = { version = "0.2", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-git = "https://github.com/SirCipher/tungstenite-rs"
+git = "https://github.com/swimos/tungstenite-rs"
 default-features = false
 
 [dependencies.native-tls]
