@@ -1,0 +1,73 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install toolchain
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+
+      - name: Install dependencies
+        run: sudo apt-get install libssl-dev
+
+      - name: Check default-features
+        run: cargo check
+
+      - name: Check tls
+        run: cargo check --features tls
+
+      - name: Test
+        run: cargo test --release
+
+  autobahn:
+    name: Autobahn tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install toolchain
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install libssl-dev python-unittest2
+          sudo pip install urllib3[secure] autobahntestsuite
+
+      - name: Build Autobahn TestSuite for client
+        run: cargo build --release --example autobahn-client
+
+      - name: Build Autobahn TestSuite for server
+        run: cargo build --release --example autobahn-server
+
+      - name: Running Autobahn TestSuite for client
+        run: ./scripts/autobahn-client.sh
+
+      - name: Running Autobahn TestSuite for server
+        run: ./scripts/autobahn-server.sh
