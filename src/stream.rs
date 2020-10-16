@@ -7,7 +7,7 @@ use pin_project::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
 /// Stream, either plain TCP or TLS.
 #[pin_project(project = StreamProj)]
@@ -22,8 +22,8 @@ impl<S: AsyncRead + Unpin, T: AsyncRead + Unpin> AsyncRead for Stream<S, T> {
     fn poll_read(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<std::io::Result<usize>> {
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
         match self.project() {
             StreamProj::Plain(ref mut s) => Pin::new(s).poll_read(cx, buf),
             StreamProj::Tls(ref mut s) => Pin::new(s).poll_read(cx, buf),
