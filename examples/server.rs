@@ -92,7 +92,7 @@ async fn main() -> Result<(), IoError> {
 
     // Create the event loop and TCP listener we'll accept connections on.
     let try_socket = TcpListener::bind(&addr).await;
-    let mut listener = try_socket.expect("Failed to bind");
+    let listener = try_socket.expect("Failed to bind");
     println!("Listening on: {}", addr);
 
     // Let's spawn the handling of each connection in a separate task.
