@@ -30,7 +30,7 @@ async fn communication() {
     let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
 
     let f = async move {
-        let mut listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
+        let listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
         info!("Server ready");
         con_tx.send(()).unwrap();
         info!("Waiting on next connection");
@@ -76,7 +76,7 @@ async fn split_communication() {
     let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
 
     let f = async move {
-        let mut listener = TcpListener::bind("0.0.0.0:12346").await.unwrap();
+        let listener = TcpListener::bind("0.0.0.0:12346").await.unwrap();
         info!("Server ready");
         con_tx.send(()).unwrap();
         info!("Waiting on next connection");

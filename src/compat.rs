@@ -5,7 +5,7 @@ use std::task::{Context, Poll};
 
 use futures_util::task;
 use std::sync::Arc;
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use tungstenite::Error as WsError;
 
 pub(crate) enum ContextWaker {
@@ -145,15 +145,17 @@ where
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         trace!("{}:{} Read.read", file!(), line!());
+        let mut read_buf = ReadBuf::new(buf);
         match self.with_context(ContextWaker::Read, |ctx, stream| {
             trace!(
                 "{}:{} Read.with_context read -> poll_read",
                 file!(),
                 line!()
             );
-            stream.poll_read(ctx, buf)
+            stream.poll_read(ctx, &mut read_buf)
         }) {
-            Poll::Ready(r) => r,
+            Poll::Ready(Ok(_)) => Ok(read_buf.filled().len()),
+            Poll::Ready(Err(e)) => Err(e),
             Poll::Pending => Err(std::io::Error::from(std::io::ErrorKind::WouldBlock)),
         }
     }

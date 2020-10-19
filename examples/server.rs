@@ -25,12 +25,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use futures_util::{
-    future, pin_mut,
-    stream::TryStreamExt,
-    StreamExt,
-};
 use futures_channel::mpsc::{unbounded, UnboundedSender};
+use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
 use tokio::net::{TcpListener, TcpStream};
 use tungstenite::protocol::Message;
@@ -92,7 +88,7 @@ async fn main() -> Result<(), IoError> {
 
     // Create the event loop and TCP listener we'll accept connections on.
     let try_socket = TcpListener::bind(&addr).await;
-    let mut listener = try_socket.expect("Failed to bind");
+    let listener = try_socket.expect("Failed to bind");
     println!("Listening on: {}", addr);
 
     // Let's spawn the handling of each connection in a separate task.
