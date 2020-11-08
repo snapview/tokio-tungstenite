@@ -58,4 +58,6 @@ async fn read_stdin(tx: futures_channel::mpsc::UnboundedSender<Message>) {
         buf.truncate(n);
         tx.unbounded_send(Message::binary(buf)).unwrap();
     }
+
+    tx.unbounded_send(Message::Close(None)).unwrap();
 }

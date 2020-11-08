@@ -323,15 +323,8 @@ where
         (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending()))
     }
 
-    fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        match (*self).with_context(Some((ContextWaker::Write, cx)), |_| Ok(())) {
-            Ok(()) => Poll::Ready(Ok(())),
-            Err(::tungstenite::Error::ConnectionClosed) => Poll::Ready(Ok(())),
-            Err(err) => {
-                debug!("websocket close error: {}", err);
-                Poll::Ready(Err(err))
-            }
-        }
+    fn poll_close(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
     }
 }
 
