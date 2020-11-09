@@ -94,7 +94,7 @@ async fn split_communication() {
     let tcp = TcpStream::connect("0.0.0.0:12346")
         .await
         .expect("Failed to connect");
-    let url = url::Url::parse("ws://localhost:12345/").unwrap();
+    let url = url::Url::parse("ws://localhost:12346/").unwrap();
     let (stream, _) = client_async(url, tcp)
         .await
         .expect("Client failed to connect");
@@ -107,7 +107,7 @@ async fn split_communication() {
             .expect("Failed to send message");
     }
 
-    tx.close().await.expect("Failed to close");
+    tx.send(Message::Close(None)).await.expect("Failed to close");
 
     info!("Waiting for response messages");
     let messages = msg_rx.await.expect("Failed to receive messages");
