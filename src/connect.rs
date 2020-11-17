@@ -1,11 +1,12 @@
 //! Connection helper.
-use tokio::io::{AsyncRead, AsyncWrite};
-use tokio::net::TcpStream;
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    net::TcpStream,
+};
 
-use tungstenite::client::uri_mode;
-use tungstenite::handshake::client::Response;
-use tungstenite::protocol::WebSocketConfig;
-use tungstenite::Error;
+use tungstenite::{
+    client::uri_mode, handshake::client::Response, protocol::WebSocketConfig, Error,
+};
 
 use super::{client_async_with_config, IntoClientRequest, Request, WebSocketStream};
 
@@ -16,8 +17,7 @@ pub(crate) mod encryption {
 
     use tokio::io::{AsyncRead, AsyncWrite};
 
-    use tungstenite::stream::Mode;
-    use tungstenite::Error;
+    use tungstenite::{stream::Mode, Error};
 
     use crate::stream::Stream as StreamSwitcher;
 
@@ -63,8 +63,7 @@ pub use self::encryption::TlsConnector;
 pub(crate) mod encryption {
     use tokio::io::{AsyncRead, AsyncWrite};
 
-    use tungstenite::stream::Mode;
-    use tungstenite::Error;
+    use tungstenite::{stream::Mode, Error};
 
     pub type AutoStream<S> = S;
 

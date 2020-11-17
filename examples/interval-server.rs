@@ -1,8 +1,9 @@
-use futures_util::future::{select, Either};
-use futures_util::{SinkExt, StreamExt};
+use futures_util::{
+    future::{select, Either},
+    SinkExt, StreamExt,
+};
 use log::*;
-use std::net::SocketAddr;
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, tungstenite::Error};
 use tungstenite::{Message, Result};
@@ -63,9 +64,7 @@ async fn main() {
     info!("Listening on: {}", addr);
 
     while let Ok((stream, _)) = listener.accept().await {
-        let peer = stream
-            .peer_addr()
-            .expect("connected streams should have a peer address");
+        let peer = stream.peer_addr().expect("connected streams should have a peer address");
         info!("Peer address: {}", peer);
 
         tokio::spawn(accept_connection(peer, stream));

@@ -8,13 +8,7 @@
 //! Each WebSocket stream implements the required `Stream` and `Sink` traits,
 //! so the socket is just a stream of messages coming in and going out.
 
-#![deny(
-    missing_docs,
-    unused_must_use,
-    unused_mut,
-    unused_imports,
-    unused_import_braces
-)]
+#![deny(missing_docs, unused_must_use, unused_mut, unused_imports, unused_import_braces)]
 
 pub use tungstenite;
 
@@ -33,8 +27,10 @@ use futures_util::{
     stream::Stream,
 };
 use log::*;
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::{
@@ -51,10 +47,7 @@ use tungstenite::{
 
 #[cfg(feature = "connect")]
 pub use connect::{
-    client_async_tls,
-    client_async_tls_with_config,
-    connect_async,
-    connect_async_with_config,
+    client_async_tls, client_async_tls_with_config, connect_async, connect_async_with_config,
     TlsConnector,
 };
 
@@ -103,10 +96,7 @@ where
     });
     f.await.map_err(|e| match e {
         HandshakeError::Failure(e) => e,
-        e => WsError::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            e.to_string(),
-        )),
+        e => WsError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())),
     })
 }
 
@@ -169,10 +159,7 @@ where
     });
     f.await.map_err(|e| match e {
         HandshakeError::Failure(e) => e,
-        e => WsError::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            e.to_string(),
-        )),
+        e => WsError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())),
     })
 }
 
@@ -254,8 +241,7 @@ impl<S> WebSocketStream<S> {
     }
 
     /// Returns a reference to the configuration of the tungstenite stream.
-    pub fn get_config(&self) -> &WebSocketConfig
-    {
+    pub fn get_config(&self) -> &WebSocketConfig {
         self.inner.get_config()
     }
 
@@ -278,11 +264,7 @@ where
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         trace!("{}:{} Stream.poll_next", file!(), line!());
         match futures_util::ready!(self.with_context(Some((ContextWaker::Read, cx)), |s| {
-            trace!(
-                "{}:{} Stream.with_context poll_next -> read_message()",
-                file!(),
-                line!()
-            );
+            trace!("{}:{} Stream.with_context poll_next -> read_message()", file!(), line!());
             cvt(s.read_message())
         })) {
             Ok(v) => Poll::Ready(Some(Ok(v))),
@@ -337,10 +319,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::compat::AllowStd;
     #[cfg(feature = "connect")]
     use crate::connect::encryption::AutoStream;
-    use crate::WebSocketStream;
+    use crate::{compat::AllowStd, WebSocketStream};
     use std::io::{Read, Write};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
 

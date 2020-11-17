@@ -1,7 +1,9 @@
 use futures_util::{SinkExt, StreamExt};
 use log::*;
-use tokio::io::{AsyncRead, AsyncWrite};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    net::{TcpListener, TcpStream},
+};
 use tokio_tungstenite::{accept_async, client_async, WebSocketStream};
 use tungstenite::Message;
 
@@ -45,20 +47,13 @@ async fn communication() {
     info!("Waiting for server to be ready");
 
     con_rx.await.expect("Server not ready");
-    let tcp = TcpStream::connect("0.0.0.0:12345")
-        .await
-        .expect("Failed to connect");
+    let tcp = TcpStream::connect("0.0.0.0:12345").await.expect("Failed to connect");
     let url = "ws://localhost:12345/";
-    let (mut stream, _) = client_async(url, tcp)
-        .await
-        .expect("Client failed to connect");
+    let (mut stream, _) = client_async(url, tcp).await.expect("Client failed to connect");
 
     for i in 1..10 {
         info!("Sending message");
-        stream
-            .send(Message::Text(format!("{}", i)))
-            .await
-            .expect("Failed to send message");
+        stream.send(Message::Text(format!("{}", i))).await.expect("Failed to send message");
     }
 
     stream.close(None).await.expect("Failed to close");
@@ -91,20 +86,14 @@ async fn split_communication() {
     info!("Waiting for server to be ready");
 
     con_rx.await.expect("Server not ready");
-    let tcp = TcpStream::connect("0.0.0.0:12346")
-        .await
-        .expect("Failed to connect");
+    let tcp = TcpStream::connect("0.0.0.0:12346").await.expect("Failed to connect");
     let url = url::Url::parse("ws://localhost:12345/").unwrap();
-    let (stream, _) = client_async(url, tcp)
-        .await
-        .expect("Client failed to connect");
+    let (stream, _) = client_async(url, tcp).await.expect("Client failed to connect");
     let (mut tx, _rx) = stream.split();
 
     for i in 1..10 {
         info!("Sending message");
-        tx.send(Message::Text(format!("{}", i)))
-            .await
-            .expect("Failed to send message");
+        tx.send(Message::Text(format!("{}", i))).await.expect("Failed to send message");
     }
 
     tx.close().await.expect("Failed to close");
