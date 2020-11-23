@@ -35,6 +35,9 @@ jobs:
       - name: Test
         run: cargo test --release
 
+      - name: Format
+        run: cargo +nightly fmt
+
   autobahn:
     name: Autobahn tests
     runs-on: ubuntu-latest
