@@ -38,9 +38,7 @@ async fn main() {
     info!("Listening on: {}", addr);
 
     while let Ok((stream, _)) = listener.accept().await {
-        let peer = stream
-            .peer_addr()
-            .expect("connected streams should have a peer address");
+        let peer = stream.peer_addr().expect("connected streams should have a peer address");
         info!("Peer address: {}", peer);
 
         tokio::spawn(accept_connection(peer, stream));
