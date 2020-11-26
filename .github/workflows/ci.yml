@@ -11,6 +11,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          components: rustfmt
           override: true
       - uses: actions-rs/cargo@v1
         with:
