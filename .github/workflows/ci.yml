@@ -29,14 +29,14 @@ jobs:
       - name: Check default-features
         run: cargo check
 
+      - name: Format
+        run: cargo +nightly fmt -- --check
+
       - name: Check tls
         run: cargo check --features tls
 
       - name: Test
         run: cargo test --release
-
-      - name: Format
-        run: cargo +nightly fmt -- --check
 
   autobahn:
     name: Autobahn tests
