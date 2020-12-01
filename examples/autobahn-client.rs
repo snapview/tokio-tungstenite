@@ -4,9 +4,10 @@ use tokio_tungstenite::{
     connect_async, connect_async_with_config,
     tungstenite::{Error, Result},
 };
-use tungstenite::extensions::compression::deflate::DeflateConfig;
-use tungstenite::extensions::compression::WsCompression;
-use tungstenite::protocol::WebSocketConfig;
+use tungstenite::{
+    extensions::compression::{deflate::DeflateConfig, WsCompression},
+    protocol::WebSocketConfig,
+};
 use url::Url;
 
 const AGENT: &str = "Tungstenite";

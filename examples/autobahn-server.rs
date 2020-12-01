@@ -2,10 +2,14 @@ use futures_util::{SinkExt, StreamExt};
 use log::*;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::tungstenite::extensions::compression::deflate::DeflateConfig;
-use tokio_tungstenite::tungstenite::extensions::compression::WsCompression;
-use tokio_tungstenite::tungstenite::protocol::WebSocketConfig;
-use tokio_tungstenite::{accept_async_with_config, tungstenite::Error};
+use tokio_tungstenite::{
+    accept_async_with_config,
+    tungstenite::{
+        extensions::compression::{deflate::DeflateConfig, WsCompression},
+        protocol::WebSocketConfig,
+        Error,
+    },
+};
 use tungstenite::Result;
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
