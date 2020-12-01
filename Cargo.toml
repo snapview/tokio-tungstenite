@@ -26,6 +26,7 @@ tokio = { version = "0.3", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
 version = "0.11.1"
+default-features = false
 git = "https://github.com/swimos/tungstenite-rs/"
 branch = "deflate"
 
