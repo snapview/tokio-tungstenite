@@ -16,6 +16,7 @@ default = ["connect"]
 connect = ["stream", "tokio/net"]
 tls = ["native-tls", "tokio-native-tls", "stream", "tungstenite/tls"]
 stream = []
+deflate = ["tungstenite/deflate"]
 
 [dependencies]
 log = "0.4"
@@ -25,7 +26,8 @@ tokio = { version = "0.3", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
 version = "0.11.1"
-default-features = false
+git = "https://github.com/swimos/tungstenite-rs/"
+branch = "deflate"
 
 [dependencies.native-tls]
 optional = true
@@ -40,3 +42,11 @@ futures-channel = "0.3"
 tokio = { version = "0.3", default-features = false, features = ["io-std", "macros", "rt-multi-thread", "stream", "time"] }
 url = "2.0.0"
 env_logger = "0.7"
+
+[[example]]
+name = "autobahn-client"
+required-features = ["deflate"]
+
+[[example]]
+name = "autobahn-server"
+required-features = ["deflate"]
