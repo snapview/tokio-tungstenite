@@ -21,7 +21,7 @@ stream = []
 log = "0.4"
 futures-util = { version = "0.3", default-features = false, features = ["async-await", "sink", "std"] }
 pin-project = "1.0"
-tokio = { version = "0.3", default-features = false, features = ["io-util"] }
+tokio = { version = "1.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
 version = "0.11.1"
@@ -33,10 +33,11 @@ version = "0.2.0"
 
 [dependencies.tokio-native-tls]
 optional = true
-version = "0.2"
+git = "https://github.com/tokio-rs/tls.git"
+rev = "f85882fbc7c0f5e5aafbe3f8637ec333be7ecd68"
 
 [dev-dependencies]
 futures-channel = "0.3"
-tokio = { version = "0.3", default-features = false, features = ["io-std", "macros", "rt-multi-thread", "stream", "time"] }
+tokio = { version = "1.0", default-features = false, features = ["io-std", "macros", "rt-multi-thread", "time"] }
 url = "2.0.0"
 env_logger = "0.7"
