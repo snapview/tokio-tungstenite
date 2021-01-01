@@ -1,7 +1,4 @@
-use futures_util::{
-    future::{select, Either},
-    SinkExt, StreamExt,
-};
+use futures_util::{SinkExt, StreamExt};
 use log::*;
 use std::{net::SocketAddr, time::Duration};
 use tokio::net::{TcpListener, TcpStream};
@@ -24,12 +21,9 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
     let mut interval = tokio::time::interval(Duration::from_millis(1000));
 
     // Echo incoming WebSocket messages and send a message periodically every second.
-
-    let mut msg_fut = ws_receiver.next();
-    let mut tick_fut = interval.next();
     loop {
-        match select(msg_fut, tick_fut).await {
-            Either::Left((msg, tick_fut_continue)) => {
+        tokio::select! {
+            msg = ws_receiver.next() => {
                 match msg {
                     Some(msg) => {
                         let msg = msg?;
@@ -38,16 +32,12 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                         } else if msg.is_close() {
                             break;
                         }
-                        tick_fut = tick_fut_continue; // Continue waiting for tick.
-                        msg_fut = ws_receiver.next(); // Receive next WebSocket message.
                     }
                     None => break, // WebSocket stream terminated.
-                };
+                }
             }
-            Either::Right((_, msg_fut_continue)) => {
+            _ = interval.tick() => {
                 ws_sender.send(Message::Text("tick".to_owned())).await?;
-                msg_fut = msg_fut_continue; // Continue receiving the WebSocket message.
-                tick_fut = interval.next(); // Wait for next tick.
             }
         }
     }
