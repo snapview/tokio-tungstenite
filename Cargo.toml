@@ -24,10 +24,8 @@ pin-project = "1.0"
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.11.1"
+version = "0.12.0"
 default-features = false
-git = "https://github.com/snapview/tungstenite-rs.git"
-rev = "208061ba284eaf95a54c1b9b6968f570004c90de"
 
 [dependencies.native-tls]
 optional = true
