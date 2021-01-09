@@ -13,7 +13,7 @@ use tungstenite::{
 
 use super::{client_async_with_config, IntoClientRequest, WebSocketStream};
 
-#[cfg(feature = "tls")]
+#[cfg(feature = "use-native-tls")]
 pub(crate) mod encryption {
     use native_tls::TlsConnector as NativeTlsConnector;
     use tokio_native_tls::{TlsConnector as TokioTlsConnector, TlsStream};
@@ -44,7 +44,7 @@ pub(crate) mod encryption {
         match mode {
             Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
             Mode::Tls => {
-                let try_connector = tls_connector.map_or_else(|| TlsConnector::new(), |c| Ok(c));
+                let try_connector = tls_connector.map_or_else(TlsConnector::new, Ok);
                 let connector = try_connector.map_err(Error::Tls)?;
                 let stream = TokioTlsConnector::from(connector);
                 let connected = stream.connect(&domain, socket).await;
@@ -57,12 +57,65 @@ pub(crate) mod encryption {
     }
 }
 
-#[cfg(feature = "tls")]
+#[cfg(feature = "use-rustls")]
+pub(crate) mod encryption {
+    pub use rustls::ClientConfig;
+    use tokio_rustls::{webpki::DNSNameRef, TlsConnector as TokioTlsConnector, TlsStream};
+
+    use std::sync::Arc;
+    use tokio::io::{AsyncRead, AsyncWrite};
+
+    use tungstenite::{stream::Mode, Error};
+
+    use crate::stream::Stream as StreamSwitcher;
+
+    /// A stream that might be protected with TLS.
+    pub type MaybeTlsStream<S> = StreamSwitcher<S, TlsStream<S>>;
+
+    pub type AutoStream<S> = MaybeTlsStream<S>;
+
+    /// A TLS connector that can be used when establishing TLS connections.
+    pub type TlsConnector = Arc<ClientConfig>;
+
+    pub async fn wrap_stream<S>(
+        socket: S,
+        domain: String,
+        mode: Mode,
+        tls_connector: Option<TlsConnector>,
+    ) -> Result<AutoStream<S>, Error>
+    where
+        S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
+    {
+        match mode {
+            Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
+            Mode::Tls => {
+                let config = tls_connector.unwrap_or_else(|| {
+                    let mut config = ClientConfig::new();
+                    config.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+
+                    Arc::new(config)
+                });
+                let domain = DNSNameRef::try_from_ascii_str(&domain)?;
+                let stream = TokioTlsConnector::from(config);
+                let connected = stream.connect(domain, socket).await;
+
+                match connected {
+                    Err(e) => Err(Error::Io(e)),
+                    Ok(s) => Ok(StreamSwitcher::Tls(TlsStream::Client(s))),
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "use-native-tls")]
+pub use self::encryption::MaybeTlsStream;
+#[cfg(feature = "use-rustls")]
 pub use self::encryption::MaybeTlsStream;
 
 pub use self::encryption::TlsConnector;
 
-#[cfg(not(feature = "tls"))]
+#[cfg(not(any(feature = "use-native-tls", feature = "use-rustls")))]
 pub(crate) mod encryption {
     use tokio::io::{AsyncRead, AsyncWrite};
 
