@@ -26,7 +26,7 @@ pin-project = "1.0"
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.12.0"
+version = "0.13.0"
 default-features = false
 git = "https://github.com/dnaka91/tungstenite-rs"
 branch = "rustls"

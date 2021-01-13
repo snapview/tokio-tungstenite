@@ -55,9 +55,6 @@ pub use connect::{
 pub use connect::MaybeTlsStream;
 use tungstenite::protocol::CloseFrame;
 
-#[cfg(all(feature = "use-native-tls", feature = "use-rustls"))]
-compile_error!("either \"use-native-tls\" or \"use-rustls\" can be enabled, but not both.");
-
 /// Creates a WebSocket handshake from a request and a stream.
 /// For convenience, the user may call this with a url string, a URL,
 /// or a `Request`. Calling with `Request` allows the user to add
