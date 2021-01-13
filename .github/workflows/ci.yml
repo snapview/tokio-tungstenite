@@ -47,8 +47,14 @@ jobs:
       - name: Check default-features
         run: cargo check
 
-      - name: Check tls
-        run: cargo check --features tls
+      - name: Check native-tls
+        run: cargo check --features use-native-tls
+
+      - name: Check rustls
+        run: cargo check --features use-rustls
+
+      - name: Check native-tls and rustls
+        run: cargo check --features use-native-tls,use-rustls
 
       - name: Test
         run: cargo test --release
