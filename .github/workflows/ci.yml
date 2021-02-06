@@ -48,13 +48,13 @@ jobs:
         run: cargo check
 
       - name: Check native-tls
-        run: cargo check --features use-native-tls
+        run: cargo check --features native-tls
 
       - name: Check rustls
-        run: cargo check --features use-rustls
+        run: cargo check --features rustls-tls
 
       - name: Check native-tls and rustls
-        run: cargo check --features use-native-tls,use-rustls
+        run: cargo check --features native-tls,rustls-tls
 
       - name: Test
         run: cargo test --release

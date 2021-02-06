@@ -13,14 +13,14 @@ use tungstenite::{
 
 use super::{client_async_with_config, IntoClientRequest, WebSocketStream};
 
-#[cfg(feature = "use-native-tls")]
+#[cfg(feature = "native-tls")]
 pub(crate) mod encryption {
-    use native_tls::TlsConnector as NativeTlsConnector;
+    use native_tls_crate::TlsConnector as NativeTlsConnector;
     use tokio_native_tls::{TlsConnector as TokioTlsConnector, TlsStream};
 
     use tokio::io::{AsyncRead, AsyncWrite};
 
-    use tungstenite::{stream::Mode, Error};
+    use tungstenite::{error::TlsError, stream::Mode, Error};
 
     use crate::stream::Stream as StreamSwitcher;
 
@@ -45,17 +45,17 @@ pub(crate) mod encryption {
             Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
             Mode::Tls => {
                 let try_connector = tls_connector.map_or_else(TlsConnector::new, Ok);
-                #[cfg(feature = "use-native-tls")]
-                let connector = try_connector.map_err(Error::TlsNative)?;
-                #[cfg(all(feature = "use-rustls", not(feature = "use-native-tls")))]
-                let connector = try_connector.map_err(Error::TlsRustls)?;
+                #[cfg(feature = "native-tls")]
+                let connector = try_connector.map_err(TlsError::Native)?;
+                #[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
+                let connector = try_connector.map_err(TlsError::Rustls)?;
                 let stream = TokioTlsConnector::from(connector);
                 let connected = stream.connect(&domain, socket).await;
                 match connected {
-                    #[cfg(feature = "use-native-tls")]
-                    Err(e) => Err(Error::TlsNative(e)),
-                    #[cfg(all(feature = "use-rustls", not(feature = "use-native-tls")))]
-                    Err(e) => Err(Error::TlsRustls(e)),
+                    #[cfg(feature = "native-tls")]
+                    Err(e) => Err(Error::Tls(e.into())),
+                    #[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
+                    Err(e) => Err(Error::Tls(e.into())),
                     Ok(s) => Ok(StreamSwitcher::Tls(s)),
                 }
             }
@@ -63,7 +63,7 @@ pub(crate) mod encryption {
     }
 }
 
-#[cfg(all(feature = "use-rustls", not(feature = "use-native-tls")))]
+#[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
 pub(crate) mod encryption {
     pub use rustls::ClientConfig;
     use tokio_rustls::{webpki::DNSNameRef, TlsConnector as TokioTlsConnector, TlsStream};
@@ -71,7 +71,7 @@ pub(crate) mod encryption {
     use std::sync::Arc;
     use tokio::io::{AsyncRead, AsyncWrite};
 
-    use tungstenite::{stream::Mode, Error};
+    use tungstenite::{error::TlsError, stream::Mode, Error};
 
     use crate::stream::Stream as StreamSwitcher;
 
@@ -101,7 +101,7 @@ pub(crate) mod encryption {
 
                     Arc::new(config)
                 });
-                let domain = DNSNameRef::try_from_ascii_str(&domain)?;
+                let domain = DNSNameRef::try_from_ascii_str(&domain).map_err(TlsError::Dns)?;
                 let stream = TokioTlsConnector::from(config);
                 let connected = stream.connect(domain, socket).await;
 
@@ -114,14 +114,14 @@ pub(crate) mod encryption {
     }
 }
 
-#[cfg(feature = "use-native-tls")]
+#[cfg(feature = "native-tls")]
 pub use self::encryption::MaybeTlsStream;
-#[cfg(all(feature = "use-rustls", not(feature = "use-native-tls")))]
+#[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
 pub use self::encryption::MaybeTlsStream;
 
 pub use self::encryption::TlsConnector;
 
-#[cfg(not(any(feature = "use-native-tls", feature = "use-rustls")))]
+#[cfg(not(any(feature = "native-tls", feature = "rustls-tls")))]
 pub(crate) mod encryption {
     use tokio::io::{AsyncRead, AsyncWrite};
 

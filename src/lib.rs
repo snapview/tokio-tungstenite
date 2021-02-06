@@ -51,7 +51,7 @@ pub use connect::{
     TlsConnector,
 };
 
-#[cfg(all(feature = "connect", any(feature = "use-native-tls", feature = "use-rustls")))]
+#[cfg(all(feature = "connect", any(feature = "native-tls", feature = "rustls-tls")))]
 pub use connect::MaybeTlsStream;
 use tungstenite::protocol::CloseFrame;
 
@@ -323,11 +323,14 @@ mod tests {
     use crate::connect::encryption::AutoStream;
     use crate::{compat::AllowStd, WebSocketStream};
     use std::io::{Read, Write};
+    #[cfg(feature = "connect")]
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
     fn is_read<T: Read>() {}
     fn is_write<T: Write>() {}
+    #[cfg(feature = "connect")]
     fn is_async_read<T: AsyncReadExt>() {}
+    #[cfg(feature = "connect")]
     fn is_async_write<T: AsyncWriteExt>() {}
     fn is_unpin<T: Unpin>() {}
 
