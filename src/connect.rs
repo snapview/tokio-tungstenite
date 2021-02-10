@@ -108,11 +108,8 @@ pub(crate) mod encryption {
     }
 }
 
-#[cfg(feature = "native-tls")]
+#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
 pub use self::encryption::MaybeTlsStream;
-#[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
-pub use self::encryption::MaybeTlsStream;
-
 pub use self::encryption::TlsConnector;
 
 #[cfg(not(any(feature = "native-tls", feature = "rustls-tls")))]
