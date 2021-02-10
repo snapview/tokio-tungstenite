@@ -45,16 +45,10 @@ pub(crate) mod encryption {
             Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
             Mode::Tls => {
                 let try_connector = tls_connector.map_or_else(TlsConnector::new, Ok);
-                #[cfg(feature = "native-tls")]
                 let connector = try_connector.map_err(TlsError::Native)?;
-                #[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
-                let connector = try_connector.map_err(TlsError::Rustls)?;
                 let stream = TokioTlsConnector::from(connector);
                 let connected = stream.connect(&domain, socket).await;
                 match connected {
-                    #[cfg(feature = "native-tls")]
-                    Err(e) => Err(Error::Tls(e.into())),
-                    #[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
                     Err(e) => Err(Error::Tls(e.into())),
                     Ok(s) => Ok(StreamSwitcher::Tls(s)),
                 }
