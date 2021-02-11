@@ -48,11 +48,9 @@ use tungstenite::{
 #[cfg(feature = "connect")]
 pub use connect::{
     client_async_tls, client_async_tls_with_config, connect_async, connect_async_with_config,
-    TlsConnector,
+    MaybeTlsStream, TlsConnector, TlsStream,
 };
 
-#[cfg(all(feature = "connect", any(feature = "native-tls", feature = "rustls-tls")))]
-pub use connect::MaybeTlsStream;
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -320,7 +318,7 @@ where
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "connect")]
-    use crate::connect::encryption::AutoStream;
+    use crate::connect::encryption::MaybeTlsStream;
     use crate::{compat::AllowStd, WebSocketStream};
     use std::io::{Read, Write};
     #[cfg(feature = "connect")]
@@ -340,12 +338,12 @@ mod tests {
         is_write::<AllowStd<tokio::net::TcpStream>>();
 
         #[cfg(feature = "connect")]
-        is_async_read::<AutoStream<tokio::net::TcpStream>>();
+        is_async_read::<MaybeTlsStream<tokio::net::TcpStream>>();
         #[cfg(feature = "connect")]
-        is_async_write::<AutoStream<tokio::net::TcpStream>>();
+        is_async_write::<MaybeTlsStream<tokio::net::TcpStream>>();
 
         is_unpin::<WebSocketStream<tokio::net::TcpStream>>();
         #[cfg(feature = "connect")]
-        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>>>();
+        is_unpin::<WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>>();
     }
 }
