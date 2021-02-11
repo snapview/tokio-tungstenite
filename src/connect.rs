@@ -60,7 +60,7 @@ pub(crate) mod encryption {
 #[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
 pub(crate) mod encryption {
     pub use rustls::ClientConfig;
-    use tokio_rustls::{webpki::DNSNameRef, TlsConnector as TokioTlsConnector, TlsStream};
+    use tokio_rustls::{webpki::DNSNameRef, TlsConnector as TokioTlsConnector, client::TlsStream};
 
     use std::sync::Arc;
     use tokio::io::{AsyncRead, AsyncWrite};
@@ -101,7 +101,7 @@ pub(crate) mod encryption {
 
                 match connected {
                     Err(e) => Err(Error::Io(e)),
-                    Ok(s) => Ok(StreamSwitcher::Tls(TlsStream::Client(s))),
+                    Ok(s) => Ok(StreamSwitcher::Tls(s)),
                 }
             }
         }
