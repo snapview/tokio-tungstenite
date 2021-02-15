@@ -14,7 +14,7 @@ edition = "2018"
 [features]
 default = ["connect"]
 connect = ["stream", "tokio/net"]
-tls = ["native-tls", "tokio-native-tls", "stream", "tungstenite/tls"]
+tls = ["native-tls", "tokio-native-tls", "stream"]
 stream = []
 
 [dependencies]
@@ -22,10 +22,7 @@ log = "0.4"
 futures-util = { version = "0.3", default-features = false, features = ["async-await", "sink", "std"] }
 pin-project = "1.0"
 tokio = { version = "1", default-features = false, features = ["io-util"] }
-
-[dependencies.tungstenite]
-version = "0.13.0"
-default-features = false
+tungstenite = "0.13.0"
 
 [dependencies.native-tls]
 optional = true

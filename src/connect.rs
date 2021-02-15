@@ -5,7 +5,7 @@ use tokio::{
 };
 
 use tungstenite::{
-    client::uri_mode, handshake::client::Response, protocol::WebSocketConfig, Error,
+    client::uri_mode, handshake::client::Response, protocol::WebSocketConfig, Error, error::UrlError,
 };
 
 use super::{client_async_with_config, IntoClientRequest, Request, WebSocketStream};
@@ -63,7 +63,7 @@ pub use self::encryption::TlsConnector;
 pub(crate) mod encryption {
     use tokio::io::{AsyncRead, AsyncWrite};
 
-    use tungstenite::{stream::Mode, Error};
+    use tungstenite::{Error, error::UrlError, stream::Mode};
 
     pub type AutoStream<S> = S;
 
@@ -81,7 +81,7 @@ pub(crate) mod encryption {
     {
         match mode {
             Mode::Plain => Ok(socket),
-            Mode::Tls => Err(Error::Url("TLS support not compiled in.".into())),
+            Mode::Tls => Err(Error::Url(UrlError::TlsFeatureNotEnabled)),
         }
     }
 }
@@ -93,7 +93,7 @@ use self::encryption::{wrap_stream, AutoStream};
 fn domain(request: &Request) -> Result<String, Error> {
     match request.uri().host() {
         Some(d) => Ok(d.to_string()),
-        None => Err(Error::Url("no host name in the url".into())),
+        None => Err(Error::Url(UrlError::NoHostName)),
     }
 }
 
@@ -168,7 +168,7 @@ where
             Some("ws") => Some(80),
             _ => None,
         })
-        .ok_or_else(|| Error::Url("Url scheme not supported".into()))?;
+        .ok_or_else(|| Error::Url(UrlError::UnsupportedUrlScheme))?;
 
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;
