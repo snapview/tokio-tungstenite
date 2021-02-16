@@ -5,10 +5,13 @@ use tokio::{
 };
 
 use tungstenite::{
-    client::uri_mode, handshake::client::Response, protocol::WebSocketConfig, Error,
+    client::uri_mode,
+    handshake::client::{Request, Response},
+    protocol::WebSocketConfig,
+    Error,
 };
 
-use super::{client_async_with_config, IntoClientRequest, Request, WebSocketStream};
+use super::{client_async_with_config, IntoClientRequest, WebSocketStream};
 
 #[cfg(feature = "tls")]
 pub(crate) mod encryption {
