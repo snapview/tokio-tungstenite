@@ -48,7 +48,7 @@ use tungstenite::{
 #[cfg(feature = "connect")]
 pub use connect::{
     client_async_tls, client_async_tls_with_config, connect_async, connect_async_with_config,
-    MaybeTlsStream, TlsConnector, TlsStream,
+    MaybeTlsStream, TlsConnector,
 };
 
 use tungstenite::protocol::CloseFrame;
@@ -318,7 +318,7 @@ where
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "connect")]
-    use crate::connect::encryption::MaybeTlsStream;
+    use crate::stream::MaybeTlsStream;
     use crate::{compat::AllowStd, WebSocketStream};
     use std::io::{Read, Write};
     #[cfg(feature = "connect")]

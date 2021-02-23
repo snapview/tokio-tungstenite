@@ -14,91 +14,6 @@ use tungstenite::{
 use super::{client_async_with_config, IntoClientRequest, WebSocketStream};
 
 pub(crate) mod encryption {
-    use std::{
-        marker::PhantomData,
-        pin::Pin,
-        task::{Context, Poll},
-    };
-
-    use pin_project::pin_project;
-    use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
-
-    use crate::stream::Stream;
-
-    /// A stream that might be protected with TLS.
-    pub type MaybeTlsStream<S> = Stream<S, TlsStream<S>>;
-
-    #[allow(missing_docs)]
-    #[non_exhaustive]
-    #[pin_project(project = StreamProj)]
-    pub enum TlsStream<S> {
-        Plain(PhantomData<S>),
-        #[cfg(feature = "native-tls")]
-        NativeTls(tokio_native_tls::TlsStream<S>),
-        #[cfg(feature = "rustls-tls")]
-        Rustls(tokio_rustls::client::TlsStream<S>),
-    }
-
-    #[cfg_attr(not(any(feature = "native-tls", feature = "rustls-tls")), allow(unused_variables))]
-    impl<S: AsyncRead + AsyncWrite + Unpin> AsyncRead for TlsStream<S> {
-        fn poll_read(
-            self: Pin<&mut Self>,
-            cx: &mut Context<'_>,
-            buf: &mut ReadBuf<'_>,
-        ) -> Poll<std::io::Result<()>> {
-            match self.project() {
-                StreamProj::Plain(_) => Poll::Ready(Ok(())),
-                #[cfg(feature = "native-tls")]
-                StreamProj::NativeTls(s) => Pin::new(s).poll_read(cx, buf),
-                #[cfg(feature = "rustls-tls")]
-                StreamProj::Rustls(s) => Pin::new(s).poll_read(cx, buf),
-            }
-        }
-    }
-
-    #[cfg_attr(not(any(feature = "native-tls", feature = "rustls-tls")), allow(unused_variables))]
-    impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for TlsStream<S> {
-        fn poll_write(
-            self: Pin<&mut Self>,
-            cx: &mut Context<'_>,
-            buf: &[u8],
-        ) -> Poll<Result<usize, std::io::Error>> {
-            match self.project() {
-                StreamProj::Plain(_) => Poll::Ready(Ok(0)),
-                #[cfg(feature = "native-tls")]
-                StreamProj::NativeTls(s) => Pin::new(s).poll_write(cx, buf),
-                #[cfg(feature = "rustls-tls")]
-                StreamProj::Rustls(s) => Pin::new(s).poll_write(cx, buf),
-            }
-        }
-
-        fn poll_flush(
-            self: Pin<&mut Self>,
-            cx: &mut Context<'_>,
-        ) -> Poll<Result<(), std::io::Error>> {
-            match self.project() {
-                StreamProj::Plain(_) => Poll::Ready(Ok(())),
-                #[cfg(feature = "native-tls")]
-                StreamProj::NativeTls(s) => Pin::new(s).poll_flush(cx),
-                #[cfg(feature = "rustls-tls")]
-                StreamProj::Rustls(s) => Pin::new(s).poll_flush(cx),
-            }
-        }
-
-        fn poll_shutdown(
-            self: Pin<&mut Self>,
-            cx: &mut Context<'_>,
-        ) -> Poll<Result<(), std::io::Error>> {
-            match self.project() {
-                StreamProj::Plain(_) => Poll::Ready(Ok(())),
-                #[cfg(feature = "native-tls")]
-                StreamProj::NativeTls(s) => Pin::new(s).poll_shutdown(cx),
-                #[cfg(feature = "rustls-tls")]
-                StreamProj::Rustls(s) => Pin::new(s).poll_shutdown(cx),
-            }
-        }
-    }
-
     /// A TLS connector that can be used when establishing TLS connections.
     #[non_exhaustive]
     pub enum TlsConnector {
@@ -121,8 +36,7 @@ pub(crate) mod encryption {
 
         use tungstenite::{error::TlsError, stream::Mode, Error};
 
-        use super::{MaybeTlsStream, TlsStream};
-        use crate::stream::Stream as StreamSwitcher;
+        use crate::stream::MaybeTlsStream;
 
         pub async fn wrap_stream<S>(
             socket: S,
@@ -134,7 +48,7 @@ pub(crate) mod encryption {
             S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
         {
             match mode {
-                Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
+                Mode::Plain => Ok(MaybeTlsStream::Plain(socket)),
                 Mode::Tls => {
                     let try_connector = tls_connector.map_or_else(TlsConnector::new, Ok);
                     let connector = try_connector.map_err(TlsError::Native)?;
@@ -142,7 +56,7 @@ pub(crate) mod encryption {
                     let connected = stream.connect(&domain, socket).await;
                     match connected {
                         Err(e) => Err(Error::Tls(e.into())),
-                        Ok(s) => Ok(StreamSwitcher::Tls(TlsStream::NativeTls(s))),
+                        Ok(s) => Ok(MaybeTlsStream::NativeTls(s)),
                     }
                 }
             }
@@ -159,8 +73,7 @@ pub(crate) mod encryption {
 
         use tungstenite::{error::TlsError, stream::Mode, Error};
 
-        use super::{MaybeTlsStream, TlsStream};
-        use crate::stream::Stream as StreamSwitcher;
+        use crate::stream::MaybeTlsStream;
 
         pub async fn wrap_stream<S>(
             socket: S,
@@ -172,7 +85,7 @@ pub(crate) mod encryption {
             S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
         {
             match mode {
-                Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
+                Mode::Plain => Ok(MaybeTlsStream::Plain(socket)),
                 Mode::Tls => {
                     let config = tls_connector.unwrap_or_else(|| {
                         let mut config = ClientConfig::new();
@@ -186,7 +99,7 @@ pub(crate) mod encryption {
 
                     match connected {
                         Err(e) => Err(Error::Io(e)),
-                        Ok(s) => Ok(StreamSwitcher::Tls(TlsStream::Rustls(s))),
+                        Ok(s) => Ok(MaybeTlsStream::Rustls(s)),
                     }
                 }
             }
@@ -201,22 +114,22 @@ pub(crate) mod encryption {
             stream::Mode,
         };
 
-        use super::MaybeTlsStream;
-        use crate::stream::Stream as StreamSwitcher;
+        use crate::stream::MaybeTlsStream;
 
         pub async fn wrap_stream<S>(socket: S, mode: Mode) -> Result<MaybeTlsStream<S>, Error>
         where
             S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
         {
             match mode {
-                Mode::Plain => Ok(StreamSwitcher::Plain(socket)),
+                Mode::Plain => Ok(MaybeTlsStream::Plain(socket)),
                 Mode::Tls => Err(Error::Url(UrlError::TlsFeatureNotEnabled)),
             }
         }
     }
 }
 
-pub use self::encryption::{MaybeTlsStream, TlsConnector, TlsStream};
+pub use self::encryption::TlsConnector;
+pub use crate::stream::MaybeTlsStream;
 
 /// Get a domain from an URL.
 #[inline]
