@@ -92,11 +92,11 @@ pub(crate) async fn client_handshake<F, S>(
 ) -> Result<(WebSocketStream<S>, Response), Error<ClientHandshake<AllowStd<S>>>>
 where
     F: FnOnce(
-        AllowStd<S>,
-    ) -> Result<
-        <ClientHandshake<AllowStd<S>> as HandshakeRole>::FinalResult,
-        Error<ClientHandshake<AllowStd<S>>>,
-    > + Unpin,
+            AllowStd<S>,
+        ) -> Result<
+            <ClientHandshake<AllowStd<S>> as HandshakeRole>::FinalResult,
+            Error<ClientHandshake<AllowStd<S>>>,
+        > + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
     let result = handshake(stream, f).await?;
@@ -111,11 +111,11 @@ pub(crate) async fn server_handshake<C, F, S>(
 where
     C: Callback + Unpin,
     F: FnOnce(
-        AllowStd<S>,
-    ) -> Result<
-        <ServerHandshake<AllowStd<S>, C> as HandshakeRole>::FinalResult,
-        Error<ServerHandshake<AllowStd<S>, C>>,
-    > + Unpin,
+            AllowStd<S>,
+        ) -> Result<
+            <ServerHandshake<AllowStd<S>, C> as HandshakeRole>::FinalResult,
+            Error<ServerHandshake<AllowStd<S>, C>>,
+        > + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
     let s: WebSocket<AllowStd<S>> = handshake(stream, f).await?;
