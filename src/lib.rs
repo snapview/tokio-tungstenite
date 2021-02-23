@@ -17,7 +17,9 @@ mod compat;
 mod connect;
 mod handshake;
 #[cfg(feature = "stream")]
-pub mod stream;
+pub(crate) mod stream;
+#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+pub(crate) mod tls;
 
 use std::io::{Read, Write};
 
@@ -45,11 +47,14 @@ use tungstenite::{
     server,
 };
 
+#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+pub use tls::{client_async_tls, client_async_tls_with_config, TlsConnector};
+
 #[cfg(feature = "connect")]
-pub use connect::{
-    client_async_tls, client_async_tls_with_config, connect_async, connect_async_with_config,
-    MaybeTlsStream, TlsConnector,
-};
+pub use connect::{connect_async, connect_async_with_config};
+
+#[cfg(feature = "stream")]
+pub use stream::MaybeTlsStream;
 
 use tungstenite::protocol::CloseFrame;
 
@@ -312,6 +317,16 @@ where
                 Poll::Ready(Err(err))
             }
         }
+    }
+}
+
+/// Get a domain from an URL.
+#[cfg(any(feature = "connect", feature = "native-tls", feature = "rustls-tls"))]
+#[inline]
+fn domain(request: &tungstenite::handshake::client::Request) -> Result<String, WsError> {
+    match request.uri().host() {
+        Some(d) => Ok(d.to_string()),
+        None => Err(WsError::Url(tungstenite::error::UrlError::NoHostName)),
     }
 }
 
