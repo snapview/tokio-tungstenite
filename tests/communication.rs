@@ -32,7 +32,7 @@ async fn communication() {
     let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
 
     let f = async move {
-        let listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
+        let listener = TcpListener::bind("127.0.0.1:12345").await.unwrap();
         info!("Server ready");
         con_tx.send(()).unwrap();
         info!("Waiting on next connection");
@@ -47,7 +47,7 @@ async fn communication() {
     info!("Waiting for server to be ready");
 
     con_rx.await.expect("Server not ready");
-    let tcp = TcpStream::connect("0.0.0.0:12345").await.expect("Failed to connect");
+    let tcp = TcpStream::connect("127.0.0.1:12345").await.expect("Failed to connect");
     let url = "ws://localhost:12345/";
     let (mut stream, _) = client_async(url, tcp).await.expect("Client failed to connect");
 
@@ -71,7 +71,7 @@ async fn split_communication() {
     let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
 
     let f = async move {
-        let listener = TcpListener::bind("0.0.0.0:12346").await.unwrap();
+        let listener = TcpListener::bind("127.0.0.1:12346").await.unwrap();
         info!("Server ready");
         con_tx.send(()).unwrap();
         info!("Waiting on next connection");
@@ -86,7 +86,7 @@ async fn split_communication() {
     info!("Waiting for server to be ready");
 
     con_rx.await.expect("Server not ready");
-    let tcp = TcpStream::connect("0.0.0.0:12346").await.expect("Failed to connect");
+    let tcp = TcpStream::connect("127.0.0.1:12346").await.expect("Failed to connect");
     let url = url::Url::parse("ws://localhost:12345/").unwrap();
     let (stream, _) = client_async(url, tcp).await.expect("Client failed to connect");
     let (mut tx, _rx) = stream.split();
