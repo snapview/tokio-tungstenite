@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install libssl-dev
 
+      - name: Check no-default-features
+        run: cargo check --no-default-features
+
       - name: Check default-features
         run: cargo check
 

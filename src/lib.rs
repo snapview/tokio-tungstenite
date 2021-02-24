@@ -37,7 +37,7 @@ use tungstenite::{
     client::IntoClientRequest,
     error::Error as WsError,
     handshake::{
-        client::{ClientHandshake, Request, Response},
+        client::{ClientHandshake, Response},
         server::{Callback, NoCallback},
         HandshakeError,
     },
