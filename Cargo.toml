@@ -23,7 +23,7 @@ stream = []
 log = "0.4"
 futures-util = { version = "0.3", default-features = false, features = ["async-await", "sink", "std"] }
 pin-project = "1.0"
-tokio = { version = "1.2.0", default-features = false, features = ["io-util"] }
+tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
 version = "0.13.0"
@@ -56,9 +56,9 @@ version = "0.21.0"
 
 [dev-dependencies]
 futures-channel = "0.3"
-tokio = { version = "1.2.0", default-features = false, features = ["io-std", "macros", "net", "rt-multi-thread", "time"] }
-url = "2.2.0"
-env_logger = "0.8.2"
+tokio = { version = "1.0.0", default-features = false, features = ["io-std", "macros", "net", "rt-multi-thread", "time"] }
+url = "2.0.0"
+env_logger = "0.7"
 
 [[example]]
 name = "autobahn-client"
