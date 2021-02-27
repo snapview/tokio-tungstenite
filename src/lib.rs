@@ -48,7 +48,7 @@ use tungstenite::{
 };
 
 #[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
-pub use tls::{client_async_tls, client_async_tls_with_config, TlsConnector};
+pub use tls::{client_async_tls, client_async_tls_with_config, Connector};
 
 #[cfg(feature = "connect")]
 pub use connect::{connect_async, connect_async_with_config};

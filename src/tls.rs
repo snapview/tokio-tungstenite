@@ -9,9 +9,9 @@ use crate::{client_async_with_config, domain, IntoClientRequest, WebSocketStream
 
 pub use crate::stream::MaybeTlsStream;
 
-/// A TLS connector that can be used when establishing TLS connections.
+/// A connector that can be used when establishing TLS connections.
 #[non_exhaustive]
-pub enum TlsConnector {
+pub enum Connector {
     /// Plain (non-TLS) connector.
     Plain,
     /// `native-tls` TLS connector.
@@ -147,7 +147,7 @@ pub async fn client_async_tls_with_config<R, S>(
     request: R,
     stream: S,
     config: Option<WebSocketConfig>,
-    tls_connector: Option<TlsConnector>,
+    connector: Option<Connector>,
 ) -> Result<(WebSocketStream<MaybeTlsStream<S>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
@@ -162,17 +162,17 @@ where
     // Make sure we check domain and mode first. URL must be valid.
     let mode = uri_mode(&request.uri())?;
 
-    let stream = match tls_connector {
+    let stream = match connector {
         Some(conn) => match conn {
             #[cfg(feature = "native-tls")]
-            TlsConnector::NativeTls(conn) => {
+            Connector::NativeTls(conn) => {
                 self::encryption::native_tls::wrap_stream(stream, domain, mode, Some(conn)).await
             }
             #[cfg(feature = "rustls-tls")]
-            TlsConnector::Rustls(conn) => {
+            Connector::Rustls(conn) => {
                 self::encryption::rustls::wrap_stream(stream, domain, mode, Some(conn)).await
             }
-            TlsConnector::Plain => self::encryption::plain::wrap_stream(stream, mode).await,
+            Connector::Plain => self::encryption::plain::wrap_stream(stream, mode).await,
         },
         None => {
             #[cfg(feature = "native-tls")]
