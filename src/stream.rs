@@ -17,10 +17,10 @@ use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 pub enum MaybeTlsStream<S> {
     /// Unencrypted socket stream.
     Plain(#[pin] S),
-    /// Encrypted socket stream using [`native-tls`].
+    /// Encrypted socket stream using `native-tls`.
     #[cfg(feature = "native-tls")]
     NativeTls(tokio_native_tls::TlsStream<S>),
-    /// Encrypted socket stream using [`rustls`].
+    /// Encrypted socket stream using `rustls`.
     #[cfg(feature = "rustls-tls")]
     Rustls(tokio_rustls::client::TlsStream<S>),
 }

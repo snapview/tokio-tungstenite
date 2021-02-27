@@ -9,7 +9,9 @@ use crate::{client_async_with_config, domain, IntoClientRequest, WebSocketStream
 
 pub use crate::stream::MaybeTlsStream;
 
-/// A connector that can be used when establishing TLS connections.
+/// A connector that can be used when establishing connections, allowing to control whether
+/// `native-tls` or `rustls` is used to create a TLS connection. Or TLS can be disabled with the
+/// `Plain` variant.
 #[non_exhaustive]
 pub enum Connector {
     /// Plain (non-TLS) connector.
@@ -139,7 +141,7 @@ where
 }
 
 /// The same as `client_async_tls()` but the one can specify a websocket configuration,
-/// and an optional TLS connector. If no connector is specified, the default one will
+/// and an optional connector. If no connector is specified, a default one will
 /// be created.
 ///
 /// Please refer to `client_async_tls()` for more details.
