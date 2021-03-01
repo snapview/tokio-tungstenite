@@ -17,9 +17,9 @@ mod compat;
 mod connect;
 mod handshake;
 #[cfg(feature = "stream")]
-pub(crate) mod stream;
+mod stream;
 #[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
-pub(crate) mod tls;
+mod tls;
 
 use std::io::{Read, Write};
 
