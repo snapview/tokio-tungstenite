@@ -14,7 +14,9 @@ edition = "2018"
 [features]
 default = ["connect"]
 connect = ["stream", "tokio/net"]
-tls = ["native-tls", "tokio-native-tls", "stream", "tungstenite/tls"]
+native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls"]
+native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]
+rustls-tls = ["rustls", "tokio-rustls", "stream", "tungstenite/rustls-tls", "webpki", "webpki-roots"]
 stream = []
 
 [dependencies]
@@ -24,19 +26,44 @@ pin-project = "1.0"
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.12.0"
+version = "0.13.0"
 default-features = false
 
-[dependencies.native-tls]
+[dependencies.native-tls-crate]
 optional = true
-version = "0.2.0"
+package = "native-tls"
+version = "0.2.7"
+
+[dependencies.rustls]
+optional = true
+version = "0.19.0"
 
 [dependencies.tokio-native-tls]
 optional = true
 version = "0.3.0"
 
+[dependencies.tokio-rustls]
+optional = true
+version = "0.22.0"
+
+[dependencies.webpki]
+optional = true
+version = "0.21.4"
+
+[dependencies.webpki-roots]
+optional = true
+version = "0.21.0"
+
 [dev-dependencies]
 futures-channel = "0.3"
-tokio = { version = "1.0.0", default-features = false, features = ["io-std", "macros", "rt-multi-thread", "time"] }
+tokio = { version = "1.0.0", default-features = false, features = ["io-std", "macros", "net", "rt-multi-thread", "time"] }
 url = "2.0.0"
 env_logger = "0.7"
+
+[[example]]
+name = "autobahn-client"
+required-features = ["connect"]
+
+[[example]]
+name = "client"
+required-features = ["connect"]

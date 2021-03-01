@@ -17,7 +17,9 @@ mod compat;
 mod connect;
 mod handshake;
 #[cfg(feature = "stream")]
-pub mod stream;
+pub(crate) mod stream;
+#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+pub(crate) mod tls;
 
 use std::io::{Read, Write};
 
@@ -45,14 +47,15 @@ use tungstenite::{
     server,
 };
 
-#[cfg(feature = "connect")]
-pub use connect::{
-    client_async_tls, client_async_tls_with_config, connect_async, connect_async_with_config,
-    TlsConnector,
-};
+#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+pub use tls::{client_async_tls, client_async_tls_with_config, Connector};
 
-#[cfg(all(feature = "connect", feature = "tls"))]
-pub use connect::MaybeTlsStream;
+#[cfg(feature = "connect")]
+pub use connect::{connect_async, connect_async_with_config};
+
+#[cfg(feature = "stream")]
+pub use stream::MaybeTlsStream;
+
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -317,17 +320,30 @@ where
     }
 }
 
+/// Get a domain from an URL.
+#[cfg(any(feature = "connect", feature = "native-tls", feature = "rustls-tls"))]
+#[inline]
+fn domain(request: &tungstenite::handshake::client::Request) -> Result<String, WsError> {
+    match request.uri().host() {
+        Some(d) => Ok(d.to_string()),
+        None => Err(WsError::Url(tungstenite::error::UrlError::NoHostName)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "connect")]
-    use crate::connect::encryption::AutoStream;
+    use crate::stream::MaybeTlsStream;
     use crate::{compat::AllowStd, WebSocketStream};
     use std::io::{Read, Write};
+    #[cfg(feature = "connect")]
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
     fn is_read<T: Read>() {}
     fn is_write<T: Write>() {}
+    #[cfg(feature = "connect")]
     fn is_async_read<T: AsyncReadExt>() {}
+    #[cfg(feature = "connect")]
     fn is_async_write<T: AsyncWriteExt>() {}
     fn is_unpin<T: Unpin>() {}
 
@@ -337,12 +353,12 @@ mod tests {
         is_write::<AllowStd<tokio::net::TcpStream>>();
 
         #[cfg(feature = "connect")]
-        is_async_read::<AutoStream<tokio::net::TcpStream>>();
+        is_async_read::<MaybeTlsStream<tokio::net::TcpStream>>();
         #[cfg(feature = "connect")]
-        is_async_write::<AutoStream<tokio::net::TcpStream>>();
+        is_async_write::<MaybeTlsStream<tokio::net::TcpStream>>();
 
         is_unpin::<WebSocketStream<tokio::net::TcpStream>>();
         #[cfg(feature = "connect")]
-        is_unpin::<WebSocketStream<AutoStream<tokio::net::TcpStream>>>();
+        is_unpin::<WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>>();
     }
 }
