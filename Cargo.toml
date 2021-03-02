@@ -11,6 +11,9 @@ repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.14.0"
 edition = "2018"
 
+[package.metadata.docs.rs]
+features = ["native-tls", "rustls-tls"]
+
 [features]
 default = ["connect"]
 connect = ["stream", "tokio/net"]
