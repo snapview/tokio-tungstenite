@@ -24,3 +24,7 @@ Take a look at the `examples/` directory for client and server examples. You may
 
 This crate is based on [`tungstenite-rs`](https://github.com/snapview/tungstenite-rs) Rust WebSocket library and provides `Tokio` bindings and wrappers for it, so you
 can use it with non-blocking/asynchronous `TcpStream`s from and couple it together with other crates from `Tokio` stack.
+
+## Features
+
+As with [`tungstenite-rs`](https://github.com/snapview/tungstenite-rs) TLS is supported on all platforms using [`native-tls`](https://github.com/sfackler/rust-native-tls) or [`rustls`](https://github.com/ctz/rustls) through the `native-tls` and `rustls-tls` feature flags. Neither is enabled by default. If you require support for secure WebSockets (`wss://`) enable one of them.
