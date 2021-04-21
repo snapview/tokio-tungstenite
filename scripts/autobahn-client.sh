@@ -6,8 +6,9 @@ SOURCE_DIR=$(readlink -f "${BASH_SOURCE[0]}")
 SOURCE_DIR=$(dirname "$SOURCE_DIR")
 cd "${SOURCE_DIR}/.."
 
+CONTAINER_NAME=fuzzingserver
 function cleanup() {
-    kill -9 ${FUZZINGSERVER_PID}
+    docker container stop "${CONTAINER_NAME}"
 }
 trap cleanup TERM EXIT
 
@@ -23,10 +24,14 @@ function test_diff() {
     fi
 }
 
-cargo build --release --example autobahn-client
+docker run -d --rm \
+    -v "${PWD}/autobahn:/autobahn" \
+    -p 9001:9001 \
+    --init \
+    --name "${CONTAINER_NAME}" \
+    crossbario/autobahn-testsuite \
+    wstest -m fuzzingserver -s 'autobahn/fuzzingserver.json'
 
-wstest -m fuzzingserver -s 'autobahn/fuzzingserver.json' & FUZZINGSERVER_PID=$!
 sleep 3
-echo "Server PID: ${FUZZINGSERVER_PID}"
 cargo run --release --example autobahn-client
 test_diff

@@ -5,7 +5,6 @@ set -x
 SOURCE_DIR=$(readlink -f "${BASH_SOURCE[0]}")
 SOURCE_DIR=$(dirname "$SOURCE_DIR")
 cd "${SOURCE_DIR}/.."
-WSSERVER_PID=
 
 function cleanup() {
     kill -9 ${WSSERVER_PID}
@@ -23,9 +22,13 @@ function test_diff() {
     fi
 }
 
-cargo build --release --example autobahn-server
 cargo run --release --example autobahn-server & WSSERVER_PID=$!
-echo "Server PID: ${WSSERVER_PID}"
 sleep 3
-wstest -m fuzzingclient -s 'autobahn/fuzzingclient.json'
+
+docker run --rm \
+    -v "${PWD}/autobahn:/autobahn" \
+    --network host \
+    crossbario/autobahn-testsuite \
+    wstest -m fuzzingclient -s 'autobahn/fuzzingclient.json'
+
 test_diff
