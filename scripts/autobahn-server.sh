@@ -13,11 +13,11 @@ trap cleanup TERM EXIT
 
 function test_diff() {
     if ! diff -q \
-        <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/client-results.json') \
+        <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/expected-results.json') \
         <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/server/index.json')
     then
-        echo Difference in results, either this is a regression or \
-             one should update autobahn/server-results.json with the new results.
+        echo 'Difference in results, either this is a regression or' \
+             'one should update autobahn/expected-results.json with the new results.' \
         exit 64
     fi
 }
