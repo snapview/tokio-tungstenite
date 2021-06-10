@@ -14,6 +14,7 @@ use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 /// A stream that might be protected with TLS.
 #[non_exhaustive]
 #[pin_project(project = StreamProj)]
+#[derive(Debug)]
 pub enum MaybeTlsStream<S> {
     /// Unencrypted socket stream.
     Plain(#[pin] S),
