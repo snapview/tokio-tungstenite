@@ -1,3 +1,8 @@
+# 0.15.0
+
+- Update the `tungstenite-rs` version to `0.14.0`,
+  [check `tungstenite-rs` release for more details](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md#0140).
+
 # 0.14.0
 
 - Support for `rustls` as TLS backend.
