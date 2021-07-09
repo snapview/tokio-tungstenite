@@ -26,8 +26,6 @@ jobs:
       matrix:
         rust:
           - stable
-          - beta
-          - nightly
 
     steps:
       - name: Checkout sources
