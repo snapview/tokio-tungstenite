@@ -6,3 +6,15 @@ Examples
 * [echo-server.rs](https://github.com/snapview/tokio-tungstenite/blob/master/examples/echo-server.rs)
 * [server.rs](https://github.com/snapview/tokio-tungstenite/blob/master/examples/server.rs)
 * [interval-server.rs](https://github.com/snapview/tokio-tungstenite/blob/master/examples/interval-server.rs)
+
+## client.rs
+
+Add the following to your `cargo.toml`:
+
+```toml
+[dependencies]
+futures = "0.3.15"
+tokio =  { version = "1", features = ["full"] }
+tokio-tungstenite = "0.14.0"
+url = "2.2.2"
+```
