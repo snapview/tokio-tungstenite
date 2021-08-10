@@ -20,7 +20,7 @@ pub enum Connector {
     #[cfg(feature = "native-tls")]
     NativeTls(native_tls_crate::TlsConnector),
     /// `rustls` TLS connector.
-    #[cfg(feature = "rustls-tls")]
+    #[cfg(feature = "__rustls-tls")]
     Rustls(std::sync::Arc<rustls::ClientConfig>),
 }
 
@@ -61,7 +61,7 @@ mod encryption {
         }
     }
 
-    #[cfg(feature = "rustls-tls")]
+    #[cfg(feature = "__rustls-tls")]
     pub mod rustls {
         pub use rustls::ClientConfig;
         use tokio_rustls::{webpki::DNSNameRef, TlsConnector as TokioTlsConnector};
@@ -85,12 +85,26 @@ mod encryption {
             match mode {
                 Mode::Plain => Ok(MaybeTlsStream::Plain(socket)),
                 Mode::Tls => {
-                    let config = tls_connector.unwrap_or_else(|| {
-                        let mut config = ClientConfig::new();
-                        config.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+                    let config = match tls_connector {
+                        Some(config) => config,
+                        None => {
+                            #[allow(unused_mut)]
+                            let mut config = ClientConfig::new();
+                            #[cfg(feature = "rustls-tls-native-roots")]
+                            {
+                                config.root_store = rustls_native_certs::load_native_certs()
+                                    .map_err(|(_, err)| err)?;
+                            }
+                            #[cfg(feature = "rustls-tls-webpki-roots")]
+                            {
+                                config
+                                    .root_store
+                                    .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+                            }
 
-                        Arc::new(config)
-                    });
+                            Arc::new(config)
+                        }
+                    };
                     let domain = DNSNameRef::try_from_ascii_str(&domain).map_err(TlsError::Dns)?;
                     let stream = TokioTlsConnector::from(config);
                     let connected = stream.connect(domain, socket).await;
@@ -158,7 +172,7 @@ where
 {
     let request = request.into_client_request()?;
 
-    #[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+    #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
     let domain = domain(&request)?;
 
     // Make sure we check domain and mode first. URL must be valid.
@@ -170,7 +184,7 @@ where
             Connector::NativeTls(conn) => {
                 self::encryption::native_tls::wrap_stream(stream, domain, mode, Some(conn)).await
             }
-            #[cfg(feature = "rustls-tls")]
+            #[cfg(feature = "__rustls-tls")]
             Connector::Rustls(conn) => {
                 self::encryption::rustls::wrap_stream(stream, domain, mode, Some(conn)).await
             }
@@ -181,11 +195,11 @@ where
             {
                 self::encryption::native_tls::wrap_stream(stream, domain, mode, None).await
             }
-            #[cfg(all(feature = "rustls-tls", not(feature = "native-tls")))]
+            #[cfg(all(feature = "__rustls-tls", not(feature = "native-tls")))]
             {
                 self::encryption::rustls::wrap_stream(stream, domain, mode, None).await
             }
-            #[cfg(not(any(feature = "native-tls", feature = "rustls-tls")))]
+            #[cfg(not(any(feature = "native-tls", feature = "__rustls-tls")))]
             {
                 self::encryption::plain::wrap_stream(stream, mode).await
             }

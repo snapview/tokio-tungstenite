@@ -18,7 +18,7 @@ mod connect;
 mod handshake;
 #[cfg(feature = "stream")]
 mod stream;
-#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 mod tls;
 
 use std::io::{Read, Write};
@@ -44,10 +44,9 @@ use tungstenite::{
         HandshakeError,
     },
     protocol::{Message, Role, WebSocket, WebSocketConfig},
-    server,
 };
 
-#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 pub use tls::{client_async_tls, client_async_tls_with_config, Connector};
 
 #[cfg(feature = "connect")]
@@ -161,7 +160,7 @@ where
     C: Callback + Unpin,
 {
     let f = handshake::server_handshake(stream, move |allow_std| {
-        server::accept_hdr_with_config(allow_std, callback, config)
+        tungstenite::accept_hdr_with_config(allow_std, callback, config)
     });
     f.await.map_err(|e| match e {
         HandshakeError::Failure(e) => e,
@@ -324,7 +323,7 @@ where
 }
 
 /// Get a domain from an URL.
-#[cfg(any(feature = "connect", feature = "native-tls", feature = "rustls-tls"))]
+#[cfg(any(feature = "connect", feature = "native-tls", feature = "__rustls-tls"))]
 #[inline]
 fn domain(request: &tungstenite::handshake::client::Request) -> Result<String, WsError> {
     match request.uri().host() {

@@ -39,20 +39,11 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install libssl-dev
 
-      - name: Check no-default-features
-        run: cargo check --no-default-features
+      - name: Install cargo-hack
+        run: cargo install cargo-hack
 
-      - name: Check default-features
-        run: cargo check
-
-      - name: Check native-tls
-        run: cargo check --features native-tls
-
-      - name: Check rustls
-        run: cargo check --features rustls-tls
-
-      - name: Check native-tls and rustls
-        run: cargo check --features native-tls,rustls-tls
+      - name: Check
+        run: cargo hack check --feature-powerset --all-targets
 
       - name: Test
         run: cargo test --release
