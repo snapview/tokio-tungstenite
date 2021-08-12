@@ -10,6 +10,7 @@ documentation = "https://docs.rs/tokio-tungstenite/0.15.0"
 repository = "https://github.com/snapview/tokio-tungstenite"
 version = "0.15.0"
 edition = "2018"
+include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 
 [package.metadata.docs.rs]
 features = ["native-tls", "rustls-tls"]
