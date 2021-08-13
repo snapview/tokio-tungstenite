@@ -22,7 +22,7 @@ pub enum MaybeTlsStream<S> {
     #[cfg(feature = "native-tls")]
     NativeTls(tokio_native_tls::TlsStream<S>),
     /// Encrypted socket stream using `rustls`.
-    #[cfg(feature = "rustls-tls")]
+    #[cfg(feature = "__rustls-tls")]
     Rustls(tokio_rustls::client::TlsStream<S>),
 }
 
@@ -36,7 +36,7 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncRead for MaybeTlsStream<S> {
             StreamProj::Plain(ref mut s) => Pin::new(s).poll_read(cx, buf),
             #[cfg(feature = "native-tls")]
             StreamProj::NativeTls(s) => Pin::new(s).poll_read(cx, buf),
-            #[cfg(feature = "rustls-tls")]
+            #[cfg(feature = "__rustls-tls")]
             StreamProj::Rustls(s) => Pin::new(s).poll_read(cx, buf),
         }
     }
@@ -52,7 +52,7 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
             StreamProj::Plain(ref mut s) => Pin::new(s).poll_write(cx, buf),
             #[cfg(feature = "native-tls")]
             StreamProj::NativeTls(s) => Pin::new(s).poll_write(cx, buf),
-            #[cfg(feature = "rustls-tls")]
+            #[cfg(feature = "__rustls-tls")]
             StreamProj::Rustls(s) => Pin::new(s).poll_write(cx, buf),
         }
     }
@@ -62,7 +62,7 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
             StreamProj::Plain(ref mut s) => Pin::new(s).poll_flush(cx),
             #[cfg(feature = "native-tls")]
             StreamProj::NativeTls(s) => Pin::new(s).poll_flush(cx),
-            #[cfg(feature = "rustls-tls")]
+            #[cfg(feature = "__rustls-tls")]
             StreamProj::Rustls(s) => Pin::new(s).poll_flush(cx),
         }
     }
@@ -75,7 +75,7 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
             StreamProj::Plain(ref mut s) => Pin::new(s).poll_shutdown(cx),
             #[cfg(feature = "native-tls")]
             StreamProj::NativeTls(s) => Pin::new(s).poll_shutdown(cx),
-            #[cfg(feature = "rustls-tls")]
+            #[cfg(feature = "__rustls-tls")]
             StreamProj::Rustls(s) => Pin::new(s).poll_shutdown(cx),
         }
     }
