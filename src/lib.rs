@@ -18,7 +18,6 @@ mod connect;
 mod handshake;
 #[cfg(feature = "stream")]
 mod stream;
-#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 mod tls;
 
 use std::io::{Read, Write};
@@ -47,7 +46,8 @@ use tungstenite::{
 };
 
 #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
-pub use tls::{client_async_tls, client_async_tls_with_config, Connector};
+pub use tls::{client_async_tls, client_async_tls_with_config};
+pub use tls::Connector;
 
 #[cfg(feature = "connect")]
 pub use connect::{connect_async, connect_async_with_config};
