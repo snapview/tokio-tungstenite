@@ -1,3 +1,9 @@
+# 0.16.0 (Unreleased)
+
+- Add a function to allow to specify the TLS connector when using `connect()` like logic.
+- Add support for choosing the right root certificates for the TLS.
+- Change the behavior of the `connect()` so that it fails when using TLS without TLS feature.
+
 # 0.15.0
 
 - Update the `tungstenite-rs` version to `0.14.0`,
