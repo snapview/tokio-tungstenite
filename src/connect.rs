@@ -48,15 +48,7 @@ where
     let try_socket = TcpStream::connect(addr).await;
     let socket = try_socket.map_err(Error::Io)?;
 
-    #[cfg(not(any(feature = "native-tls", feature = "__rustls-tls")))]
-    {
-        crate::client_async_with_config(request, MaybeTlsStream::Plain(socket), config).await
-    }
-
-    #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
-    {
-        crate::tls::client_async_tls_with_config(request, socket, config, None).await
-    }
+    crate::tls::client_async_tls_with_config(request, socket, config, None).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration,

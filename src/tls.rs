@@ -5,7 +5,7 @@ use tungstenite::{
     client::uri_mode, error::Error, handshake::client::Response, protocol::WebSocketConfig,
 };
 
-use crate::{client_async_with_config, domain, IntoClientRequest, WebSocketStream};
+use crate::{client_async_with_config, IntoClientRequest, WebSocketStream};
 
 pub use crate::stream::MaybeTlsStream;
 
@@ -142,6 +142,7 @@ mod encryption {
 
 /// Creates a WebSocket handshake from a request and a stream,
 /// upgrading the stream to TLS if required.
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 pub async fn client_async_tls<R, S>(
     request: R,
     stream: S,
@@ -173,7 +174,7 @@ where
     let request = request.into_client_request()?;
 
     #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
-    let domain = domain(&request)?;
+    let domain = crate::domain(&request)?;
 
     // Make sure we check domain and mode first. URL must be valid.
     let mode = uri_mode(&request.uri())?;
