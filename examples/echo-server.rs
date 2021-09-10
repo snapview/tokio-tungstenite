@@ -10,7 +10,7 @@
 
 use std::{env, io::Error};
 
-use futures_util::StreamExt;
+use futures_util::{future, StreamExt, TryStreamExt};
 use log::info;
 use tokio::net::{TcpListener, TcpStream};
 
@@ -42,5 +42,9 @@ async fn accept_connection(stream: TcpStream) {
     info!("New WebSocket connection: {}", addr);
 
     let (write, read) = ws_stream.split();
-    read.forward(write).await.expect("Failed to forward message")
+    // We should not forward messages other than text or binary.
+    read.try_filter(|msg| future::ready(msg.is_text() || msg.is_binary()))
+        .forward(write)
+        .await
+        .expect("Failed to forward messages")
 }
