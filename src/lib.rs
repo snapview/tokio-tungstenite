@@ -38,6 +38,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tungstenite::{
     client::IntoClientRequest,
     error::Error as WsError,
+    extensions::Extensions,
     handshake::{
         client::{ClientHandshake, Response},
         server::{Callback, NoCallback},
@@ -193,6 +194,23 @@ impl<S> WebSocketStream<S> {
     {
         handshake::without_handshake(stream, move |allow_std| {
             WebSocket::from_raw_socket(allow_std, role, config)
+        })
+        .await
+    }
+
+    /// Convert a raw socket into a WebSocketStream without performing a
+    /// handshake.
+    pub async fn from_raw_socket_with_extensions(
+        stream: S,
+        role: Role,
+        config: Option<WebSocketConfig>,
+        extensions: Option<Extensions>,
+    ) -> Self
+    where
+        S: AsyncRead + AsyncWrite + Unpin,
+    {
+        handshake::without_handshake(stream, move |allow_std| {
+            WebSocket::from_raw_socket_with_extensions(allow_std, role, config, extensions)
         })
         .await
     }

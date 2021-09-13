@@ -22,7 +22,7 @@ function test_diff() {
     fi
 }
 
-cargo run --release --example autobahn-server & WSSERVER_PID=$!
+cargo run --release --example autobahn-server --features=deflate & WSSERVER_PID=$!
 sleep 3
 
 docker run --rm \
