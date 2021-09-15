@@ -6,20 +6,23 @@ keywords = ["websocket", "io", "web"]
 authors = ["Daniel Abramov <dabramov@snapview.de>", "Alexey Galakhov <agalakhov@snapview.de>"]
 license = "MIT"
 homepage = "https://github.com/snapview/tokio-tungstenite"
-documentation = "https://docs.rs/tokio-tungstenite/0.14.0"
+documentation = "https://docs.rs/tokio-tungstenite/0.15.0"
 repository = "https://github.com/snapview/tokio-tungstenite"
-version = "0.14.0"
+version = "0.15.0"
 edition = "2018"
+include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 
 [package.metadata.docs.rs]
-features = ["native-tls", "rustls-tls"]
+features = ["native-tls", "__rustls-tls"]
 
 [features]
 default = ["connect"]
 connect = ["stream", "tokio/net"]
 native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls"]
 native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]
-rustls-tls = ["rustls", "tokio-rustls", "stream", "tungstenite/rustls-tls", "webpki", "webpki-roots"]
+rustls-tls-native-roots = ["__rustls-tls", "rustls-native-certs"]
+rustls-tls-webpki-roots = ["__rustls-tls", "webpki-roots"]
+__rustls-tls = ["rustls", "tokio-rustls", "stream", "tungstenite/__rustls-tls", "webpki"]
 stream = []
 
 [dependencies]
@@ -29,7 +32,7 @@ pin-project = "1.0"
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.13.0"
+version = "0.15.0"
 default-features = false
 
 [dependencies.native-tls-crate]
@@ -40,6 +43,10 @@ version = "0.2.7"
 [dependencies.rustls]
 optional = true
 version = "0.19.0"
+
+[dependencies.rustls-native-certs]
+optional = true
+version = "0.5.0"
 
 [dependencies.tokio-native-tls]
 optional = true
