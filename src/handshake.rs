@@ -3,7 +3,6 @@ use crate::{
     WebSocketStream,
 };
 use log::*;
-use pin_project::pin_project;
 use std::{
     future::Future,
     io::{Read, Write},
@@ -54,7 +53,6 @@ where
     }
 }
 
-#[pin_project]
 struct MidHandshake<Role: HandshakeRole>(Option<WsHandshake<Role>>);
 
 enum StartedHandshake<Role: HandshakeRole> {
@@ -71,7 +69,7 @@ struct StartedHandshakeFutureInner<F, S> {
 async fn handshake<Role, F, S>(stream: S, f: F) -> Result<Role::FinalResult, Error<Role>>
 where
     Role: HandshakeRole + Unpin,
-    Role::InternalStream: SetWaker,
+    Role::InternalStream: SetWaker + Unpin,
     F: FnOnce(AllowStd<S>) -> Result<Role::FinalResult, Error<Role>> + Unpin,
     S: AsyncRead + AsyncWrite + Unpin,
 {
@@ -125,7 +123,7 @@ where
 impl<Role, F, S> Future for StartedHandshakeFuture<F, S>
 where
     Role: HandshakeRole,
-    Role::InternalStream: SetWaker,
+    Role::InternalStream: SetWaker + Unpin,
     F: FnOnce(AllowStd<S>) -> Result<Role::FinalResult, Error<Role>> + Unpin,
     S: Unpin,
     AllowStd<S>: Read + Write,
@@ -148,13 +146,12 @@ where
 impl<Role> Future for MidHandshake<Role>
 where
     Role: HandshakeRole + Unpin,
-    Role::InternalStream: SetWaker,
+    Role::InternalStream: SetWaker + Unpin,
 {
     type Output = Result<Role::FinalResult, Error<Role>>;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let this = self.project();
-        let mut s = this.0.take().expect("future polled after completion");
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let mut s = self.as_mut().0.take().expect("future polled after completion");
 
         let machine = s.get_mut();
         trace!("Setting context in handshake");
@@ -164,7 +161,7 @@ where
             Ok(stream) => Poll::Ready(Ok(stream)),
             Err(Error::Failure(e)) => Poll::Ready(Err(Error::Failure(e))),
             Err(Error::Interrupted(mid)) => {
-                *this.0 = Some(mid);
+                self.0 = Some(mid);
                 Poll::Pending
             }
         }
