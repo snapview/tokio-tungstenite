@@ -27,7 +27,7 @@ stream = []
 
 [dependencies]
 log = "0.4"
-futures-util = { version = "0.3", default-features = false, features = ["async-await", "sink", "std"] }
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
