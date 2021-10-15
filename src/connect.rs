@@ -1,4 +1,10 @@
 //! Connection helper.
+
+use std::{
+    collections::HashMap,
+    net::SocketAddr,
+};
+
 use tokio::net::TcpStream;
 
 use tungstenite::{
@@ -20,6 +26,17 @@ where
     R: IntoClientRequest + Unpin,
 {
     connect_async_with_config(request, None).await
+}
+
+/// Connect to a given URL, overrides DNS items.
+pub async fn connect_async_overrides_dns<R>(
+    request: R,
+    dns_overrides: HashMap<String, SocketAddr>,
+) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    connect_async_with_config_overrides_dns(request, None, dns_overrides).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
@@ -51,6 +68,42 @@ where
     crate::tls::client_async_tls_with_config(request, socket, config, None).await
 }
 
+/// The same as `connect_async()` but the one can specify a websocket configuration, overrides DNS items.
+/// Please refer to `connect_async()` for more details.
+pub async fn connect_async_with_config_overrides_dns<R>(
+    request: R,
+    config: Option<WebSocketConfig>,
+    dns_overrides: HashMap<String, SocketAddr>,
+) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    let request = request.into_client_request()?;
+
+    let domain = domain(&request)?;
+    let port = request
+        .uri()
+        .port_u16()
+        .or_else(|| match request.uri().scheme_str() {
+            Some("wss") => Some(443),
+            Some("ws") => Some(80),
+            _ => None,
+        })
+        .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
+
+    let domain = if dns_overrides.contains_key(&domain) {
+        dns_overrides.get(&domain).unwrap().ip().to_string()
+    } else {
+        domain
+    };
+    
+    let addr = format!("{}:{}", domain, port);
+    let try_socket = TcpStream::connect(addr).await;
+    let socket = try_socket.map_err(Error::Io)?;
+
+    crate::tls::client_async_tls_with_config(request, socket, config, None).await
+}
+
 /// The same as `connect_async()` but the one can specify a websocket configuration,
 /// and a TLS connector to use.
 /// Please refer to `connect_async()` for more details.
@@ -75,6 +128,44 @@ where
             _ => None,
         })
         .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
+
+    let addr = format!("{}:{}", domain, port);
+    let try_socket = TcpStream::connect(addr).await;
+    let socket = try_socket.map_err(Error::Io)?;
+    crate::tls::client_async_tls_with_config(request, socket, config, connector).await
+}
+
+/// The same as `connect_async()` but the one can specify a websocket configuration,
+/// and a TLS connector to use, overrides DNS items.
+/// Please refer to `connect_async()` for more details.
+#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+pub async fn connect_async_tls_with_config_overrides_dns<R>(
+    request: R,
+    config: Option<WebSocketConfig>,
+    connector: Option<Connector>,
+    dns_overrides: HashMap<String, SocketAddr>,
+) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    let request = request.into_client_request()?;
+
+    let domain = domain(&request)?;
+    let port = request
+        .uri()
+        .port_u16()
+        .or_else(|| match request.uri().scheme_str() {
+            Some("wss") => Some(443),
+            Some("ws") => Some(80),
+            _ => None,
+        })
+        .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
+
+    let domain = if dns_overrides.contains_key(&domain) {
+        dns_overrides.get(&domain).unwrap().ip().to_string()
+    } else {
+        domain
+    };
 
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;
