@@ -33,6 +33,8 @@ tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 [dependencies.tungstenite]
 version = "0.15.0"
 default-features = false
+git = "https://github.com/dnaka91/tungstenite-rs.git"
+rev = "f4bb653aa03665a83bd98068432602f07cd5634b"
 
 [dependencies.native-tls-crate]
 optional = true
@@ -41,11 +43,13 @@ version = "0.2.7"
 
 [dependencies.rustls]
 optional = true
-version = "0.19.0"
+version = "0.20.0"
 
 [dependencies.rustls-native-certs]
 optional = true
-version = "0.5.0"
+version = "0.6.0"
+git = "https://github.com/rustls/rustls-native-certs.git"
+rev = "87b84b51bcf38eb9d377e0f5606c444ced43cc60"
 
 [dependencies.tokio-native-tls]
 optional = true
@@ -53,15 +57,15 @@ version = "0.3.0"
 
 [dependencies.tokio-rustls]
 optional = true
-version = "0.22.0"
+version = "0.23.0"
 
 [dependencies.webpki]
 optional = true
-version = "0.21.4"
+version = "0.22.0"
 
 [dependencies.webpki-roots]
 optional = true
-version = "0.21.0"
+version = "0.22.1"
 
 [dev-dependencies]
 futures-channel = "0.3"
