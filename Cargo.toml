@@ -31,10 +31,8 @@ futures-util = { version = "0.3", default-features = false, features = ["sink", 
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.15.0"
+version = "0.16.0"
 default-features = false
-git = "https://github.com/dnaka91/tungstenite-rs.git"
-rev = "f4bb653aa03665a83bd98068432602f07cd5634b"
 
 [dependencies.native-tls-crate]
 optional = true
@@ -47,9 +45,7 @@ version = "0.20.0"
 
 [dependencies.rustls-native-certs]
 optional = true
-version = "0.6.0"
-git = "https://github.com/rustls/rustls-native-certs.git"
-rev = "87b84b51bcf38eb9d377e0f5606c444ced43cc60"
+version = "0.6.1"
 
 [dependencies.tokio-native-tls]
 optional = true
