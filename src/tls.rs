@@ -64,9 +64,10 @@ mod encryption {
     #[cfg(feature = "__rustls-tls")]
     pub mod rustls {
         pub use rustls::ClientConfig;
-        use tokio_rustls::{webpki::DNSNameRef, TlsConnector as TokioTlsConnector};
+        use rustls::{RootCertStore, ServerName};
+        use tokio_rustls::TlsConnector as TokioTlsConnector;
 
-        use std::sync::Arc;
+        use std::{convert::TryFrom, sync::Arc};
         use tokio::io::{AsyncRead, AsyncWrite};
 
         use tungstenite::{error::TlsError, stream::Mode, Error};
@@ -89,23 +90,38 @@ mod encryption {
                         Some(config) => config,
                         None => {
                             #[allow(unused_mut)]
-                            let mut config = ClientConfig::new();
+                            let mut root_store = RootCertStore::empty();
                             #[cfg(feature = "rustls-tls-native-roots")]
                             {
-                                config.root_store = rustls_native_certs::load_native_certs()
-                                    .map_err(|(_, err)| err)?;
+                                for cert in rustls_native_certs::load_native_certs()? {
+                                    root_store
+                                        .add(&rustls::Certificate(cert.0))
+                                        .map_err(TlsError::Webpki)?;
+                                }
                             }
                             #[cfg(feature = "rustls-tls-webpki-roots")]
                             {
-                                config
-                                    .root_store
-                                    .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+                                root_store.add_server_trust_anchors(
+                                    webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
+                                        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
+                                            ta.subject,
+                                            ta.spki,
+                                            ta.name_constraints,
+                                        )
+                                    })
+                                );
                             }
 
-                            Arc::new(config)
+                            Arc::new(
+                                ClientConfig::builder()
+                                    .with_safe_defaults()
+                                    .with_root_certificates(root_store)
+                                    .with_no_client_auth(),
+                            )
                         }
                     };
-                    let domain = DNSNameRef::try_from_ascii_str(&domain).map_err(TlsError::Dns)?;
+                    let domain = ServerName::try_from(domain.as_str())
+                        .map_err(|_| TlsError::InvalidDnsName)?;
                     let stream = TokioTlsConnector::from(config);
                     let connected = stream.connect(domain, socket).await;
 
@@ -177,7 +193,7 @@ where
     let domain = crate::domain(&request)?;
 
     // Make sure we check domain and mode first. URL must be valid.
-    let mode = uri_mode(&request.uri())?;
+    let mode = uri_mode(request.uri())?;
 
     let stream = match connector {
         Some(conn) => match conn {

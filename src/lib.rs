@@ -226,7 +226,7 @@ impl<S> WebSocketStream<S> {
     {
         trace!("{}:{} WebSocketStream.with_context", file!(), line!());
         if let Some((kind, ctx)) = ctx {
-            self.inner.get_mut().set_waker(kind, &ctx.waker());
+            self.inner.get_mut().set_waker(kind, ctx.waker());
         }
         f(&mut self.inner)
     }
@@ -236,7 +236,7 @@ impl<S> WebSocketStream<S> {
     where
         S: AsyncRead + AsyncWrite + Unpin,
     {
-        &self.inner.get_ref().get_ref()
+        self.inner.get_ref().get_ref()
     }
 
     /// Returns a mutable reference to the inner stream.
