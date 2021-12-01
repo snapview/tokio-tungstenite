@@ -9,7 +9,7 @@ use tungstenite::{
 
 use crate::{domain, stream::MaybeTlsStream, IntoClientRequest, WebSocketStream};
 
-#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 use crate::Connector;
 
 /// Connect to a given URL.
@@ -54,7 +54,7 @@ where
 /// The same as `connect_async()` but the one can specify a websocket configuration,
 /// and a TLS connector to use.
 /// Please refer to `connect_async()` for more details.
-#[cfg(any(feature = "native-tls", feature = "rustls-tls"))]
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 pub async fn connect_async_tls_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>,
