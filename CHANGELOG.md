@@ -1,3 +1,7 @@
+# 0.17.0
+
+- Update the dependencies, please refer to the [`tungstenite` changelog](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md#0170) for the actual changes.
+
 # 0.16.1
 
 - Fix feature selection problem when using TLS.
