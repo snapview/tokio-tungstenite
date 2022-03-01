@@ -313,7 +313,7 @@ where
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         if self.closing {
-            // After queing it, we call `write_pending` to drive the close handshake to completion.
+            // After queueing it, we call `write_pending` to drive the close handshake to completion.
             match (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.write_pending()) {
                 Ok(()) => Poll::Ready(Ok(())),
                 Err(::tungstenite::Error::ConnectionClosed) => Poll::Ready(Ok(())),
