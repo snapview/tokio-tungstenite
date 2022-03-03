@@ -182,6 +182,7 @@ where
 #[derive(Debug)]
 pub struct WebSocketStream<S> {
     inner: WebSocket<AllowStd<S>>,
+    closing: bool,
 }
 
 impl<S> WebSocketStream<S> {
@@ -215,7 +216,7 @@ impl<S> WebSocketStream<S> {
     }
 
     pub(crate) fn new(ws: WebSocket<AllowStd<S>>) -> Self {
-        WebSocketStream { inner: ws }
+        WebSocketStream { inner: ws, closing: false }
     }
 
     fn with_context<F, R>(&mut self, ctx: Option<(ContextWaker, &mut Context<'_>)>, f: F) -> R
@@ -294,9 +295,7 @@ where
     fn start_send(mut self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
         match (*self).with_context(None, |s| s.write_message(item)) {
             Ok(()) => Ok(()),
-            Err(::tungstenite::Error::Io(ref err))
-                if err.kind() == std::io::ErrorKind::WouldBlock =>
-            {
+            Err(::tungstenite::Error::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 // the message was accepted and queued
                 // isn't an error.
                 Ok(())
@@ -313,9 +312,21 @@ where
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        match (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.close(None)) {
+        let res = if self.closing {
+            // After queueing it, we call `write_pending` to drive the close handshake to completion.
+            (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.write_pending())
+        } else {
+            (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.close(None))
+        };
+
+        match res {
             Ok(()) => Poll::Ready(Ok(())),
             Err(::tungstenite::Error::ConnectionClosed) => Poll::Ready(Ok(())),
+            Err(::tungstenite::Error::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
+                trace!("WouldBlock");
+                self.closing = true;
+                Poll::Pending
+            }
             Err(err) => {
                 debug!("websocket close error: {}", err);
                 Poll::Ready(Err(err))
