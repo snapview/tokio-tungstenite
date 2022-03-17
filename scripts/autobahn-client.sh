@@ -18,7 +18,7 @@ function test_diff() {
         <(jq -S 'del(."Tungstenite" | .. | .duration?)' 'autobahn/client/index.json')
     then
         echo 'Difference in results, either this is a regression or' \
-             'one should update autobahn/expected-results.json with the new results.' \
+             'one should update autobahn/expected-results.json with the new results.'
         exit 64
     fi
 }
