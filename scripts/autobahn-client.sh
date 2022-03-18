@@ -32,5 +32,5 @@ docker run -d --rm \
     wstest -m fuzzingserver -s 'autobahn/fuzzingserver.json'
 
 sleep 5
-cargo run --release --example autobahn-client
+cargo run --release --example autobahn-client --features=deflate
 test_diff

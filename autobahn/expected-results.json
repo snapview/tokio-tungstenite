@@ -120,884 +120,884 @@
          "reportfile": "tungstenite_case_10_1_1.json"
       },
       "12.1.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 490,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_1.json"
       },
       "12.1.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 4346,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_10.json"
       },
       "12.1.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1257,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_11.json"
       },
       "12.1.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1830,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_12.json"
       },
       "12.1.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1819,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_13.json"
       },
       "12.1.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2484,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_14.json"
       },
       "12.1.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 4087,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_15.json"
       },
       "12.1.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3933,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_16.json"
       },
       "12.1.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3914,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_17.json"
       },
       "12.1.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3891,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_18.json"
       },
       "12.1.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 387,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_2.json"
       },
       "12.1.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 245,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_3.json"
       },
       "12.1.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 287,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_4.json"
       },
       "12.1.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 459,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_5.json"
       },
       "12.1.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 559,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_6.json"
       },
       "12.1.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 817,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_7.json"
       },
       "12.1.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1305,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_8.json"
       },
       "12.1.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2262,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_1_9.json"
       },
       "12.2.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 201,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_1.json"
       },
       "12.2.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 18286,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_10.json"
       },
       "12.2.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1429,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_11.json"
       },
       "12.2.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 2491,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_12.json"
       },
       "12.2.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 4218,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_13.json"
       },
       "12.2.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 8369,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_14.json"
       },
       "12.2.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 16487,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_15.json"
       },
       "12.2.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 16234,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_16.json"
       },
       "12.2.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 15925,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_17.json"
       },
       "12.2.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 15617,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_18.json"
       },
       "12.2.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 193,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_2.json"
       },
       "12.2.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 345,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_3.json"
       },
       "12.2.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 424,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_4.json"
       },
       "12.2.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 856,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_5.json"
       },
       "12.2.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1424,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_6.json"
       },
       "12.2.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2211,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_7.json"
       },
       "12.2.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 4061,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_8.json"
       },
       "12.2.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 7871,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_2_9.json"
       },
       "12.3.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 161,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_1.json"
       },
       "12.3.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 21632,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_10.json"
       },
       "12.3.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1732,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_11.json"
       },
       "12.3.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 3099,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_12.json"
       },
       "12.3.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 5747,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_13.json"
       },
       "12.3.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 10949,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_14.json"
       },
       "12.3.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 21789,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_15.json"
       },
       "12.3.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 21489,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_16.json"
       },
       "12.3.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 21196,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_17.json"
       },
       "12.3.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 22421,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_18.json"
       },
       "12.3.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 160,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_2.json"
       },
       "12.3.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 224,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_3.json"
       },
       "12.3.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 380,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_4.json"
       },
       "12.3.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 990,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_5.json"
       },
       "12.3.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 2,
+         "duration": 1607,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_6.json"
       },
       "12.3.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 2925,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_7.json"
       },
       "12.3.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 5461,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_8.json"
       },
       "12.3.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 10604,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_3_9.json"
       },
       "12.4.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 476,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_1.json"
       },
       "12.4.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 5076,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_10.json"
       },
       "12.4.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 851,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_11.json"
       },
       "12.4.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1200,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_12.json"
       },
       "12.4.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1710,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_13.json"
       },
       "12.4.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 2850,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_14.json"
       },
       "12.4.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 5211,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_15.json"
       },
       "12.4.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 5017,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_16.json"
       },
       "12.4.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 4961,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_17.json"
       },
       "12.4.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 5002,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_18.json"
       },
       "12.4.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 469,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_2.json"
       },
       "12.4.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 496,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_3.json"
       },
       "12.4.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 580,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_4.json"
       },
       "12.4.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 678,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_5.json"
       },
       "12.4.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 868,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_6.json"
       },
       "12.4.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1147,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_7.json"
       },
       "12.4.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1776,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_8.json"
       },
       "12.4.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2884,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_4_9.json"
       },
       "12.5.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 149,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_1.json"
       },
       "12.5.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 11907,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_10.json"
       },
       "12.5.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1128,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_11.json"
       },
       "12.5.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1813,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_12.json"
       },
       "12.5.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3569,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_13.json"
       },
       "12.5.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 7520,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_14.json"
       },
       "12.5.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 12700,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_15.json"
       },
       "12.5.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 11999,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_16.json"
       },
       "12.5.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 11739,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_17.json"
       },
       "12.5.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 11982,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_18.json"
       },
       "12.5.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 163,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_2.json"
       },
       "12.5.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 313,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_3.json"
       },
       "12.5.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 336,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_4.json"
       },
       "12.5.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 695,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_5.json"
       },
       "12.5.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1057,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_6.json"
       },
       "12.5.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1751,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_7.json"
       },
       "12.5.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3150,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_8.json"
       },
       "12.5.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 6072,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_12_5_9.json"
       },
       "13.1.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 235,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_1.json"
       },
       "13.1.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3978,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_10.json"
       },
       "13.1.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 591,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_11.json"
       },
       "13.1.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 851,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_12.json"
       },
       "13.1.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1346,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_13.json"
       },
       "13.1.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2212,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_14.json"
       },
       "13.1.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 4209,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_15.json"
       },
       "13.1.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 4009,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_16.json"
       },
       "13.1.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 4007,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_17.json"
       },
       "13.1.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3975,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_18.json"
       },
       "13.1.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 265,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_2.json"
       },
       "13.1.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 272,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_3.json"
       },
       "13.1.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 338,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_4.json"
       },
       "13.1.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 482,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_5.json"
       },
       "13.1.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 2,
+         "duration": 570,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_6.json"
       },
       "13.1.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 2,
+         "duration": 823,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_7.json"
       },
       "13.1.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1367,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_8.json"
       },
       "13.1.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 2228,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_1_9.json"
       },
       "13.2.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 289,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_1.json"
       },
       "13.2.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 3957,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_10.json"
       },
       "13.2.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 569,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_11.json"
       },
       "13.2.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 839,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_12.json"
       },
       "13.2.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1255,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_13.json"
       },
       "13.2.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 2198,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_14.json"
       },
       "13.2.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 2,
+         "duration": 4179,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_15.json"
       },
       "13.2.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 4,
+         "duration": 4024,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_16.json"
       },
       "13.2.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 4049,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_17.json"
       },
       "13.2.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 3886,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_18.json"
       },
       "13.2.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 282,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_2.json"
       },
       "13.2.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 319,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_3.json"
       },
       "13.2.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 407,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_4.json"
       },
       "13.2.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 468,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_5.json"
       },
       "13.2.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 559,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_6.json"
       },
       "13.2.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 818,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_7.json"
       },
       "13.2.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 1287,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_8.json"
       },
       "13.2.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2175,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_2_9.json"
       },
@@ -1506,128 +1506,128 @@
          "reportfile": "tungstenite_case_13_6_9.json"
       },
       "13.7.1": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 306,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_1.json"
       },
       "13.7.10": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 3931,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_10.json"
       },
       "13.7.11": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 562,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_11.json"
       },
       "13.7.12": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 801,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_12.json"
       },
       "13.7.13": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 1354,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_13.json"
       },
       "13.7.14": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 2170,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_14.json"
       },
       "13.7.15": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 4121,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_15.json"
       },
       "13.7.16": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 3941,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_16.json"
       },
       "13.7.17": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 3915,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_17.json"
       },
       "13.7.18": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 4000,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_18.json"
       },
       "13.7.2": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 279,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_2.json"
       },
       "13.7.3": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 301,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_3.json"
       },
       "13.7.4": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 0,
+         "duration": 461,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_4.json"
       },
       "13.7.5": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 439,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_5.json"
       },
       "13.7.6": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 600,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_6.json"
       },
       "13.7.7": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 2,
+         "duration": 886,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_7.json"
       },
       "13.7.8": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 2,
+         "duration": 1255,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_8.json"
       },
       "13.7.9": {
-         "behavior": "UNIMPLEMENTED",
+         "behavior": "OK",
          "behaviorClose": "OK",
-         "duration": 1,
+         "duration": 2173,
          "remoteCloseCode": 1000,
          "reportfile": "tungstenite_case_13_7_9.json"
       },
