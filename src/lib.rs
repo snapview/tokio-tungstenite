@@ -26,7 +26,7 @@ use std::io::{Read, Write};
 use compat::{cvt, AllowStd, ContextWaker};
 use futures_util::{
     sink::{Sink, SinkExt},
-    stream::Stream,
+    stream::{FusedStream, Stream},
 };
 use log::*;
 use std::{
@@ -294,6 +294,15 @@ where
                 }
             }
         }
+    }
+}
+
+impl<T> FusedStream for WebSocketStream<T>
+where
+    T: AsyncRead + AsyncWrite + Unpin,
+{
+    fn is_terminated(&self) -> bool {
+        self.ended
     }
 }
 
