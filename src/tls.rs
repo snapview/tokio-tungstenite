@@ -13,6 +13,7 @@ pub use crate::stream::MaybeTlsStream;
 /// `native-tls` or `rustls` is used to create a TLS connection. Or TLS can be disabled with the
 /// `Plain` variant.
 #[non_exhaustive]
+#[derive(Clone)]
 pub enum Connector {
     /// Plain (non-TLS) connector.
     Plain,
