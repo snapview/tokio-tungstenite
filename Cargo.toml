@@ -17,13 +17,14 @@ features = ["native-tls", "__rustls-tls"]
 
 [features]
 default = ["connect"]
-connect = ["stream", "tokio/net"]
+connect = ["stream", "tokio/net", "mio"]
 native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls"]
 native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]
 rustls-tls-native-roots = ["__rustls-tls", "rustls-native-certs"]
 rustls-tls-webpki-roots = ["__rustls-tls", "webpki-roots"]
 __rustls-tls = ["rustls", "tokio-rustls", "stream", "tungstenite/__rustls-tls", "webpki"]
 stream = []
+mio = ["dep:mio"]
 
 [dependencies]
 log = "0.4"
@@ -62,6 +63,10 @@ version = "0.22.0"
 [dependencies.webpki-roots]
 optional = true
 version = "0.22.1"
+
+[dependencies.mio]
+optional = true
+version = "0.8"
 
 [dev-dependencies]
 futures-channel = "0.3"

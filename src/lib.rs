@@ -60,6 +60,9 @@ pub use connect::connect_async_tls_with_config;
 #[cfg(feature = "stream")]
 pub use stream::MaybeTlsStream;
 
+#[cfg(feature = "mio")]
+use mio::{Interest, Registry, Token, event::Source};
+
 use tungstenite::protocol::CloseFrame;
 
 /// Creates a WebSocket handshake from a request and a stream.
@@ -356,6 +359,31 @@ where
                 Poll::Ready(Err(err))
             }
         }
+    }
+}
+
+#[cfg(feature = "mio")]
+impl<S: AsyncRead + AsyncWrite + Unpin + Source> Source for WebSocketStream<S> {
+    fn register(
+        &mut self,
+        registry: &Registry,
+        token: Token,
+        interests: Interest,
+    ) -> std::io::Result<()> {
+        self.get_mut().register(registry, token, interests)
+    }
+
+    fn reregister(
+        &mut self,
+        registry: &Registry,
+        token: Token,
+        interests: Interest,
+    ) -> std::io::Result<()> {
+        self.get_mut().reregister(registry, token, interests)
+    }
+
+    fn deregister(&mut self, registry: &Registry) -> std::io::Result<()> {
+        self.get_mut().deregister(registry)
     }
 }
 
