@@ -332,7 +332,16 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending()))
+        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending())).map(
+            |result| match result {
+                // It's not an error for the WebSocket to have closed normally.
+                // Note: `tungstenite` will only return this if a close frame has been sent, and
+                // doesn't allow sending anything else after that, so this can't arise when trying
+                // to flush something other than a close frame.
+                Err(::tungstenite::Error::ConnectionClosed) => Ok(()),
+                other => other,
+            },
+        )
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
