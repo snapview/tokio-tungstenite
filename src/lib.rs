@@ -338,7 +338,7 @@ where
                 // Note: `tungstenite` will only return this if a close frame has been sent, and
                 // doesn't allow sending anything else after that, so this can't arise when trying
                 // to flush something other than a close frame.
-                Err(::tungstenite::Error::ConnectionClosed) => Ok(()),
+                Err(::tungstenite::Error::ConnectionClosed) if self.closing => Ok(()),
                 other => other,
             },
         )
