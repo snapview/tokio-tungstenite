@@ -23,7 +23,7 @@ function test_diff() {
 }
 
 cargo run --release --example autobahn-server & WSSERVER_PID=$!
-sleep 3
+sleep 5
 
 docker run --rm \
     -v "${PWD}/autobahn:/autobahn" \

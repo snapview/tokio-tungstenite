@@ -31,6 +31,6 @@ docker run -d --rm \
     crossbario/autobahn-testsuite \
     wstest -m fuzzingserver -s 'autobahn/fuzzingserver.json'
 
-sleep 3
+sleep 5
 cargo run --release --example autobahn-client
 test_diff
