@@ -1,3 +1,9 @@
+# 0.17.2
+
+- Make `Origin` header case-sensitive (to keep compatibility with poorely-written servers that don't accept lowercase `Origin` header).
+- Make semantics of the reading form the `WebSocketStream` more reasonable (return `None` instead of an error when the stream is normally closed).
+- Imrpove the way `poll_close()` works by properly driving the close of the stream till completion.
+
 # 0.17.1
 
 - Update the `tungstenite` dependency (fixes a panic in `tungstenite` and MSRV), see [`tungstenite`'s changelog for more details](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md#0172).
