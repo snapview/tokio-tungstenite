@@ -16,8 +16,9 @@ include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 features = ["native-tls", "__rustls-tls"]
 
 [features]
-default = ["connect"]
-connect = ["stream", "tokio/net"]
+default = ["connect", "handshake"]
+connect = ["stream", "tokio/net", "handshake"]
+handshake = ["tungstenite/handshake"]
 native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls"]
 native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]
 rustls-tls-native-roots = ["__rustls-tls", "rustls-native-certs"]
@@ -32,6 +33,7 @@ tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
 version = "0.17.3"
+path = "../tungstenite-rs"
 default-features = false
 
 [dependencies.native-tls-crate]

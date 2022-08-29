@@ -35,14 +35,17 @@ use std::{
 };
 use tokio::io::{AsyncRead, AsyncWrite};
 
+#[cfg(feature = "handshake")]
 use tungstenite::{
     client::IntoClientRequest,
-    error::Error as WsError,
     handshake::{
         client::{ClientHandshake, Response},
         server::{Callback, NoCallback},
         HandshakeError,
     },
+};
+use tungstenite::{
+    error::Error as WsError,
     protocol::{Message, Role, WebSocket, WebSocketConfig},
 };
 
@@ -74,6 +77,7 @@ use tungstenite::protocol::CloseFrame;
 ///
 /// This is typically used for clients who have already established, for
 /// example, a TCP connection to the remote server.
+#[cfg(feature = "handshake")]
 pub async fn client_async<'a, R, S>(
     request: R,
     stream: S,
@@ -87,6 +91,7 @@ where
 
 /// The same as `client_async()` but the one can specify a websocket configuration.
 /// Please refer to `client_async()` for more details.
+#[cfg(feature = "handshake")]
 pub async fn client_async_with_config<'a, R, S>(
     request: R,
     stream: S,
@@ -118,6 +123,7 @@ where
 /// This is typically used after a socket has been accepted from a
 /// `TcpListener`. That socket is then passed to this function to perform
 /// the server half of the accepting a client's websocket connection.
+#[cfg(feature = "handshake")]
 pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
@@ -127,6 +133,7 @@ where
 
 /// The same as `accept_async()` but the one can specify a websocket configuration.
 /// Please refer to `accept_async()` for more details.
+#[cfg(feature = "handshake")]
 pub async fn accept_async_with_config<S>(
     stream: S,
     config: Option<WebSocketConfig>,
@@ -142,6 +149,7 @@ where
 /// This function does the same as `accept_async()` but accepts an extra callback
 /// for header processing. The callback receives headers of the incoming
 /// requests and is able to add extra headers to the reply.
+#[cfg(feature = "handshake")]
 pub async fn accept_hdr_async<S, C>(stream: S, callback: C) -> Result<WebSocketStream<S>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin,
@@ -152,6 +160,7 @@ where
 
 /// The same as `accept_hdr_async()` but the one can specify a websocket configuration.
 /// Please refer to `accept_hdr_async()` for more details.
+#[cfg(feature = "handshake")]
 pub async fn accept_hdr_async_with_config<S, C>(
     stream: S,
     callback: C,
