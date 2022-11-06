@@ -1,5 +1,6 @@
 //! Connection helper.
 use tokio::net::TcpStream;
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use tungstenite::{
     error::{Error, UrlError},
@@ -52,13 +53,14 @@ where
 }
 
 /// connect to an exist stream socket, and upgrade to websocket
-pub async fn connect_to_raw_socket_async<R>(
+pub async fn connect_to_raw_socket_async<R, S>(
     request: R,
     config: Option<WebSocketConfig>,
-    stream: TcpStream,
-) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
+    stream: S,
+) -> Result<(WebSocketStream<MaybeTlsStream<S>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
+    S: 'static + AsyncRead + AsyncWrite + Send + Unpin,
 {
     let request = request.into_client_request()?;
     crate::tls::client_async_tls_with_config(request, stream, config, None).await
