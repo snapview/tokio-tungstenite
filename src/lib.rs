@@ -52,7 +52,7 @@ pub use tls::Connector;
 pub use tls::{client_async_tls, client_async_tls_with_config};
 
 #[cfg(feature = "connect")]
-pub use connect::{connect_async, connect_async_with_config};
+pub use connect::{connect_async, connect_async_with_config, connect_to_raw_socket_async};
 
 #[cfg(all(any(feature = "native-tls", feature = "__rustls-tls"), feature = "connect"))]
 pub use connect::connect_async_tls_with_config;
