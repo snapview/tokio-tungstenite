@@ -51,6 +51,19 @@ where
     crate::tls::client_async_tls_with_config(request, socket, config, None).await
 }
 
+/// connect to an exist stream socket, and upgrade to websocket
+pub async fn connect_to_raw_socket_async<R>(
+    request: R,
+    config: Option<WebSocketConfig>,
+    stream: TcpStream,
+) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    let request = request.into_client_request()?;
+    crate::tls::client_async_tls_with_config(request, stream, config, None).await
+}
+
 /// The same as `connect_async()` but the one can specify a websocket configuration,
 /// and a TLS connector to use.
 /// Please refer to `connect_async()` for more details.
