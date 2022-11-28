@@ -1,3 +1,7 @@
+# 0.18.0
+
+- Update dependencies (underlying `tungstenite` core).
+
 # 0.17.2
 
 - Make `Origin` header case-sensitive (to keep compatibility with poorely-written servers that don't accept lowercase `Origin` header).
