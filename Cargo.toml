@@ -78,3 +78,7 @@ required-features = ["connect"]
 [[example]]
 name = "client"
 required-features = ["connect"]
+
+[[test]]
+name = "handshakes"
+required-features = ["handshake"]
