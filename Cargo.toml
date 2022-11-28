@@ -76,8 +76,24 @@ name = "autobahn-client"
 required-features = ["connect"]
 
 [[example]]
+name = "autobahn-server"
+required-features = ["handshake"]
+
+[[example]]
 name = "client"
 required-features = ["connect"]
+
+[[example]]
+name = "echo-server"
+required-features = ["handshake"]
+
+[[example]]
+name = "server-custom-accept"
+required-features = ["handshake"]
+
+[[example]]
+name = "server"
+required-features = ["handshake"]
 
 [[test]]
 name = "handshakes"
