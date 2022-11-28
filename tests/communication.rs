@@ -1,3 +1,5 @@
+#![cfg(feature = "handshake")]
+
 use futures_util::{SinkExt, StreamExt};
 use log::*;
 use tokio::{

@@ -1,3 +1,5 @@
+#![cfg(feature = "handshake")]
+
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, client_async};
 
