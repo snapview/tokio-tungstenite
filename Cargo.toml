@@ -32,8 +32,7 @@ futures-util = { version = "0.3", default-features = false, features = ["sink", 
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.17.3"
-path = "../tungstenite-rs"
+version = "0.18.0"
 default-features = false
 
 [dependencies.native-tls-crate]
