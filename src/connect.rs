@@ -48,6 +48,9 @@ where
     let try_socket = TcpStream::connect(addr).await;
     let socket = try_socket.map_err(Error::Io)?;
 
+    // Disable Nagle algorithm.
+    socket.set_nodelay(true)?;
+
     crate::tls::client_async_tls_with_config(request, socket, config, None).await
 }
 
@@ -79,5 +82,9 @@ where
     let addr = format!("{}:{}", domain, port);
     let try_socket = TcpStream::connect(addr).await;
     let socket = try_socket.map_err(Error::Io)?;
+
+    // Disable Nagle algorithm.
+    socket.set_nodelay(true)?;
+
     crate::tls::client_async_tls_with_config(request, socket, config, connector).await
 }
