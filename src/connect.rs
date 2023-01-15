@@ -19,14 +19,17 @@ pub async fn connect_async<R>(
 where
     R: IntoClientRequest + Unpin,
 {
-    connect_async_with_config(request, None).await
+    connect_async_with_config(request, None, false).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration.
-/// Please refer to `connect_async()` for more details.
+/// Please refer to `connect_async()` for more details. `disable_nagle` specifies if
+/// the Nagle's algorithm must be disabled, i.e. `set_nodelay(true)`. If you don't know
+/// what the Nagle's algorithm is, better leave it set to `false`.
 pub async fn connect_async_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>,
+    disable_nagle: bool,
 ) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
@@ -48,19 +51,23 @@ where
     let try_socket = TcpStream::connect(addr).await;
     let socket = try_socket.map_err(Error::Io)?;
 
-    // Disable Nagle algorithm.
-    socket.set_nodelay(true)?;
+    if disable_nagle {
+        socket.set_nodelay(true)?;
+    }
 
     crate::tls::client_async_tls_with_config(request, socket, config, None).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration,
-/// and a TLS connector to use.
-/// Please refer to `connect_async()` for more details.
+/// and a TLS connector to use. Please refer to `connect_async()` for more details.
+/// `disable_nagle` specifies if the Nagle's algorithm must be disabled, i.e.
+/// `set_nodelay(true)`. If you don't know what the Nagle's algorithm is, better
+/// leave it to `false`.
 #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 pub async fn connect_async_tls_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>,
+    disable_nagle: bool,
     connector: Option<Connector>,
 ) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
 where
@@ -83,8 +90,9 @@ where
     let try_socket = TcpStream::connect(addr).await;
     let socket = try_socket.map_err(Error::Io)?;
 
-    // Disable Nagle algorithm.
-    socket.set_nodelay(true)?;
+    if disable_nagle {
+        socket.set_nodelay(true)?;
+    }
 
     crate::tls::client_async_tls_with_config(request, socket, config, connector).await
 }
