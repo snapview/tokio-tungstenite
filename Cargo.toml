@@ -13,7 +13,7 @@ edition = "2018"
 include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 
 [package.metadata.docs.rs]
-features = ["native-tls", "__rustls-tls"]
+features = ["native-tls", "__rustls-tls", "uds"]
 
 [features]
 default = ["connect", "handshake"]
@@ -25,6 +25,7 @@ rustls-tls-native-roots = ["__rustls-tls", "rustls-native-certs"]
 rustls-tls-webpki-roots = ["__rustls-tls", "webpki-roots"]
 __rustls-tls = ["rustls", "tokio-rustls", "stream", "tungstenite/__rustls-tls", "webpki", "handshake"]
 stream = []
+uds = []
 
 [dependencies]
 log = "0.4"
@@ -70,6 +71,7 @@ hyper = { version = "0.14", default-features = false, features = ["http1", "serv
 tokio = { version = "1.0.0", default-features = false, features = ["io-std", "macros", "net", "rt-multi-thread", "time"] }
 url = "2.0.0"
 env_logger = "0.9"
+target-test-dir = "0.2.0"
 
 [[example]]
 name = "autobahn-client"

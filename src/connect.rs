@@ -1,5 +1,7 @@
 //! Connection helper.
-use tokio::net::TcpStream;
+use std::path::Path;
+
+use tokio::net::{TcpStream, UnixStream};
 
 use tungstenite::{
     error::{Error, UrlError},
@@ -54,6 +56,35 @@ where
     if disable_nagle {
         socket.set_nodelay(true)?;
     }
+
+    crate::tls::client_async_tls_with_config(request, socket, config, None).await
+}
+
+/// Connect to a given URL but connect to UNIX domain socket
+#[cfg(feature = "uds")]
+pub async fn connect_unix_async<R>(
+    path: impl AsRef<Path>,
+    request: R,
+) -> Result<(WebSocketStream<MaybeTlsStream<UnixStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    connect_unix_async_with_config(path, request, None).await
+}
+
+/// The same as `connect_unix_async()` but the one can specify a websocket configuration.
+#[cfg(feature = "uds")]
+pub async fn connect_unix_async_with_config<R>(
+    path: impl AsRef<Path>,
+    request: R,
+    config: Option<WebSocketConfig>,
+) -> Result<(WebSocketStream<MaybeTlsStream<UnixStream>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+{
+    let request = request.into_client_request()?;
+    let try_socket = UnixStream::connect(path).await;
+    let socket = try_socket.map_err(Error::Io)?;
 
     crate::tls::client_async_tls_with_config(request, socket, config, None).await
 }

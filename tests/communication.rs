@@ -104,3 +104,53 @@ async fn split_communication() {
     let messages = msg_rx.await.expect("Failed to receive messages");
     assert_eq!(messages.len(), 10);
 }
+
+#[cfg(feature = "uds")]
+#[tokio::test]
+async fn unix_communication() {
+    use target_test_dir::get_base_test_dir;
+    use tokio::net::UnixListener;
+
+    let test_dir = get_base_test_dir();
+    let socket_path = test_dir.join("tokio-tungsentite.socket");
+
+    let _ = std::fs::remove_file(&socket_path);
+
+    let _ = env_logger::try_init();
+
+    let (con_tx, con_rx) = futures_channel::oneshot::channel();
+    let (msg_tx, msg_rx) = futures_channel::oneshot::channel();
+
+    let socket_path2 = socket_path.clone();
+    let f = async move {
+        println!("{:?}", std::env::vars().into_iter().collect::<Vec<_>>());
+        let listener = UnixListener::bind(&socket_path2).unwrap();
+        info!("Server ready");
+        con_tx.send(()).unwrap();
+        info!("Waiting on next connection");
+        let (connection, _) = listener.accept().await.expect("No connections to accept");
+        let stream = accept_async(connection).await;
+        let stream = stream.expect("Failed to handshake with connection");
+        run_connection(stream, msg_tx).await;
+    };
+
+    tokio::spawn(f);
+
+    info!("Waiting for server to be ready");
+
+    con_rx.await.expect("Server not ready");
+    let tcp = tokio::net::UnixStream::connect(&socket_path).await.expect("Failed to connect");
+    let url = "ws://unused-hostname/any-url";
+    let (mut stream, _) = client_async(url, tcp).await.expect("Client failed to connect");
+
+    for i in 1..10 {
+        info!("Sending message");
+        stream.send(Message::Text(format!("{}", i))).await.expect("Failed to send message");
+    }
+
+    stream.close(None).await.expect("Failed to close");
+
+    info!("Waiting for response messages");
+    let messages = msg_rx.await.expect("Failed to receive messages");
+    assert_eq!(messages.len(), 10);
+}
