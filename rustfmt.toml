@@ -4,4 +4,4 @@
 # Break complex but short statements a bit less.
 use_small_heuristics = "Max"
 
-merge_imports = true
+imports_granularity = "Crate"
