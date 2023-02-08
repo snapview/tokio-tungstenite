@@ -35,7 +35,7 @@ jobs:
         run: sudo apt-get install libssl-dev
 
       - name: Install cargo-hack
-        run: cargo install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
 
       - name: Check
         run: cargo hack check --feature-powerset --all-targets
