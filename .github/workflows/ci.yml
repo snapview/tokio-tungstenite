@@ -35,7 +35,7 @@ jobs:
         run: sudo apt-get install libssl-dev
 
       - name: Install cargo-hack
-        run: cargo install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
 
       - name: Check
         run: cargo hack check --feature-powerset --all-targets
@@ -62,9 +62,6 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-
-      - name: Install and configure docker
-        uses: docker-practice/actions-setup-docker@v1
 
       - name: Running Autobahn TestSuite for client
         run: ./scripts/autobahn-client.sh
