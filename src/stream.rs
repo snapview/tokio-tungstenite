@@ -78,3 +78,15 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
         }
     }
 }
+
+impl tungstenite::stream::NoDelay for MaybeTlsStream<tokio::net::TcpStream>  {
+    fn set_nodelay(&mut self, nodelay: bool) -> Result<(), std::io::Error> {
+        match self {
+            MaybeTlsStream::Plain(ref mut s) => s.set_nodelay(nodelay),
+            #[cfg(feature = "native-tls")]
+            MaybeTlsStream::NativeTls(ref mut s) => s.set_nodelay(nodelay),
+            #[cfg(feature = "__rustls-tls")]
+            MaybeTlsStream::Rustls(ref mut s) => s.set_nodelay(nodelay),
+        }
+    }
+}
