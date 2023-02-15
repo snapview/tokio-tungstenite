@@ -4,12 +4,13 @@
 //! `native_tls` or `openssl` will work as long as there is a TLS stream supporting standard
 //! `Read + Write` traits.
 use std::{
+    io::{Read, Write},
     pin::Pin,
     task::{Context, Poll},
-    io::{Read, Write},
 };
 
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+use tungstenite::stream::NoDelay;
 
 /// A stream that might be protected with TLS.
 #[non_exhaustive]
@@ -80,9 +81,7 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
     }
 }
 
-impl<S> tungstenite::stream::NoDelay for MaybeTlsStream<S>
-    where S: Read + Write + tungstenite::stream::NoDelay
-{
+impl<S: Read + Write + NoDelay> NoDelay for MaybeTlsStream<S> {
     fn set_nodelay(&mut self, nodelay: bool) -> Result<(), std::io::Error> {
         match self {
             MaybeTlsStream::Plain(ref mut s) => s.set_nodelay(nodelay),
