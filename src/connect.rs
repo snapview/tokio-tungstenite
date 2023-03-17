@@ -3,14 +3,11 @@ use tokio::net::TcpStream;
 
 use tungstenite::{
     error::{Error, UrlError},
-    handshake::client::Response,
+    handshake::client::{Request, Response},
     protocol::WebSocketConfig,
 };
 
-use crate::{domain, stream::MaybeTlsStream, IntoClientRequest, WebSocketStream};
-
-#[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
-use crate::Connector;
+use crate::{domain, stream::MaybeTlsStream, Connector, IntoClientRequest, WebSocketStream};
 
 /// Connect to a given URL.
 pub async fn connect_async<R>(
@@ -34,28 +31,7 @@ pub async fn connect_async_with_config<R>(
 where
     R: IntoClientRequest + Unpin,
 {
-    let request = request.into_client_request()?;
-
-    let domain = domain(&request)?;
-    let port = request
-        .uri()
-        .port_u16()
-        .or_else(|| match request.uri().scheme_str() {
-            Some("wss") => Some(443),
-            Some("ws") => Some(80),
-            _ => None,
-        })
-        .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
-
-    let addr = format!("{}:{}", domain, port);
-    let try_socket = TcpStream::connect(addr).await;
-    let socket = try_socket.map_err(Error::Io)?;
-
-    if disable_nagle {
-        socket.set_nodelay(true)?;
-    }
-
-    crate::tls::client_async_tls_with_config(request, socket, config, None).await
+    connect(request.into_client_request()?, config, disable_nagle, None).await
 }
 
 /// The same as `connect_async()` but the one can specify a websocket configuration,
@@ -73,8 +49,15 @@ pub async fn connect_async_tls_with_config<R>(
 where
     R: IntoClientRequest + Unpin,
 {
-    let request = request.into_client_request()?;
+    connect(request.into_client_request()?, config, disable_nagle, connector).await
+}
 
+async fn connect(
+    request: Request,
+    config: Option<WebSocketConfig>,
+    disable_nagle: bool,
+    connector: Option<Connector>,
+) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error> {
     let domain = domain(&request)?;
     let port = request
         .uri()
@@ -86,9 +69,8 @@ where
         })
         .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
 
-    let addr = format!("{}:{}", domain, port);
-    let try_socket = TcpStream::connect(addr).await;
-    let socket = try_socket.map_err(Error::Io)?;
+    let addr = format!("{domain}:{port}");
+    let socket = TcpStream::connect(addr).await.map_err(Error::Io)?;
 
     if disable_nagle {
         socket.set_nodelay(true)?;
