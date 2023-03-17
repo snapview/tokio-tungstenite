@@ -10,7 +10,14 @@
 ///! cmd /c "set RUST_LOG=debug && cargo run --example server-headers"
 ///! ```
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::{accept_hdr_async, tungstenite::{connect, handshake::server::{Request, Response}, Message}};
+use tokio_tungstenite::{
+    accept_hdr_async,
+    tungstenite::{
+        connect,
+        handshake::server::{Request, Response},
+        Message,
+    },
+};
 use url::Url;
 #[macro_use]
 extern crate log;
@@ -71,9 +78,7 @@ fn client() {
         debug!("* {}: {:?}", header, _value);
     }
 
-    socket
-        .write_message(Message::Text("Hello WebSocket".into()))
-        .unwrap();
+    socket.write_message(Message::Text("Hello WebSocket".into())).unwrap();
     loop {
         let msg = socket.read_message().expect("Error reading message");
         debug!("Received: {}", msg);
