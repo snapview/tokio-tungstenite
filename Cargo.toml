@@ -96,5 +96,9 @@ name = "server"
 required-features = ["handshake"]
 
 [[example]]
+name = "server-headers"
+required-features = ["handshake"]
+
+[[example]]
 name = "interval-server"
 required-features = ["handshake"]
