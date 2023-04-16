@@ -39,10 +39,12 @@ use hyper::{
 use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
-use tokio_tungstenite::WebSocketStream;
-use tungstenite::{
-    handshake::derive_accept_key,
-    protocol::{Message, Role},
+use tokio_tungstenite::{
+    tungstenite::{
+        handshake::derive_accept_key,
+        protocol::{Message, Role},
+    },
+    WebSocketStream,
 };
 
 type Tx = UnboundedSender<Message>;

@@ -2,8 +2,9 @@ use futures_util::{SinkExt, StreamExt};
 use log::*;
 use std::{net::SocketAddr, time::Duration};
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::{accept_async, tungstenite::Error};
-use tungstenite::{Message, Result};
+use tokio_tungstenite::{
+    accept_async, tungstenite::Error, tungstenite::Message, tungstenite::Result,
+};
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {
