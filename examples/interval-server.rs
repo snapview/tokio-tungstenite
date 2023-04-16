@@ -3,7 +3,8 @@ use log::*;
 use std::{net::SocketAddr, time::Duration};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{
-    accept_async, tungstenite::Error, tungstenite::Message, tungstenite::Result,
+    accept_async,
+    tungstenite::{Error, Message, Result},
 };
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
