@@ -373,6 +373,9 @@ where
 #[inline]
 fn domain(request: &tungstenite::handshake::client::Request) -> Result<String, WsError> {
     match request.uri().host() {
+        // rustls expects IPv6 addresses without the surrounding [] brackets
+        #[cfg(feature = "__rustls-tls")]
+        Some(d) if d.starts_with('[') && d.ends_with(']') => Ok(d[1..d.len() - 1].to_string()),
         Some(d) => Ok(d.to_string()),
         None => Err(WsError::Url(tungstenite::error::UrlError::NoHostName)),
     }
