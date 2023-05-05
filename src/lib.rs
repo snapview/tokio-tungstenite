@@ -328,7 +328,7 @@ where
     fn start_send(mut self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
         match (*self).with_context(None, |s| s.write_message(item)) {
             Ok(()) => Ok(()),
-            Err(::tungstenite::Error::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
+            Err(WsError::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 // the message was accepted and queued
                 // isn't an error.
                 Ok(())
@@ -341,7 +341,19 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending()))
+        match (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.write_pending()) {
+            Ok(()) => Poll::Ready(Ok(())),
+            Err(WsError::ConnectionClosed) => {
+                // WebSocket is closing and there is nothing to send anymore.
+                // Not an failure, the flush operation is a success.
+                Poll::Ready(Ok(()))
+            }
+            Err(WsError::Io(ref e)) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                trace!("WouldBlock");
+                Poll::Pending
+            }
+            Err(e) => Poll::Ready(Err(e)),
+        }
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -354,8 +366,8 @@ where
 
         match res {
             Ok(()) => Poll::Ready(Ok(())),
-            Err(::tungstenite::Error::ConnectionClosed) => Poll::Ready(Ok(())),
-            Err(::tungstenite::Error::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
+            Err(WsError::ConnectionClosed) => Poll::Ready(Ok(())),
+            Err(WsError::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 trace!("WouldBlock");
                 self.closing = true;
                 Poll::Pending
