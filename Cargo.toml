@@ -30,7 +30,7 @@ stream = []
 [dependencies]
 log = "0.4.17"
 futures-util = { version = "0.3.28", default-features = false, features = ["sink", "std"] }
-tokio = { version = "1.27.0", default-features = false, features = ["io-util"] }
+tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
 version = "0.19.0"
