@@ -90,7 +90,6 @@ mod encryption {
                     let config = match tls_connector {
                         Some(config) => config,
                         None => {
-                            #[allow(unused_mut)]
                             let mut root_store = RootCertStore::empty();
                             #[cfg(feature = "rustls-tls-native-roots")]
                             {
