@@ -1,3 +1,10 @@
+# 0.19.0
+
+- Allow users to enable/disable Nagle algorithm when using `connect()` helpers.
+- Improve the behavior of the `Sink` for the `WebSocketStream`, so it does not return an error when it’s not necessary (when `poll_flush()` is called on a connection that has just been closed).
+- Workaround an issue where `rustls` TLS backend expected domain in a certain format and reject IPv6 addresses if they contained square brackets in them.
+- Update dependencies and remove unused errors.
+
 # 0.18.0
 
 - Update dependencies (underlying `tungstenite` core).
