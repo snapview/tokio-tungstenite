@@ -116,7 +116,7 @@ mod encryption {
                                 feature = "rustls-tls-native-roots",
                                 feature = "rustls-tls-webpki-roots"
                             )))]
-                            compile_error!("__rustls-tls is private; use one of the documented flags to choose root certificate vendor");
+                            compile_error!("__rustls-tls is private; use one of the documented features to choose root certificate vendor");
 
                             Arc::new(
                                 ClientConfig::builder()
