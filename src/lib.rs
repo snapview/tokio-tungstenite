@@ -341,19 +341,13 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        match (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.write_pending()) {
-            Ok(()) => Poll::Ready(Ok(())),
-            Err(WsError::ConnectionClosed) => {
-                // WebSocket is closing and there is nothing to send anymore.
-                // Not an failure, the flush operation is a success.
-                Poll::Ready(Ok(()))
+        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending())).map(|r| {
+            // WebSocket connection has just been closed. Flushing completed, not an error.
+            match r {
+                Err(WsError::ConnectionClosed) => Ok(()),
+                other => other,
             }
-            Err(WsError::Io(ref e)) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                trace!("WouldBlock");
-                Poll::Pending
-            }
-            Err(e) => Poll::Ready(Err(e)),
-        }
+        })
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
