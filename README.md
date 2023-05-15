@@ -40,6 +40,6 @@ that have been designed to be performant or you could file a PR against `tungste
 
 We are aware of changes that both `tungstenite` and `tokio-tungstenite` need in order to fill the gap of ~30% performance difference between `tungstenite`
 and more performant libraries like `fastbwebsockets`, but we have not worked on that yet as it was not required for the use case that original authors designed
-the library for. In the course of past yeras have merged several performance improvements provided by the awesome community of Rust users who helped to improve
-the crate! For a quick summary of the pending performance problems/improvements, see [the comment](https://github.com/snapview/tungstenite-rs/issues/352#issuecomment-1537488614).
+the library for. In the course of past years we have merged several performance improvements submitted by the awesome community of Rust users who helped to improve
+the library! For a quick summary of the pending performance problems/improvements, see [the comment](https://github.com/snapview/tungstenite-rs/issues/352#issuecomment-1537488614).
 
