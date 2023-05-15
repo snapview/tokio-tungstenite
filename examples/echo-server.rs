@@ -2,11 +2,14 @@
 //!
 //! You can test this out by running:
 //!
-//!     cargo run --example server 127.0.0.1:12345
+//!     cargo run --example echo-server 127.0.0.1:12345
 //!
 //! And then in another window run:
 //!
 //!     cargo run --example client ws://127.0.0.1:12345/
+//!
+//! Type a message into the client window, press enter to send it and
+//! see it echoed back.
 
 use std::{env, io::Error};
 
