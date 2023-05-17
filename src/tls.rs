@@ -94,11 +94,13 @@ mod encryption {
                             let mut root_store = RootCertStore::empty();
                             #[cfg(feature = "rustls-tls-native-roots")]
                             {
-                                for cert in rustls_native_certs::load_native_certs()? {
-                                    root_store
-                                        .add(&rustls::Certificate(cert.0))
-                                        .map_err(TlsError::Rustls)?;
-                                }
+                                let native_certs = rustls_native_certs::load_native_certs()?;
+                                let der_certs: Vec<Vec<u8>> =
+                                    native_certs.into_iter().map(|cert| cert.0).collect();
+                                let total_number = der_certs.len();
+                                let (number_added, number_ignored) =
+                                    root_store.add_parsable_certificates(&der_certs);
+                                log::debug!("Added {number_added}/{total_number} native root certificates (ignored {number_ignored})");
                             }
                             #[cfg(feature = "rustls-tls-webpki-roots")]
                             {
