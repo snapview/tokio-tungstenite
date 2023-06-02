@@ -290,8 +290,8 @@ where
         }
 
         match futures_util::ready!(self.with_context(Some((ContextWaker::Read, cx)), |s| {
-            trace!("{}:{} Stream.with_context poll_next -> read_message()", file!(), line!());
-            cvt(s.read_message())
+            trace!("{}:{} Stream.with_context poll_next -> read()", file!(), line!());
+            cvt(s.read())
         })) {
             Ok(v) => Poll::Ready(Some(Ok(v))),
             Err(e) => {
@@ -321,12 +321,12 @@ where
 {
     type Error = WsError;
 
-    fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending()))
+    fn poll_ready(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
     }
 
     fn start_send(mut self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
-        match (*self).with_context(None, |s| s.write_message(item)) {
+        match (*self).with_context(None, |s| s.write(item)) {
             Ok(()) => Ok(()),
             Err(WsError::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 // the message was accepted and queued
@@ -341,7 +341,7 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.write_pending())).map(|r| {
+        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.flush())).map(|r| {
             // WebSocket connection has just been closed. Flushing completed, not an error.
             match r {
                 Err(WsError::ConnectionClosed) => Ok(()),
@@ -352,8 +352,8 @@ where
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         let res = if self.closing {
-            // After queueing it, we call `write_pending` to drive the close handshake to completion.
-            (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.write_pending())
+            // After queueing it, we call `flush` to drive the close handshake to completion.
+            (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.flush())
         } else {
             (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.close(None))
         };

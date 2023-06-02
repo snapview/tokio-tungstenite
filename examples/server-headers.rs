@@ -78,9 +78,9 @@ fn client() {
         debug!("* {}: {:?}", header, _value);
     }
 
-    socket.write_message(Message::Text("Hello WebSocket".into())).unwrap();
+    socket.send(Message::Text("Hello WebSocket".into())).unwrap();
     loop {
-        let msg = socket.read_message().expect("Error reading message");
+        let msg = socket.read().expect("Error reading message");
         debug!("Received: {}", msg);
     }
 }
