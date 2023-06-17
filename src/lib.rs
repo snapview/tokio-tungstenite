@@ -326,11 +326,15 @@ where
 {
     type Error = WsError;
 
-    fn poll_ready(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         if self.ready {
             Poll::Ready(Ok(()))
         } else {
-            Poll::Pending
+            // Currently blocked so try to flush the blockage away
+            (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.flush())).map(|r| {
+                self.ready = true;
+                r
+            })
         }
     }
 
@@ -355,10 +359,10 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.ready = true;
         (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.flush())).map(|r| {
-            // WebSocket connection has just been closed. Flushing completed, not an error.
+            self.ready = true;
             match r {
+                // WebSocket connection has just been closed. Flushing completed, not an error.
                 Err(WsError::ConnectionClosed) => Ok(()),
                 other => other,
             }
