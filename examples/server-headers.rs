@@ -1,14 +1,14 @@
-///! Read/Write headers on server example
-///!
-///! Run with logs:
-///! Linux:
-///! ```sh
-///! RUST_LOG=debug cargo run --example server-headers
-///! ```
-///! Windows
-///! ```sh
-///! cmd /c "set RUST_LOG=debug && cargo run --example server-headers"
-///! ```
+//! Read/Write headers on server example
+//!
+//! Run with logs:
+//! Linux:
+//! ```sh
+//! RUST_LOG=debug cargo run --example server-headers
+//! ```
+//! Windows
+//! ```sh
+//! cmd /c "set RUST_LOG=debug && cargo run --example server-headers"
+//! ```
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{
     accept_hdr_async,
