@@ -346,7 +346,7 @@ where
             }
             Err(WsError::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 // the message was accepted and queued so not an error
-                // but `poll_ready` will start returning pending now.
+                // but `poll_ready` will now start trying to flush the block
                 self.ready = false;
                 Ok(())
             }
