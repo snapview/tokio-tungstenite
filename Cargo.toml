@@ -35,7 +35,7 @@ tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 [dependencies.tungstenite]
 # TODO use 0.20 release
 # version = "0.19.0"
-git = "https://github.com/snapview/tungstenite-rs"
+git = "https://github.com/conorbros/tungstenite-rs"
 default-features = false
 
 [dependencies.native-tls-crate]
