@@ -1,3 +1,7 @@
+# 0.20.0
+
+- Change the buffering behavior for `Sink::send()` and `Sink::feed()`, [see `tungstenite`'s changelog for more details](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md#0200).
+
 # 0.19.0
 
 - Allow users to enable/disable Nagle algorithm when using `connect()` helpers.
