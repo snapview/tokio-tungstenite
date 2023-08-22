@@ -55,7 +55,7 @@ version = "0.3.1"
 
 [dependencies.tokio-rustls]
 optional = true
-version = "0.24.0"
+version = "0.24.1"
 
 [dependencies.webpki-roots]
 optional = true
