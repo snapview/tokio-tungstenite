@@ -43,7 +43,7 @@ version = "0.2.11"
 
 [dependencies.rustls]
 optional = true
-version = "0.21.0"
+version = "0.21.6"
 
 [dependencies.rustls-native-certs]
 optional = true
