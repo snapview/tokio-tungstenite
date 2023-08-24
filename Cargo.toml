@@ -59,7 +59,7 @@ version = "0.24.1"
 
 [dependencies.webpki-roots]
 optional = true
-version = "0.23.0"
+version = "0.25.2"
 
 [dev-dependencies]
 futures-channel = "0.3.28"
