@@ -1,3 +1,8 @@
+# 0.20.1
+
+- Fix RUSTSEC-2023-0053.
+- Fix transitive CVE-2023-43669 from `tungstenite`.
+
 # 0.20.0
 
 - Change the buffering behavior for `Sink::send()` and `Sink::feed()`, [see `tungstenite`'s changelog for more details](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md#0200).
