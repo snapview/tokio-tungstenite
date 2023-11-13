@@ -6,9 +6,9 @@ keywords = ["websocket", "io", "web"]
 authors = ["Daniel Abramov <dabramov@snapview.de>", "Alexey Galakhov <agalakhov@snapview.de>"]
 license = "MIT"
 homepage = "https://github.com/snapview/tokio-tungstenite"
-documentation = "https://docs.rs/tokio-tungstenite/0.19.0"
+documentation = "https://docs.rs/tokio-tungstenite/0.20.1"
 repository = "https://github.com/snapview/tokio-tungstenite"
-version = "0.19.0"
+version = "0.20.1"
 edition = "2018"
 rust-version = "1.63"
 include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
@@ -35,7 +35,7 @@ tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 [dependencies.tungstenite]
 # TODO use 0.20 release
 # version = "0.19.0"
-git = "https://github.com/conorbros/tungstenite-rs"
+git = "https://github.com/shotover/tungstenite-rs"
 default-features = false
 
 [dependencies.native-tls-crate]
@@ -45,7 +45,7 @@ version = "0.2.11"
 
 [dependencies.rustls]
 optional = true
-version = "0.21.0"
+version = "0.21.6"
 
 [dependencies.rustls-native-certs]
 optional = true
@@ -57,11 +57,11 @@ version = "0.3.1"
 
 [dependencies.tokio-rustls]
 optional = true
-version = "0.24.0"
+version = "0.24.1"
 
 [dependencies.webpki-roots]
 optional = true
-version = "0.23.0"
+version = "0.25.2"
 
 [dev-dependencies]
 futures-channel = "0.3.28"
