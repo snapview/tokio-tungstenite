@@ -1,3 +1,8 @@
+# 0.21.0
+
+- Update TLS dependencies.
+- Update `tungstenite` to `0.21.0`.
+
 # 0.20.1
 
 - Fix RUSTSEC-2023-0053.
