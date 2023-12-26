@@ -52,22 +52,7 @@ use tokio_tungstenite::{
 
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
-
-/// Helper methods to create responses.
-mod body {
-    use http_body_util::{Either, Empty, Full};
-    use hyper::body::Bytes;
-
-    pub type Body = Either<Empty<Bytes>, Full<Bytes>>;
-
-    pub fn empty() -> Body {
-        Either::Left(Empty::new())
-    }
-
-    pub fn bytes<B: Into<Bytes>>(chunk: B) -> Body {
-        Either::Right(Full::from(chunk.into()))
-    }
-}
+type Body = http_body_util::Full<hyper::body::Bytes>;
 
 async fn handle_connection(
     peer_map: PeerMap,
@@ -110,7 +95,7 @@ async fn handle_request(
     peer_map: PeerMap,
     mut req: Request<Incoming>,
     addr: SocketAddr,
-) -> Result<Response<body::Body>, Infallible> {
+) -> Result<Response<Body>, Infallible> {
     println!("Received a new, potentially ws handshake");
     println!("The request's path is: {}", req.uri().path());
     println!("The request's headers are:");
@@ -141,7 +126,7 @@ async fn handle_request(
         || key.is_none()
         || req.uri() != "/socket"
     {
-        return Ok(Response::new(body::bytes("Hello World!")));
+        return Ok(Response::new(Body::from("Hello World!")));
     }
     let ver = req.version();
     tokio::task::spawn(async move {
@@ -158,7 +143,7 @@ async fn handle_request(
             Err(e) => println!("upgrade error: {}", e),
         }
     });
-    let mut res = Response::new(body::empty());
+    let mut res = Response::new(Body::default());
     *res.status_mut() = StatusCode::SWITCHING_PROTOCOLS;
     *res.version_mut() = ver;
     res.headers_mut().append(CONNECTION, upgrade);
