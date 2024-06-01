@@ -1,3 +1,8 @@
+# 0.22.0
+
+- Update TLS dependencies.
+- Update `tungstenite` to match `0.22.0`.
+
 # 0.21.0
 
 - Update TLS dependencies.
