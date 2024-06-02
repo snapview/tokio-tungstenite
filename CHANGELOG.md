@@ -1,7 +1,12 @@
+# 0.23.0
+
+- Update `tungstenite` to `0.23.0`.
+- Disable default features on TLS crates.
+
 # 0.22.0
 
 - Update TLS dependencies.
-- Update `tungstenite` to match `0.22.0`.
+- ~~Update `tungstenite` to match `0.22.0`.~~
 
 # 0.21.0
 

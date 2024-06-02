@@ -18,7 +18,6 @@ use tokio_tungstenite::{
         Message,
     },
 };
-use url::Url;
 #[macro_use]
 extern crate log;
 use futures_util::{SinkExt, StreamExt};
@@ -69,8 +68,7 @@ async fn accept_connection(stream: TcpStream) {
 }
 
 fn client() {
-    let (mut socket, response) =
-        connect(Url::parse("ws://localhost:8080/socket").unwrap()).expect("Can't connect");
+    let (mut socket, response) = connect("ws://localhost:8080/socket").expect("Can't connect");
     debug!("Connected to the server");
     debug!("Response HTTP code: {}", response.status());
     debug!("Response contains the following headers:");
