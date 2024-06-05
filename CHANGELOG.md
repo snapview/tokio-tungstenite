@@ -1,3 +1,7 @@
+# Unreleased
+
+- Introduce a `url` feature (proxies to `tungstenite/url`).
+
 # 0.23.0
 
 - Update `tungstenite` to `0.23.0`.

@@ -26,6 +26,7 @@ rustls-tls-native-roots = ["__rustls-tls", "rustls-native-certs"]
 rustls-tls-webpki-roots = ["__rustls-tls", "webpki-roots"]
 __rustls-tls = ["rustls", "rustls-pki-types", "tokio-rustls", "stream", "tungstenite/__rustls-tls", "handshake"]
 stream = []
+url = ["tungstenite/url"]
 
 [dependencies]
 log = "0.4.17"
