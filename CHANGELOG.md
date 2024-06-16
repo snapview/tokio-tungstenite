@@ -1,4 +1,4 @@
-# Unreleased
+# 0.23.1
 
 - Introduce a `url` feature (proxies to `tungstenite/url`).
 
