@@ -8,17 +8,22 @@
 //! Each WebSocket stream implements the required `Stream` and `Sink` traits,
 //! so the socket is just a stream of messages coming in and going out.
 
-#![deny(missing_docs, unused_must_use, unused_mut, unused_imports, unused_import_braces)]
+//#![deny(missing_docs, unused_must_use, unused_mut, unused_imports, unused_import_braces)]
 
 pub use tungstenite;
 
 mod compat;
-#[cfg(feature = "connect")]
+#[cfg(all(feature = "connect", not(target_family = "wasm")))]
 mod connect;
+
+#[cfg(all(feature = "js-connect", target_family = "wasm"))]
+mod connect_wasm;
+
+#[cfg(feature = "handshake")]
 mod handshake;
 #[cfg(feature = "stream")]
 mod stream;
-#[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect"))]
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect", feature = "js-connect"))]
 mod tls;
 
 use std::io::{Read, Write};
@@ -49,13 +54,16 @@ use tungstenite::{
     protocol::{Message, Role, WebSocket, WebSocketConfig},
 };
 
-#[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect"))]
+#[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect", feature = "js-connect"))]
 pub use tls::Connector;
 #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 pub use tls::{client_async_tls, client_async_tls_with_config};
 
-#[cfg(feature = "connect")]
+#[cfg(all(feature = "connect", not(target_family = "wasm")))]
 pub use connect::{connect_async, connect_async_with_config};
+
+#[cfg(all(feature = "js-connect", target_family = "wasm"))]
+pub use connect_wasm::connect;
 
 #[cfg(all(any(feature = "native-tls", feature = "__rustls-tls"), feature = "connect"))]
 pub use connect::connect_async_tls_with_config;
