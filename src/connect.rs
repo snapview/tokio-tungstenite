@@ -16,6 +16,7 @@ use crate::{domain, stream::MaybeTlsStream, Connector, IntoClientRequest, WebSoc
 /// complex uses.
 ///
 /// ```no_run
+/// # async fn example() {
 /// use tungstenite::http::{Method, Request};
 /// use tokio_tungstenite::connect_async;
 ///
@@ -31,6 +32,7 @@ use crate::{domain, stream::MaybeTlsStream, Connector, IntoClientRequest, WebSoc
 ///             .unwrap();
 ///
 /// let (stream, response) = connect_async(request).await.unwrap();
+/// #}
 /// ```
 pub async fn connect_async<R>(
     request: R,
