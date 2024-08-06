@@ -16,23 +16,17 @@ use crate::{domain, stream::MaybeTlsStream, Connector, IntoClientRequest, WebSoc
 /// complex uses.
 ///
 /// ```no_run
-/// # async fn example() {
+/// # use tungstenite::client::IntoClientRequest;
+///
+/// # async fn main() {
 /// use tungstenite::http::{Method, Request};
 /// use tokio_tungstenite::connect_async;
 ///
-/// let request = Request::builder()
-///             .uri("wss://api.example.com")
-///             .method(Method::GET)
-///             .header("Sec-WebSocket-Key", "someUniqueValue")
-///             .header("Sec-WebSocket-Version", "13")
-///             .header("host", "api.example.com")
-///             .header("Connection", "Upgrade")
-///             .header("Upgrade", "websocket")
-///             .body(())
-///             .unwrap();
+/// let mut request = "wss://api.example.com".into_client_request().unwrap();
+/// request.headers_mut().insert("api-key", "42".parse().unwrap());
 ///
 /// let (stream, response) = connect_async(request).await.unwrap();
-/// #}
+/// # }
 /// ```
 pub async fn connect_async<R>(
     request: R,
