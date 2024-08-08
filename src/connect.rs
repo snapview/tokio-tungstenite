@@ -18,7 +18,7 @@ use crate::{domain, stream::MaybeTlsStream, Connector, IntoClientRequest, WebSoc
 /// ```no_run
 /// # use tungstenite::client::IntoClientRequest;
 ///
-/// # async fn main() {
+/// # async fn test() {
 /// use tungstenite::http::{Method, Request};
 /// use tokio_tungstenite::connect_async;
 ///
