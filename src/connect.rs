@@ -10,6 +10,24 @@ use tungstenite::{
 use crate::{domain, stream::MaybeTlsStream, Connector, IntoClientRequest, WebSocketStream};
 
 /// Connect to a given URL.
+///
+/// Accepts any request that implements [`IntoClientRequest`], which is often just `&str`, but can
+/// be a variety of types such as `httparse::Request` or [`tungstenite::http::Request`] for more
+/// complex uses.
+///
+/// ```no_run
+/// # use tungstenite::client::IntoClientRequest;
+///
+/// # async fn test() {
+/// use tungstenite::http::{Method, Request};
+/// use tokio_tungstenite::connect_async;
+///
+/// let mut request = "wss://api.example.com".into_client_request().unwrap();
+/// request.headers_mut().insert("api-key", "42".parse().unwrap());
+///
+/// let (stream, response) = connect_async(request).await.unwrap();
+/// # }
+/// ```
 pub async fn connect_async<R>(
     request: R,
 ) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response), Error>
