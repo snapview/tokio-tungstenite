@@ -1,16 +1,19 @@
-use crate::{stream::MaybeTlsStream, Connector, WebSocketStream};
+use crate::{stream::MaybeTlsStream, Connector, WebSocketStream, AllowStd};
 
 use tungstenite::{
     error::{Error, UrlError},
     handshake::client::{Request, Response},
-    protocol::WebSocketConfig,
-    //client::IntoClientRequest,
+    protocol::{
+        WebSocketConfig,
+        WebSocket,
+        Role,
+    },
 };
-//use web_sys::WebSocket;
-use ws_stream_wasm::WsStreamIo;
+use ws_stream_wasm::{
+    WsMeta,
+    WsStreamIo,
+};
 use async_io_stream::IoStream;
-
-
 
 pub async fn connect(
     request: Request,
@@ -19,6 +22,7 @@ pub async fn connect(
     //connector: Option<Connector>,
 ) -> Result<(WebSocketStream<MaybeTlsStream<IoStream<WsStreamIo, Vec<u8>>>>, Response), Error> {
     //let domain = domain(&request)?;
+
     let domain = request.uri().host().unwrap();
     let port = request
         .uri()
@@ -30,13 +34,17 @@ pub async fn connect(
         })
         .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
 
-    let addr = format!("{domain}:{port}");
-    //let socket = TcpStream::connect(addr).await.map_err(Error::Io)?;
+    //let addr = format!("ws://{domain}:{port}");
+    let addr = request.uri().to_string();
+
+    let (mut _ws, wsio) = WsMeta::connect(addr, None ).await.expect("assume the connection succeeds");
 
     if disable_nagle {
         //socket.set_nodelay(true)?;
     }
-    todo!();
+    let io = wsio.into_io();
 
-    //crate::tls::client_async_tls_with_config(request, socket, config, connector).await
+    let result = WebSocketStream::from_raw_socket(MaybeTlsStream::Plain(io), Role::Client, None).await;
+    let response = Response::new(None);
+    Ok((result, response))
 }
