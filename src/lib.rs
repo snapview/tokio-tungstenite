@@ -23,7 +23,12 @@ mod connect_wasm;
 mod handshake;
 #[cfg(feature = "stream")]
 mod stream;
-#[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect", feature = "js-connect"))]
+#[cfg(any(
+    feature = "native-tls",
+    feature = "__rustls-tls",
+    feature = "connect",
+    feature = "js-connect"
+))]
 mod tls;
 
 use std::io::{Read, Write};
@@ -54,7 +59,12 @@ use tungstenite::{
     protocol::{Message, Role, WebSocket, WebSocketConfig},
 };
 
-#[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect", feature = "js-connect"))]
+#[cfg(any(
+    feature = "native-tls",
+    feature = "__rustls-tls",
+    feature = "connect",
+    feature = "js-connect"
+))]
 pub use tls::Connector;
 #[cfg(any(feature = "native-tls", feature = "__rustls-tls"))]
 pub use tls::{client_async_tls, client_async_tls_with_config};

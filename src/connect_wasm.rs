@@ -1,19 +1,12 @@
-use crate::{stream::MaybeTlsStream, Connector, WebSocketStream, AllowStd};
+use crate::{stream::MaybeTlsStream, AllowStd, Connector, WebSocketStream};
 
+use async_io_stream::IoStream;
 use tungstenite::{
     error::{Error, UrlError},
     handshake::client::{Request, Response},
-    protocol::{
-        WebSocketConfig,
-        WebSocket,
-        Role,
-    },
+    protocol::{Role, WebSocket, WebSocketConfig},
 };
-use ws_stream_wasm::{
-    WsMeta,
-    WsStreamIo,
-};
-use async_io_stream::IoStream;
+use ws_stream_wasm::{WsMeta, WsStreamIo};
 
 pub async fn connect(
     request: Request,
@@ -37,14 +30,16 @@ pub async fn connect(
     //let addr = format!("ws://{domain}:{port}");
     let addr = request.uri().to_string();
 
-    let (mut _ws, wsio) = WsMeta::connect(addr, None ).await.expect("assume the connection succeeds");
+    let (mut _ws, wsio) =
+        WsMeta::connect(addr, None).await.expect("assume the connection succeeds");
 
     if disable_nagle {
         //socket.set_nodelay(true)?;
     }
     let io = wsio.into_io();
 
-    let result = WebSocketStream::from_raw_socket(MaybeTlsStream::Plain(io), Role::Client, None).await;
+    let result =
+        WebSocketStream::from_raw_socket(MaybeTlsStream::Plain(io), Role::Client, None).await;
     let response = Response::new(None);
     Ok((result, response))
 }
