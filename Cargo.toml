@@ -18,7 +18,7 @@ all-features = true
 
 [features]
 default = ["connect", "handshake"]
-connect = ["stream", "tokio/net", "handshake"]
+connect = ["stream", "tokio/net", "handshake", "tokio/io-util"]
 handshake = ["tungstenite/handshake"]
 native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls", "handshake"]
 native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]

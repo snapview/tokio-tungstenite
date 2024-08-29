@@ -221,6 +221,7 @@ pub struct WebSocketStream<S> {
 impl<S> WebSocketStream<S> {
     /// Convert a raw socket into a WebSocketStream without performing a
     /// handshake.
+    #[cfg(feature = "handshake")]
     pub async fn from_raw_socket(stream: S, role: Role, config: Option<WebSocketConfig>) -> Self
     where
         S: AsyncRead + AsyncWrite + Unpin,
@@ -233,6 +234,7 @@ impl<S> WebSocketStream<S> {
 
     /// Convert a raw socket into a WebSocketStream without performing a
     /// handshake.
+    #[cfg(feature = "handshake")]
     pub async fn from_partially_read(
         stream: S,
         part: Vec<u8>,
