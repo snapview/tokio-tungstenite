@@ -53,7 +53,7 @@ version = "1.0"
 
 [dependencies.rustls-native-certs]
 optional = true
-version = "0.7.0"
+version = "0.8.0"
 
 [dependencies.tokio-native-tls]
 optional = true
