@@ -1,3 +1,8 @@
+# 0.24.0
+
+- Update dependencies (TLS, tungstenite).
+- Return a runtime error when WSS URLs are used without a proper TLS feature enabled.
+
 # 0.23.1
 
 - Introduce a `url` feature (proxies to `tungstenite/url`).
