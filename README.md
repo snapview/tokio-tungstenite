@@ -29,6 +29,10 @@ can use it with non-blocking/asynchronous `TcpStream`s from and couple it togeth
 
 As with [`tungstenite-rs`](https://github.com/snapview/tungstenite-rs) TLS is supported on all platforms using [`native-tls`](https://github.com/sfackler/rust-native-tls) or [`rustls`](https://github.com/ctz/rustls) through feature flags: `native-tls`, `rustls-tls-native-roots` or `rustls-tls-webpki-roots` feature flags. Neither is enabled by default. See the `Cargo.toml` for more information. If you require support for secure WebSockets (`wss://`) enable one of them.
 
+Note, that if you're using `rustls` features with `tokio-tungstenite` [version `0.23.0`](https://github.com/snapview/tokio-tungstenite/blob/master/CHANGELOG.md#0230) or higher,
+you [might observe a panic](https://github.com/snapview/tokio-tungstenite/issues/336) that is easy to fix (see the issue). Check [the discussion](https://github.com/snapview/tokio-tungstenite/issues/353#issuecomment-2455100010)
+for more details.
+
 ## Is it performant?
 
 In essence, `tokio-tungstenite` is a wrapper for `tungstenite`, so the performance is capped by the performance of `tungstenite`. `tungstenite`
