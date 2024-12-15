@@ -11,7 +11,7 @@ async fn get_case_count() -> Result<u32> {
     let (mut socket, _) = connect_async("ws://localhost:9001/getCaseCount").await?;
     let msg = socket.next().await.expect("Can't fetch case count")?;
     socket.close(None).await?;
-    Ok(msg.into_text()?.parse::<u32>().expect("Can't parse case count"))
+    Ok(msg.to_text()?.parse::<u32>().expect("Can't parse case count"))
 }
 
 async fn update_reports() -> Result<()> {

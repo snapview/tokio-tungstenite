@@ -40,7 +40,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                 }
             }
             _ = interval.tick() => {
-                ws_sender.send(Message::Text("tick".to_owned())).await?;
+                ws_sender.send(Message::text("tick")).await?;
             }
         }
     }

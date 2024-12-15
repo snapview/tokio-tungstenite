@@ -1,3 +1,7 @@
+# 0.25.0
+
+- Update `tungstenite` to `0.25.0` ([important updates!](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md#0250)).
+
 # 0.24.0
 
 - Update dependencies (TLS, tungstenite).
