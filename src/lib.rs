@@ -269,11 +269,10 @@ impl<S> WebSocketStream<S> {
     }
 
     /// Close the underlying web socket
-    pub async fn close(&mut self, msg: Option<CloseFrame<'_>>) -> Result<(), WsError>
+    pub async fn close(&mut self, msg: Option<CloseFrame>) -> Result<(), WsError>
     where
         S: AsyncRead + AsyncWrite + Unpin,
     {
-        let msg = msg.map(|msg| msg.into_owned());
         self.send(Message::Close(msg)).await
     }
 }

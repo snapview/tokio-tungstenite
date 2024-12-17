@@ -33,7 +33,7 @@ async fn main() {
     let ws_to_stdout = {
         read.for_each(|message| async {
             let data = message.unwrap().into_data();
-            tokio::io::stdout().write_all(&data.as_slice()).await.unwrap();
+            tokio::io::stdout().write_all(&data).await.unwrap();
         })
     };
 
