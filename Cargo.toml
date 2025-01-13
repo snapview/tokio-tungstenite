@@ -29,8 +29,9 @@ stream = []
 url = ["tungstenite/url"]
 
 [dependencies]
-log = "0.4.17"
 futures-util = { version = "0.3.28", default-features = false, features = ["sink", "std"] }
+log = "0.4.17"
+pin-project = "1.1.8"
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]

@@ -16,7 +16,9 @@ pub(crate) enum ContextWaker {
 }
 
 #[derive(Debug)]
+#[pin_project::pin_project]
 pub(crate) struct AllowStd<S> {
+    #[pin]
     inner: S,
     // We have the problem that external read operations (i.e. the Stream impl)
     // can trigger both read (AsyncRead) and write (AsyncWrite) operations on
@@ -115,21 +117,27 @@ impl task::ArcWake for WakerProxy {
     }
 }
 
-impl<S> AllowStd<S>
-where
-    S: Unpin,
-{
-    fn with_context<F, R>(&mut self, kind: ContextWaker, f: F) -> Poll<std::io::Result<R>>
+impl<S> AllowStd<S> {
+    fn with_context<F, R>(
+        self: Pin<&mut Self>,
+        kind: ContextWaker,
+        f: F,
+    ) -> Poll<std::io::Result<R>>
     where
         F: FnOnce(&mut Context<'_>, Pin<&mut S>) -> Poll<std::io::Result<R>>,
     {
         trace!("{}:{} AllowStd.with_context", file!(), line!());
+
+        let this = self.project();
+
         let waker = match kind {
-            ContextWaker::Read => task::waker_ref(&self.read_waker_proxy),
-            ContextWaker::Write => task::waker_ref(&self.write_waker_proxy),
+            ContextWaker::Read => task::waker_ref(&this.read_waker_proxy),
+            ContextWaker::Write => task::waker_ref(&this.write_waker_proxy),
         };
+
         let mut context = task::Context::from_waker(&waker);
-        f(&mut context, Pin::new(&mut self.inner))
+
+        f(&mut context, this.inner)
     }
 
     pub(crate) fn get_mut(&mut self) -> &mut S {
@@ -143,12 +151,20 @@ where
 
 impl<S> Read for AllowStd<S>
 where
-    S: AsyncRead + Unpin,
+    S: AsyncRead,
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         trace!("{}:{} Read.read", file!(), line!());
+
+        let this = unsafe {
+            // SAFETY: we rely on the fact `AllowStd` is only used internally and
+            // the wrapper that uses it is going to pin it.
+            Pin::new_unchecked(self)
+        };
+
         let mut buf = ReadBuf::new(buf);
-        match self.with_context(ContextWaker::Read, |ctx, stream| {
+
+        match this.with_context(ContextWaker::Read, |ctx, stream| {
             trace!("{}:{} Read.with_context read -> poll_read", file!(), line!());
             stream.poll_read(ctx, &mut buf)
         }) {
@@ -161,11 +177,18 @@ where
 
 impl<S> Write for AllowStd<S>
 where
-    S: AsyncWrite + Unpin,
+    S: AsyncWrite,
 {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         trace!("{}:{} Write.write", file!(), line!());
-        match self.with_context(ContextWaker::Write, |ctx, stream| {
+
+        let this = unsafe {
+            // SAFETY: we rely on the fact `AllowStd` is only used internally and
+            // the wrapper that uses it is going to pin it.
+            Pin::new_unchecked(self)
+        };
+
+        match this.with_context(ContextWaker::Write, |ctx, stream| {
             trace!("{}:{} Write.with_context write -> poll_write", file!(), line!());
             stream.poll_write(ctx, buf)
         }) {
@@ -176,7 +199,14 @@ where
 
     fn flush(&mut self) -> std::io::Result<()> {
         trace!("{}:{} Write.flush", file!(), line!());
-        match self.with_context(ContextWaker::Write, |ctx, stream| {
+
+        let this = unsafe {
+            // SAFETY: we rely on the fact `AllowStd` is only used internally and
+            // the wrapper that uses it is going to pin it.
+            Pin::new_unchecked(self)
+        };
+
+        match this.with_context(ContextWaker::Write, |ctx, stream| {
             trace!("{}:{} Write.with_context flush -> poll_flush", file!(), line!());
             stream.poll_flush(ctx)
         }) {
