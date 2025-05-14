@@ -24,6 +24,19 @@ pub enum MaybeTlsStream<S> {
     Rustls(tokio_rustls::client::TlsStream<S>),
 }
 
+impl<S> MaybeTlsStream<S> {
+    /// Returns a shared reference to the inner stream.
+    pub fn get_ref(&self) -> &S {
+        match self {
+            MaybeTlsStream::Plain(s) => s,
+            #[cfg(feature = "native-tls")]
+            MaybeTlsStream::NativeTls(s) => s.get_ref().get_ref().get_ref(),
+            #[cfg(feature = "__rustls-tls")]
+            MaybeTlsStream::Rustls(s) => s.get_ref().0,
+        }
+    }
+}
+
 impl<S: AsyncRead + AsyncWrite + Unpin> AsyncRead for MaybeTlsStream<S> {
     fn poll_read(
         self: Pin<&mut Self>,
