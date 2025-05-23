@@ -39,11 +39,6 @@ In essence, `tokio-tungstenite` is a wrapper for `tungstenite`, so the performan
 has a decent performance (it has been used in production for real-time communication software, video conferencing, etc), but it's definitely
 not the fastest WebSocket library in the world at the moment of writing this note.
 
-If performance is of a paramount importance for you (especially if you send **large messages**), then you might want to check other libraries
-that have been designed to be performant or you could file a PR against `tungstenite` to improve the performance!
+We are aware of changes that both `tungstenite` and `tokio-tungstenite` require in order to make it on-par with slightly more performant libraries like `fastwebsockets`. In the course of past years we have merged several performance improvements submitted by the awesome community of Rust users who helped to improve the library! The more recent versions of `tokio-tungstenite` (`> 0.26.2`) are more performant and should be more on-par with `fastwebsockets`.
 
-We are aware of changes that both `tungstenite` and `tokio-tungstenite` need in order to fill the gap of ~30% performance difference between `tungstenite`
-and more performant libraries like `fastwebsockets`, but we have not worked on that yet as it was not required for the use case that original authors designed
-the library for. In the course of past years we have merged several performance improvements submitted by the awesome community of Rust users who helped to improve
-the library! For a quick summary of the pending performance problems/improvements, see [the comment](https://github.com/snapview/tungstenite-rs/issues/352#issuecomment-1537488614).
-
+For a quick summary of the pending performance problems/improvements, see [the comment](https://github.com/snapview/tungstenite-rs/issues/352#issuecomment-1537488614).
