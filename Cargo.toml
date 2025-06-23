@@ -18,7 +18,7 @@ all-features = true
 
 [features]
 default = ["connect", "handshake"]
-connect = ["stream", "tokio/net", "handshake"]
+connect = ["stream", "tokio/net", "handshake", "tokio/io-util"]
 handshake = ["tungstenite/handshake"]
 native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls", "handshake"]
 native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]
@@ -27,11 +27,15 @@ rustls-tls-webpki-roots = ["__rustls-tls", "webpki-roots"]
 __rustls-tls = ["rustls", "rustls-pki-types", "tokio-rustls", "stream", "tungstenite/__rustls-tls", "handshake"]
 stream = []
 url = ["tungstenite/url"]
+js-connect = ["stream", "handshake", "ws_stream_wasm", "async_io_stream", "getrandom/js" ]
 
 [dependencies]
 log = "0.4.17"
 futures-util = { version = "0.3.28", default-features = false, features = ["sink", "std"] }
-tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
+tokio = { version = "1.39.0", default-features = false }
+ws_stream_wasm = { version = "0.7.4", optional = true }
+async_io_stream = { version = "0.3.3", features = ["tokio_io"], optional = true }
+getrandom = { version = "0.2", optional = true }
 
 [dependencies.tungstenite]
 version = "0.27.0"
@@ -68,7 +72,7 @@ default-features = false
 optional = true
 version = "0.26.0"
 
-[dev-dependencies]
+[target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
 futures-channel = "0.3.28"
 hyper = { version = "1.0", default-features = false, features = ["http1", "server"] }
 hyper-util = { version = "0.1", features = ["tokio"] }
