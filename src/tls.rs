@@ -50,7 +50,7 @@ mod encryption {
                 Mode::Plain => Ok(MaybeTlsStream::Plain(socket)),
                 Mode::Tls => {
                     let try_connector = tls_connector.map_or_else(TlsConnector::new, Ok);
-                    let connector = try_connector.map_err(TlsError::Native)?;
+                    let connector = try_connector.map_err(TlsError::from)?;
                     let stream = TokioTlsConnector::from(connector);
                     let connected = stream.connect(&domain, socket).await;
                     match connected {
