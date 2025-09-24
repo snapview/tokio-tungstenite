@@ -96,6 +96,11 @@ impl<S> AllowStd<S> {
             }
         }
     }
+
+    /// Returns the underlying stream.
+    pub(crate) fn into_inner(self) -> S {
+        self.inner
+    }
 }
 
 // Proxy Waker that we pass to the internal AsyncRead/Write of the
