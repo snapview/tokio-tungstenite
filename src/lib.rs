@@ -189,7 +189,9 @@ where
 /// them in `futures-rs` crate documentation or have a look on the examples
 /// and unit tests for this crate.
 #[derive(Debug)]
+#[pin_project::pin_project]
 pub struct WebSocketStream<S> {
+    #[pin]
     inner: WebSocket<AllowStd<S>>,
     closing: bool,
     ended: bool,
@@ -234,17 +236,23 @@ impl<S> WebSocketStream<S> {
         Self { inner: ws, closing: false, ended: false, ready: true }
     }
 
-    fn with_context<F, R>(&mut self, ctx: Option<(ContextWaker, &mut Context<'_>)>, f: F) -> R
+    fn with_context<F, R>(
+        self: Pin<&mut Self>,
+        ctx: Option<(ContextWaker, &mut Context<'_>)>,
+        f: F,
+    ) -> R
     where
-        S: Unpin,
-        F: FnOnce(&mut WebSocket<AllowStd<S>>) -> R,
+        F: FnOnce(Pin<&mut WebSocket<AllowStd<S>>>) -> R,
         AllowStd<S>: Read + Write,
     {
         trace!("{}:{} WebSocketStream.with_context", file!(), line!());
+        let this = self.project();
+
         if let Some((kind, ctx)) = ctx {
-            self.inner.get_mut().set_waker(kind, ctx.waker());
+            this.inner.get_ref().set_waker(kind, ctx.waker());
         }
-        f(&mut self.inner)
+
+        f(this.inner)
     }
 
     /// Consumes the `WebSocketStream` and returns the underlying stream.
@@ -284,7 +292,7 @@ impl<S> WebSocketStream<S> {
 
 impl<T> Stream for WebSocketStream<T>
 where
-    T: AsyncRead + AsyncWrite + Unpin,
+    T: AsyncRead + AsyncWrite,
 {
     type Item = Result<Message, WsError>;
 
@@ -298,13 +306,22 @@ where
             return Poll::Ready(None);
         }
 
-        match futures_util::ready!(self.with_context(Some((ContextWaker::Read, cx)), |s| {
-            trace!("{}:{} Stream.with_context poll_next -> read()", file!(), line!());
-            cvt(s.read())
-        })) {
+        match futures_util::ready!(self.as_mut().with_context(
+            Some((ContextWaker::Read, cx)),
+            |s| {
+                trace!("{}:{} Stream.with_context poll_next -> read()", file!(), line!());
+                unsafe {
+                    // SAFETY: library's `Read` impl is going to Pin anyway
+                    cvt(s.get_unchecked_mut().read())
+                }
+            }
+        )) {
             Ok(v) => Poll::Ready(Some(Ok(v))),
             Err(e) => {
-                self.ended = true;
+                unsafe {
+                    // SAFETY: not moving out
+                    self.get_unchecked_mut().ended = true;
+                }
                 if matches!(e, WsError::AlreadyClosed | WsError::ConnectionClosed) {
                     Poll::Ready(None)
                 } else {
@@ -317,7 +334,7 @@ where
 
 impl<T> FusedStream for WebSocketStream<T>
 where
-    T: AsyncRead + AsyncWrite + Unpin,
+    T: AsyncRead + AsyncWrite,
 {
     fn is_terminated(&self) -> bool {
         self.ended
@@ -326,7 +343,7 @@ where
 
 impl<T> Sink<Message> for WebSocketStream<T>
 where
-    T: AsyncRead + AsyncWrite + Unpin,
+    T: AsyncRead + AsyncWrite,
 {
     type Error = WsError;
 
@@ -335,27 +352,47 @@ where
             Poll::Ready(Ok(()))
         } else {
             // Currently blocked so try to flush the blockage away
-            (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.flush())).map(|r| {
-                self.ready = true;
-                r
-            })
+            self.as_mut()
+                .with_context(Some((ContextWaker::Write, cx)), |s| unsafe {
+                    // SAFETY: library's `Write` impl is going to Pin anyway
+                    cvt(s.get_unchecked_mut().flush())
+                })
+                .map(|r| {
+                    unsafe {
+                        // SAFETY: not moving out
+                        self.get_unchecked_mut().ready = true;
+                    }
+                    r
+                })
         }
     }
 
     fn start_send(mut self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
-        match (*self).with_context(None, |s| s.write(item)) {
+        match self.as_mut().with_context(None, |s| unsafe {
+            // SAFETY: library's `Write` impl is going to Pin anyway
+            s.get_unchecked_mut().write(item)
+        }) {
             Ok(()) => {
-                self.ready = true;
+                unsafe {
+                    // SAFETY: not moving out
+                    self.get_unchecked_mut().ready = true;
+                }
                 Ok(())
             }
             Err(WsError::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 // the message was accepted and queued so not an error
                 // but `poll_ready` will now start trying to flush the block
-                self.ready = false;
+                unsafe {
+                    // SAFETY: not moving out
+                    self.get_unchecked_mut().ready = false;
+                }
                 Ok(())
             }
             Err(e) => {
-                self.ready = true;
+                unsafe {
+                    // SAFETY: not moving out
+                    self.get_unchecked_mut().ready = true;
+                }
                 debug!("websocket start_send error: {}", e);
                 Err(e)
             }
@@ -363,23 +400,39 @@ where
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        (*self).with_context(Some((ContextWaker::Write, cx)), |s| cvt(s.flush())).map(|r| {
-            self.ready = true;
-            match r {
-                // WebSocket connection has just been closed. Flushing completed, not an error.
-                Err(WsError::ConnectionClosed) => Ok(()),
-                other => other,
-            }
-        })
+        self.as_mut()
+            .with_context(Some((ContextWaker::Write, cx)), |s| unsafe {
+                // SAFETY: library's `Write` impl is going to Pin anyway
+                cvt(s.get_unchecked_mut().flush())
+            })
+            .map(|r| {
+                unsafe {
+                    self.get_unchecked_mut().ready = true;
+                }
+                match r {
+                    // WebSocket connection has just been closed. Flushing completed, not an error.
+                    Err(WsError::ConnectionClosed) => Ok(()),
+                    other => other,
+                }
+            })
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.ready = true;
+        unsafe {
+            self.as_mut().get_unchecked_mut().ready = true;
+        }
+
         let res = if self.closing {
             // After queueing it, we call `flush` to drive the close handshake to completion.
-            (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.flush())
+            self.as_mut().with_context(Some((ContextWaker::Write, cx)), |s| unsafe {
+                // SAFETY: library's `Write` impl is going to Pin anyway
+                s.get_unchecked_mut().flush()
+            })
         } else {
-            (*self).with_context(Some((ContextWaker::Write, cx)), |s| s.close(None))
+            self.as_mut().with_context(Some((ContextWaker::Write, cx)), |s| unsafe {
+                // SAFETY: library's `Write` impl is going to Pin anyway
+                s.get_unchecked_mut().close(None)
+            })
         };
 
         match res {
@@ -387,7 +440,10 @@ where
             Err(WsError::ConnectionClosed) => Poll::Ready(Ok(())),
             Err(WsError::Io(err)) if err.kind() == std::io::ErrorKind::WouldBlock => {
                 trace!("WouldBlock");
-                self.closing = true;
+                unsafe {
+                    // SAFETY: not moving out
+                    self.get_unchecked_mut().closing = true;
+                }
                 Poll::Pending
             }
             Err(err) => {
