@@ -17,9 +17,10 @@ include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 all-features = true
 
 [features]
-default = ["connect", "handshake"]
+default = ["connect", "handshake", "proxy"]
 connect = ["stream", "tokio/net", "handshake"]
 handshake = ["tungstenite/handshake"]
+proxy = ["tungstenite/proxy", "tokio/net", "handshake"]
 native-tls = ["native-tls-crate", "tokio-native-tls", "stream", "tungstenite/native-tls", "handshake"]
 native-tls-vendored = ["native-tls", "native-tls-crate/vendored", "tungstenite/native-tls-vendored"]
 rustls-tls-native-roots = ["__rustls-tls", "rustls-native-certs"]
@@ -34,7 +35,7 @@ futures-util = { version = "0.3.28", default-features = false, features = ["sink
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-version = "0.28.0"
+path = "/Users/jakku/Dev/tungstenite-rs"
 default-features = false
 
 [dependencies.native-tls-crate]
@@ -73,7 +74,7 @@ futures-channel = "0.3.28"
 hyper = { version = "1.0", default-features = false, features = ["http1", "server"] }
 hyper-util = { version = "0.1", features = ["tokio"] }
 http-body-util = "0.1"
-tokio = { version = "1.27.0", default-features = false, features = ["io-std", "macros", "net", "rt-multi-thread", "time"] }
+tokio = { version = "1.27.0", default-features = false, features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "time"] }
 env_logger = "0.10.0"
 
 [[example]]
@@ -107,3 +108,7 @@ required-features = ["handshake"]
 [[example]]
 name = "interval-server"
 required-features = ["handshake"]
+
+[[example]]
+name = "proxy-client"
+required-features = ["proxy"]
