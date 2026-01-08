@@ -35,7 +35,8 @@ futures-util = { version = "0.3.28", default-features = false, features = ["sink
 tokio = { version = "1.0.0", default-features = false, features = ["io-util"] }
 
 [dependencies.tungstenite]
-path = "/Users/jakku/Dev/tungstenite-rs"
+git = "ssh://git@github.com/JakkuSakura/tungstenite-rs.git"
+branch = "proxy-support"
 default-features = false
 
 [dependencies.native-tls-crate]
