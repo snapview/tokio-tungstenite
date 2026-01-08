@@ -1,3 +1,7 @@
+# UNRELEASED
+
+- Add proxy support for `connect_async` via `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY`/`NO_PROXY`, with HTTP CONNECT and SOCKS5.
+
 # 0.28.0
 
 - Update `tungstenite` to `0.18.0`. See [`tungstenite` release](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md).
