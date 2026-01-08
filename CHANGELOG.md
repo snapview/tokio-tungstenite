@@ -1,6 +1,6 @@
 # UNRELEASED
 
-- Add proxy support for `connect_async` via `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY`/`NO_PROXY`, with HTTP CONNECT and SOCKS5.
+- Add proxy support for `connect_async` via `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY`/`NO_PROXY`, with HTTP CONNECT and SOCKS5 (opt-in via `proxy` feature).
 
 # 0.28.0
 

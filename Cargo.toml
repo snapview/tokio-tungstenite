@@ -17,7 +17,7 @@ include = ["examples/**/*", "src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 all-features = true
 
 [features]
-default = ["connect", "handshake", "proxy"]
+default = ["connect", "handshake"]
 connect = ["stream", "tokio/net", "handshake"]
 handshake = ["tungstenite/handshake"]
 proxy = ["tungstenite/proxy", "tokio/net", "handshake"]
