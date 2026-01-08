@@ -16,6 +16,19 @@ async fn proxy_http_and_socks5() {
     run_proxy_test("ALL_PROXY", "socks5").await;
 }
 
+#[tokio::test]
+async fn proxy_http_and_socks5_real() {
+    let http_proxy = env::var("REAL_HTTP_PROXY").ok();
+    let socks_proxy = env::var("REAL_SOCKS5_PROXY").ok();
+
+    if let Some(http_proxy) = http_proxy {
+        run_proxy_test_with_url("HTTP_PROXY", &http_proxy).await;
+    }
+    if let Some(socks_proxy) = socks_proxy {
+        run_proxy_test_with_url("ALL_PROXY", &socks_proxy).await;
+    }
+}
+
 async fn run_proxy_test(proxy_env_key: &str, proxy_scheme: &str) {
     let (target_port, target_handle) = spawn_ws_echo_server().await;
     let target_addr = format!("127.0.0.1:{target_port}");
@@ -48,6 +61,37 @@ async fn run_proxy_test(proxy_env_key: &str, proxy_scheme: &str) {
     restore_env("NO_PROXY", prev_no_proxy);
 
     proxy_handle.await.expect("proxy task");
+    target_handle.await.expect("target task");
+}
+
+async fn run_proxy_test_with_url(proxy_env_key: &str, proxy_url: &str) {
+    let (target_port, target_handle) = spawn_ws_echo_server().await;
+    let target_addr = format!("127.0.0.1:{target_port}");
+
+    let prev_http_proxy = env::var("HTTP_PROXY").ok();
+    let prev_https_proxy = env::var("HTTPS_PROXY").ok();
+    let prev_all_proxy = env::var("ALL_PROXY").ok();
+    let prev_no_proxy = env::var("NO_PROXY").ok();
+
+    env::remove_var("HTTP_PROXY");
+    env::remove_var("HTTPS_PROXY");
+    env::remove_var("ALL_PROXY");
+    env::remove_var("NO_PROXY");
+
+    env::set_var(proxy_env_key, proxy_url);
+
+    let url = format!("ws://{target_addr}");
+    let (mut socket, _response) = connect_async(url).await.expect("proxy connect");
+    socket.send(Message::Text("hello".into())).await.expect("send");
+    let msg = socket.next().await.expect("read").expect("message");
+    assert_eq!(msg, Message::Text("hello".into()));
+    let _ = socket.close(None).await;
+
+    restore_env("HTTP_PROXY", prev_http_proxy);
+    restore_env("HTTPS_PROXY", prev_https_proxy);
+    restore_env("ALL_PROXY", prev_all_proxy);
+    restore_env("NO_PROXY", prev_no_proxy);
+
     target_handle.await.expect("target task");
 }
 
