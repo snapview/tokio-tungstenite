@@ -42,4 +42,5 @@ echo $! > "$MICROSOCKS_PID"
 
 echo "REAL_HTTP_PROXY=http://127.0.0.1:3128"
 echo "REAL_SOCKS5_PROXY=socks5://127.0.0.1:1080"
+echo "Note: set REAL_* vars to opt into real-proxy tests without clobbering existing HTTP_PROXY/ALL_PROXY."
 echo "STATE_DIR=$STATE_DIR"
