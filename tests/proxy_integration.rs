@@ -18,6 +18,10 @@ async fn proxy_http_and_socks5() {
 
 #[tokio::test]
 async fn proxy_http_and_socks5_real() {
+    // Optional real-proxy checks:
+    // - REAL_HTTP_PROXY / REAL_SOCKS5_PROXY are used to avoid clobbering any
+    //   existing HTTP_PROXY / ALL_PROXY settings on the developer machine.
+    // - The test copies values into HTTP_PROXY/ALL_PROXY only while it runs.
     let http_proxy = env::var("REAL_HTTP_PROXY").ok();
     let socks_proxy = env::var("REAL_SOCKS5_PROXY").ok();
 

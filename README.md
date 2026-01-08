@@ -34,6 +34,7 @@ honor `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and `NO_PROXY` (case-insensitive
 connections. Supported proxy schemes are `http://`, `socks5://`, and `socks5h://`.
 `HTTPS_PROXY` values must still use the `http://` scheme (TLS-to-proxy is not supported).
 
+
 Note, that if you're using `rustls` features with `tokio-tungstenite` [version `0.23.0`](https://github.com/snapview/tokio-tungstenite/blob/master/CHANGELOG.md#0230) or higher,
 you [might observe a panic](https://github.com/snapview/tokio-tungstenite/issues/336) that is easy to fix (see the issue). Check [the discussion](https://github.com/snapview/tokio-tungstenite/issues/353#issuecomment-2455100010)
 for more details.
