@@ -41,6 +41,9 @@ where
 /// Please refer to `connect_async()` for more details. `disable_nagle` specifies if
 /// the Nagle's algorithm must be disabled, i.e. `set_nodelay(true)`. If you don't know
 /// what the Nagle's algorithm is, better leave it set to `false`.
+///
+/// When the `proxy` feature is enabled, this function honors `HTTP_PROXY`, `HTTPS_PROXY`,
+/// `ALL_PROXY`, and `NO_PROXY` (case-insensitive) for client connections.
 pub async fn connect_async_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>,
@@ -87,12 +90,27 @@ async fn connect(
         })
         .ok_or(Error::Url(UrlError::UnsupportedUrlScheme))?;
 
-    let addr = format!("{domain}:{port}");
-    let socket = TcpStream::connect(addr).await.map_err(Error::Io)?;
+    let socket = connect_socket(&request, &domain, port).await?;
 
     if disable_nagle {
         socket.set_nodelay(true)?;
     }
 
     crate::tls::client_async_tls_with_config(request, socket, config, connector).await
+}
+
+async fn connect_socket(
+    request: &Request,
+    domain: &str,
+    port: u16,
+) -> Result<TcpStream, Error> {
+    #[cfg(feature = "proxy")]
+    if let Some(proxy) = tungstenite::proxy::ProxyConfig::from_env(request.uri())? {
+        let addr = proxy.authority();
+        let socket = TcpStream::connect(addr).await.map_err(Error::Io)?;
+        return crate::proxy::connect_via_proxy(socket, &proxy, domain, port).await;
+    }
+
+    let addr = format!("{domain}:{port}");
+    TcpStream::connect(addr).await.map_err(Error::Io)
 }

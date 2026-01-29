@@ -20,6 +20,8 @@ mod handshake;
 mod stream;
 #[cfg(any(feature = "native-tls", feature = "__rustls-tls", feature = "connect"))]
 mod tls;
+#[cfg(feature = "proxy")]
+pub mod proxy;
 
 use std::io::{Read, Write};
 
