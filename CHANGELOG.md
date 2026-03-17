@@ -1,3 +1,7 @@
+# 0.29.0
+
+- Update `tungstenite` to `0.19.0`. See [`tungstenite` release](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md).
+
 # 0.28.0
 
 - Update `tungstenite` to `0.18.0`. See [`tungstenite` release](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md).
