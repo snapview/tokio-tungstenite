@@ -14,7 +14,7 @@ Add this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tokio-tungstenite = "0.28"
+tokio-tungstenite = "0.29"
 ```
 
 Take a look at the `examples/` directory for client and server examples. You may also want to get familiar with
