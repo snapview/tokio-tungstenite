@@ -4,6 +4,7 @@
 //! `native_tls` or `openssl` will work as long as there is a TLS stream supporting standard
 //! `Read + Write` traits.
 use std::{
+    io::IoSlice,
     pin::Pin,
     task::{Context, Poll},
 };
@@ -65,6 +66,20 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
             MaybeTlsStream::NativeTls(s) => Pin::new(s).poll_write(cx, buf),
             #[cfg(feature = "__rustls-tls")]
             MaybeTlsStream::Rustls(s) => Pin::new(s).poll_write(cx, buf),
+        }
+    }
+
+    fn poll_write_vectored(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[IoSlice<'_>],
+    ) -> Poll<Result<usize, std::io::Error>> {
+        match self.get_mut() {
+            MaybeTlsStream::Plain(ref mut s) => Pin::new(s).poll_write_vectored(cx, buf),
+            #[cfg(feature = "native-tls")]
+            MaybeTlsStream::NativeTls(s) => Pin::new(s).poll_write_vectored(cx, buf),
+            #[cfg(feature = "__rustls-tls")]
+            MaybeTlsStream::Rustls(s) => Pin::new(s).poll_write_vectored(cx, buf),
         }
     }
 
