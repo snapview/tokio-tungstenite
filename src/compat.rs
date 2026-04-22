@@ -168,6 +168,16 @@ impl<S> Write for AllowStd<S>
 where
     S: AsyncWrite + Unpin,
 {
+    fn write_vectored(&mut self, bufs: &[std::io::IoSlice<'_>]) -> std::io::Result<usize> {
+        trace!("{}:{} Write.write_vectored", file!(), line!());
+        match self.with_context(ContextWaker::Write, |ctx, stream| {
+            trace!("{}:{} Write.with_context write_vectored -> poll_write_vectored", file!(), line!());
+            stream.poll_write_vectored(ctx, bufs)
+        }) {
+            Poll::Ready(r) => r,
+            Poll::Pending => Err(std::io::Error::from(std::io::ErrorKind::WouldBlock)),
+        }
+    }
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         trace!("{}:{} Write.write", file!(), line!());
         match self.with_context(ContextWaker::Write, |ctx, stream| {
