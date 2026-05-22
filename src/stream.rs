@@ -91,3 +91,31 @@ impl<S: AsyncRead + AsyncWrite + Unpin> AsyncWrite for MaybeTlsStream<S> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+    use std::task::{Context, Poll, Wake};
+    use tokio::io::{duplex, AsyncReadExt, AsyncWriteExt, ReadBuf};
+
+    struct DummyWaker;
+    impl Wake for DummyWaker {
+        fn wake(self: Arc<Self>) {}
+    }
+
+    #[tokio::test]
+    async fn plain_stream_forwards_pending_and_eof() {
+        let (client, mut server) = duplex(64);
+        let mut stream = MaybeTlsStream::Plain(client);
+        let waker = Arc::new(DummyWaker).into();
+        let mut cx = Context::from_waker(&waker);
+        let mut buf = [0u8; 4];
+        let mut read_buf = ReadBuf::new(&mut buf);
+        assert!(matches!(Pin::new(&mut stream).poll_read(&mut cx, &mut read_buf), Poll::Pending));
+        server.write_all(b"x").await.unwrap();
+        assert_eq!(stream.read(&mut buf).await.unwrap(), 1);
+        drop(server);
+        assert_eq!(stream.read(&mut buf).await.unwrap(), 0);
+    }
+}

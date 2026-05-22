@@ -235,3 +235,17 @@ where
 
     client_async_with_config(request, stream, config).await
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Cursor;
+    use tungstenite::error::UrlError;
+
+    #[tokio::test]
+    async fn plain_connector_rejects_wss() {
+        let stream = Cursor::new(vec![]);
+        let result = client_async_tls_with_config("wss://example.com/", stream, None, Some(Connector::Plain)).await;
+        assert!(matches!(result, Err(Error::Url(UrlError::TlsFeatureNotEnabled))));
+    }
+}
