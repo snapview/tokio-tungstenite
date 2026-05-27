@@ -188,6 +188,18 @@ where
 /// through the respective `Stream` and `Sink`. Check more information about
 /// them in `futures-rs` crate documentation or have a look on the examples
 /// and unit tests for this crate.
+///
+/// # Cancel safety
+///
+/// Reading messages is cancel-safe. `WebSocketStream` has no dedicated read
+/// methods; messages arrive through its `Stream` implementation, and reading a
+/// message via `StreamExt::next` follows that trait's cancel-safety: if the
+/// `next()` future is dropped before it resolves (for example, as a branch of
+/// `tokio::select!` that another branch completes first), no message is lost.
+/// The next poll resumes from the same position in the stream.
+///
+/// The `Sink` side (sending) does not carry a documented cancel-safety
+/// guarantee.
 #[derive(Debug)]
 pub struct WebSocketStream<S> {
     inner: WebSocket<AllowStd<S>>,
