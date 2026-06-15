@@ -264,6 +264,22 @@ impl<S> WebSocketStream<S> {
         self.inner.into_inner().into_inner()
     }
 
+    /// Consumes the `WebSocketStream` and returns the underlying stream together
+    /// with any bytes that were already read from it into the internal read
+    /// buffer but not yet consumed as a WebSocket message.
+    ///
+    /// Unlike [`WebSocketStream::into_inner`], this does not discard that
+    /// buffered data. It is useful when taking over the raw stream after the
+    /// handshake — for example to relay raw bytes — where the peer may have
+    /// coalesced WebSocket frame bytes into the same read as the handshake
+    /// response (or where some frames have already been read and a tail
+    /// remains). The returned buffer precedes anything still unread on the
+    /// returned stream.
+    pub fn into_inner_with_read_buffer(self) -> (S, tungstenite::Bytes) {
+        let (allow_std, buffer) = self.inner.into_inner_with_read_buffer();
+        (allow_std.into_inner(), buffer)
+    }
+
     /// Returns a shared reference to the inner stream.
     pub fn get_ref(&self) -> &S
     where

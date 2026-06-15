@@ -1,3 +1,7 @@
+# UNRELEASED
+
+- Add `WebSocketStream::into_inner_with_read_buffer()` so that a caller taking over the raw stream after the handshake can recover bytes the peer coalesced into the same read as the handshake response, which `into_inner()` discards. Requires `tungstenite` with `WebSocket::into_inner_with_read_buffer()` (snapview/tungstenite-rs#556).
+
 # 0.29.0
 
 - Update `tungstenite` to `0.29.0`. See [`tungstenite` release](https://github.com/snapview/tungstenite-rs/blob/master/CHANGELOG.md).
