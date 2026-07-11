@@ -78,7 +78,7 @@ use tungstenite::protocol::CloseFrame;
 /// This is typically used for clients who have already established, for
 /// example, a TCP connection to the remote server.
 #[cfg(feature = "handshake")]
-pub async fn client_async<'a, R, S>(
+pub async fn client_async<R, S>(
     request: R,
     stream: S,
 ) -> Result<(WebSocketStream<S>, Response), WsError>
@@ -92,7 +92,7 @@ where
 /// The same as `client_async()` but the one can specify a websocket configuration.
 /// Please refer to `client_async()` for more details.
 #[cfg(feature = "handshake")]
-pub async fn client_async_with_config<'a, R, S>(
+pub async fn client_async_with_config<R, S>(
     request: R,
     stream: S,
     config: Option<WebSocketConfig>,
@@ -108,7 +108,7 @@ where
     });
     f.await.map_err(|e| match e {
         HandshakeError::Failure(e) => e,
-        e => WsError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())),
+        e => WsError::Io(std::io::Error::other(e.to_string())),
     })
 }
 
@@ -175,7 +175,7 @@ where
     });
     f.await.map_err(|e| match e {
         HandshakeError::Failure(e) => e,
-        e => WsError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())),
+        e => WsError::Io(std::io::Error::other(e.to_string())),
     })
 }
 
