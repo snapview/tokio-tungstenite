@@ -66,7 +66,7 @@ default-features = false
 
 [dependencies.webpki-roots]
 optional = true
-version = "0.26.0"
+version = "1.0.9"
 
 [dev-dependencies]
 futures-channel = "0.3.28"
@@ -74,7 +74,7 @@ hyper = { version = "1.0", default-features = false, features = ["http1", "serve
 hyper-util = { version = "0.1", features = ["tokio"] }
 http-body-util = "0.1"
 tokio = { version = "1.27.0", default-features = false, features = ["io-std", "macros", "net", "rt-multi-thread", "time"] }
-env_logger = "0.10.0"
+env_logger = "0.11.0"
 
 [[example]]
 name = "autobahn-client"
