@@ -189,6 +189,11 @@ where
 /// them in `futures-rs` crate documentation or have a look on the examples
 /// and unit tests for this crate.
 ///
+/// # Reading from the `Stream`
+/// When calling `StreamExt::next`, or derivatives like `TryStreamExt::try_next`,
+/// an `Option<Message>` is returned. Upon returning `None` the connection has
+/// either been closed or a critical error has occurred. The stream is unusable.
+///
 /// # Cancel safety
 ///
 /// Reading messages is cancel-safe. `WebSocketStream` has no dedicated read
